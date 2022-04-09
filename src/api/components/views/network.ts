@@ -31,7 +31,7 @@ const newUser = async (
         "jretondo90@gmail.com",
         "Nuevo usurio",
         true,
-        true);
+        true, "");
 
     let url: string;
     if (process.env.ENTORNO === "PROD") {

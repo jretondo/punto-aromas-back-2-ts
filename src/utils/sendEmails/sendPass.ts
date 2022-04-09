@@ -12,7 +12,8 @@ export const sendPass = async (
     email: string,
     subject: string,
     newUser: boolean,
-    view: boolean
+    view: boolean,
+    name: string
 ): Promise<any> => {
     if (view) {
 
@@ -33,7 +34,7 @@ export const sendPass = async (
             Links,
             Names,
             titlePage: subject,
-            titleHead: "Hola Retondo Javier",
+            titleHead: `${name}`,
             parrafosHead: welcome,
             titleButton: "A continuación le pasamos los datos de ingreso al mismo:",
             textCall: `Usuario: ${user}`,

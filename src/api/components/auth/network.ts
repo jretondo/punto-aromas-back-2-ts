@@ -26,7 +26,7 @@ const changePass = (
         pass: req.body.password,
         prov: 0,
         usuario: req.body.user.usuario
-    }, "")
+    }, "", "")
         .then(data => {
             success({ res, req, message: data })
         })

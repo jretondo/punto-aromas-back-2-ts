@@ -9,7 +9,7 @@ import { Iauth } from 'interfaces/Itables';
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
 
-    const upsert = async (body: Iauth, email: string) => {
+    const upsert = async (body: Iauth, email: string, name: string) => {
         let newAuth: Iauth;
         if (body.pass) {
             newAuth = {
@@ -20,7 +20,7 @@ export = (injectedStore: typeof StoreType) => {
             if (body.prov === 1) {
                 const result = await store.update(Tables.AUTH_ADMIN, newAuth, Number(body.id));
                 if (result.affectedRows > 0) {
-                    return await sendPass(body.usuario, body.pass, email, "Nueva contraseña", false, false);
+                    return await sendPass(body.usuario, body.pass, email, "Nueva contraseña", false, false, name);
                 } else {
                     return false;
                 }
@@ -37,7 +37,7 @@ export = (injectedStore: typeof StoreType) => {
             };
             const result = await store.insert(Tables.AUTH_ADMIN, newAuth);
             if (result.affectedRows > 0) {
-                return await sendPass(body.usuario, newPass, email, "Nuevo Usuario", true, false);
+                return await sendPass(body.usuario, newPass, email, "Nuevo Usuario", true, false, name);
             } else {
                 return false;
             }
@@ -48,7 +48,6 @@ export = (injectedStore: typeof StoreType) => {
         console.log('email', email);
         const newPass = await passCreator();
         const userData = await store.query(Tables.ADMIN, { email: email });
-        console.log('userData', userData);
         const idUsu = userData[0].id;
         const usuario = userData[0].usuario;
         const data: Iauth = {
@@ -58,7 +57,7 @@ export = (injectedStore: typeof StoreType) => {
             pass: newPass
         };
 
-        return await upsert(data, email);
+        return await upsert(data, email, userData[0].nombre + " " + userData[0].apellido);
     }
 
     const login = async (username: string, password: string) => {
