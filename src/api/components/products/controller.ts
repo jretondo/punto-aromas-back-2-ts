@@ -8,7 +8,7 @@ import { staticFolders } from '../../../enums/EStaticFiles';
 import OptimizeImg from '../../../utils/optimeImg';
 import { IJoin, Ipages, IWhere, IWhereParams } from 'interfaces/Ifunctions';
 import { INewPriceProduct, INewProduct, INewProductOnly, INewPV } from 'interfaces/Irequests';
-import { IImgProd, IMovStock } from 'interfaces/Itables';
+import { IImgProd } from 'interfaces/Itables';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
@@ -63,14 +63,13 @@ export = (injectedStore: typeof StoreType) => {
         }
     }
 
-    const upsertPrices = async (prices: Array<INewPriceProduct>, update: boolean, idProd: number, buyPrice: number) => {
+    const upsertPrices = async (prices: Array<INewPriceProduct>, update: boolean, buyPrice: number, name: string) => {
 
         if (prices.length > 0) {
             if (update) {
-                await store.remove(Tables.PRODUCTS_PRICES, { id_prod: idProd })
+                await store.remove(Tables.PRODUCTS_PRICES, { global_name: name })
                 prices.map(async (price) => {
                     const newPrice: INewPriceProduct = {
-                        id_prod: idProd,
                         buy_price: buyPrice,
                         percentage_sell: price.percentage_sell,
                         iva: 0,
@@ -78,14 +77,14 @@ export = (injectedStore: typeof StoreType) => {
                         round: price.round,
                         type_price_name: price.type_price_name,
                         min: price.min,
-                        discount: 0
+                        discount: 0,
+                        global_name: name
                     }
                     await store.insert(Tables.PRODUCTS_PRICES, newPrice)
                 })
             } else {
                 prices.map(async (price) => {
                     const newPrice: INewPriceProduct = {
-                        id_prod: idProd,
                         buy_price: buyPrice,
                         percentage_sell: price.percentage_sell,
                         iva: 0,
@@ -93,7 +92,8 @@ export = (injectedStore: typeof StoreType) => {
                         round: price.round,
                         type_price_name: price.type_price_name,
                         min: price.min,
-                        discount: 0
+                        discount: 0,
+                        global_name: name
                     }
                     await store.insert(Tables.PRODUCTS_PRICES, newPrice)
                 })
@@ -111,10 +111,12 @@ export = (injectedStore: typeof StoreType) => {
             unidad: body.unidad,
             precio_compra: body.precio_compra,
             prices: JSON.parse(String(body.prices)),
-            variedades: JSON.parse(String(body.variedades))
+            variedades: JSON.parse(String(body.variedades)),
+            global_name: body.global_name
         }
 
         if (body.id) {
+            await upsertPrices(product.prices, true, body.precio_compra, body.global_name)
             product.variedades.map(async (variedad, key) => {
                 const product2: INewProductOnly = {
                     name: body.name + (variedad.variedad !== "" ? (" - " + variedad.variedad) : ""),
@@ -123,12 +125,12 @@ export = (injectedStore: typeof StoreType) => {
                     subcategory: body.subcategory,
                     unidad: body.unidad,
                     cod_barra: variedad.cod_barra,
-                    precio_compra: body.precio_compra
+                    precio_compra: body.precio_compra,
+                    global_name: body.global_name
                 }
 
                 const result = await store.update(Tables.PRODUCTS_PRINCIPAL, product2, body.id || 0);
                 if (result.affectedRows > 0) {
-                    await upsertPrices(product.prices, true, body.id || result.insertId, body.precio_compra)
 
                     if (listImgDelete) {
                         try {
@@ -177,6 +179,7 @@ export = (injectedStore: typeof StoreType) => {
                 }
             })
         } else {
+            await upsertPrices(product.prices, false, body.precio_compra, body.global_name)
             product.variedades.map(async (variedad, key) => {
                 const product2: INewProductOnly = {
                     name: body.name + (variedad.variedad !== "" ? (" - " + variedad.variedad) : ""),
@@ -185,13 +188,13 @@ export = (injectedStore: typeof StoreType) => {
                     subcategory: body.subcategory,
                     unidad: body.unidad,
                     cod_barra: variedad.cod_barra,
-                    precio_compra: body.precio_compra
+                    precio_compra: body.precio_compra,
+                    global_name: body.global_name
                 }
 
                 const result = await store.insert(Tables.PRODUCTS_PRINCIPAL, product2);
 
                 if (result.affectedRows > 0) {
-                    await upsertPrices(product.prices, false, result.insertId, body.precio_compra)
                     if (body.filesName) {
                         try {
                             body.filesName.map(async file => {
@@ -244,11 +247,11 @@ export = (injectedStore: typeof StoreType) => {
             })
     }
 
-    const get = async (id: number) => {
+    const get = async (id: number, globalName: string) => {
         const productGral = await store.get(Tables.PRODUCTS_PRINCIPAL, id);
         const productImg = await store.query(Tables.PRODUCTS_IMG, { id_prod: id });
         const productTags = await store.query(Tables.PRODUCTS_TAGS, { id_prod: id });
-        const productPrices = await store.query(Tables.PRODUCTS_PRICES, { id_prod: id })
+        const productPrices = await store.query(Tables.PRODUCTS_PRICES, { global_name: globalName })
         return {
             productGral,
             productImg,
@@ -348,7 +351,7 @@ export = (injectedStore: typeof StoreType) => {
             },
         ];
 
-        await store.updateWhereJoin(Tables.PRODUCTS_PRINCIPAL, Tables.PRODUCTS_PRICES, Columns.productsPrices.id_prod, Columns.prodPrincipal.id, updateCol, filters,);
+        await store.updateWhere(Tables.PRODUCTS_PRICES, updateCol, filters);
     };
 
     const asignarCodBarra = async (id: number, codBarras: string) => {
@@ -371,8 +374,8 @@ export = (injectedStore: typeof StoreType) => {
         })
     }
 
-    const getPrices = async (idProd: number) => {
-        return await store.getAnyCol(Tables.PRODUCTS_PRICES, { id_prod: idProd })
+    const getPrices = async (globalName: string) => {
+        return await store.getAnyCol(Tables.PRODUCTS_PRICES, { global_name: globalName })
     }
 
     return {

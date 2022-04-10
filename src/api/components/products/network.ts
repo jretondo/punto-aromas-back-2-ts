@@ -81,7 +81,7 @@ const get = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.get(Number(req.params.id))
+    Controller.get(Number(req.params.id), String(req.query.globalName))
         .then(data => {
             success({ req, res, message: data });
         })
@@ -142,7 +142,7 @@ const getPrices = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.getPrices(Number(req.params.id))
+    Controller.getPrices(String(req.query.globalName))
         .then(data => {
             success({ req, res, message: data })
         }).catch(next)
@@ -151,7 +151,7 @@ const getPrices = (
 router.get("/details/:id", secure(EPermissions.productos), get);
 router.get("/getCat", secure(EPermissions.productos), getCategorys);
 router.get("/getGetSubCat", secure(EPermissions.productos), getSubCategorys);
-router.get("/prices/:id", secure(EPermissions.productos), getPrices);
+router.get("/prices/", secure(EPermissions.productos), getPrices);
 router.get("/:page", secure(EPermissions.productos), list);
 router.post("/varCost", secure(EPermissions.productos), varCost);
 router.put("/cost/:id", secure(EPermissions.productos), updateCost);

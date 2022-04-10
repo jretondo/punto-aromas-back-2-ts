@@ -26,7 +26,7 @@ const factuMiddel = () => {
             const user: IUser = req.body.user
             const pvId = body.pv_id;
             const pvData: Array<INewPV> = await ptosVtaController.get(pvId);
-            const productsList: IfactCalc = await calcProdLista(body.lista_prod);
+            const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.global_name);
             const fiscalBool = req.body.fiscal
             if (parseInt(fiscalBool) === 0) {
                 req.body.fiscal = false
@@ -146,7 +146,7 @@ const factuMiddel = () => {
     return middleware
 }
 
-const calcProdLista = (productsList: INewFactura["lista_prod"]): Promise<IfactCalc> => {
+const calcProdLista = (productsList: INewFactura["lista_prod"], globalName: string): Promise<IfactCalc> => {
     let dataAnt: Array<INewPriceProduct> = [];
     let idAnt: number = 0;
     productsList.sort((a, b) => { return a.id_prod - b.id_prod })
@@ -163,7 +163,7 @@ const calcProdLista = (productsList: INewFactura["lista_prod"]): Promise<IfactCa
             if (prod.type_price_id === idAnt) {
                 dataProd = dataAnt
             } else {
-                dataProd = await prodController.getPrices(prod.id_prod)
+                dataProd = await prodController.getPrices(globalName)
             }
             const pricdataProd: Array<INewProduct> = await (await prodController.getPrincipal(prod.id_prod)).productGral
             idAnt = prod.type_price_id

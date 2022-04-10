@@ -53,14 +53,14 @@ enum ProductosPrincipal {
 
 enum ProductsPrices {
     id = "id",
-    id_prod = "id_prod",
     buy_price = "buy_price",
     percentage_sell = "percentage_sell",
     discount = "discount",
     iva = "iva",
     sell_price = "sell_price",
     round = "round",
-    type_price_name = "type_price_name"
+    type_price_name = "type_price_name",
+    global_name = "global_name"
 }
 
 enum ProductsImg {

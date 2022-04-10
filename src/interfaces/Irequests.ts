@@ -43,6 +43,7 @@ export interface INewProduct {
     subcategory: string,
     unidad: number,
     precio_compra: number,
+    global_name: string,
     prices: Array<INewPriceProduct>,
     variedades: Array<INewVariedad>,
     filesName?: Array<IObjectFiles>
@@ -56,12 +57,12 @@ export interface INewProductOnly {
     subcategory: string,
     unidad: number,
     cod_barra: string,
-    precio_compra: number
+    precio_compra: number,
+    global_name: string
 }
 
 export interface INewPriceProduct {
     id?: number,
-    id_prod: number,
     buy_price: number,
     percentage_sell: number,
     iva: number,
@@ -69,7 +70,8 @@ export interface INewPriceProduct {
     round: number,
     type_price_name: string,
     min: number,
-    discount: number
+    discount: number,
+    global_name: string
 }
 
 export interface INewVariedad {
@@ -105,6 +107,7 @@ export interface INewFactura {
     cond_iva: number,
     forma_pago: number,
     enviar_email: boolean,
+    global_name: string,
     lista_prod: Array<{
         id_prod: number,
         cant_prod: number,
