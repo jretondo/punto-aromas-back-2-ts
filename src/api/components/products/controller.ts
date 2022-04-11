@@ -235,8 +235,6 @@ export = (injectedStore: typeof StoreType) => {
                 }
             })
         }
-        await store.remove(Tables.PRODUCTS_IMG, { id_prod: id_prod });
-        await store.remove(Tables.PRODUCTS_TAGS, { id_prod: id_prod });
         await store.remove(Tables.PRODUCTS_PRINCIPAL, { id: id_prod })
             .then(async (result: any) => {
                 if (result.affectedRows > 0) {
@@ -339,38 +337,78 @@ export = (injectedStore: typeof StoreType) => {
         if (!roundBool) {
             roundNumber = round
         }
+        const groupBy: Array<string> = [Columns.prodPrincipal.global_name];
+        const data: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, groupBy);
+        data.map(async (item, key) => {
+            const globalName = item.global_name
+            const updateCol: Array<IWhere> = [
+                {
+                    column: Columns.productsPrices.buy_price,
+                    object: `(${Columns.productsPrices.buy_price} + ROUND((${Columns.productsPrices.buy_price} * ${aumentoFinal}), ${roundNumber}))`
+                },
+                {
+                    column: Columns.productsPrices.sell_price,
+                    object: `(${Columns.productsPrices.sell_price} + ROUND((${Columns.productsPrices.sell_price} * ${aumentoFinal}), ${roundNumber}))`
+                },
+            ];
+            let filter2: IWhereParams | undefined = undefined;
+            let filters2: Array<IWhereParams> = [];
+            if (item) {
+                filter2 = {
+                    mode: EModeWhere.strict,
+                    concat: EConcatWhere.none,
+                    items: [
+                        { column: Columns.productsPrices.global_name, object: String(globalName) }
+                    ]
+                };
+                filters.push(filter2);
+            }
+            await store.updateWhere(Tables.PRODUCTS_PRICES, updateCol, filters2);
 
-        const updateCol: Array<IWhere> = [
-            {
-                column: Columns.productsPrices.buy_price,
-                object: `(${Columns.productsPrices.buy_price} + ROUND((${Columns.productsPrices.buy_price} * ${aumentoFinal}), ${roundNumber}))`
-            },
-            {
-                column: Columns.productsPrices.sell_price,
-                object: `(${Columns.productsPrices.sell_price} + ROUND((${Columns.productsPrices.sell_price} * ${aumentoFinal}), ${roundNumber}))`
-            },
-        ];
+            if (key === data.length - 1) {
+                const updateCol2: Array<IWhere> = [
+                    {
+                        column: Columns.prodPrincipal.precio_compra,
+                        object: `(${Columns.prodPrincipal.precio_compra} + ROUND((${Columns.prodPrincipal.precio_compra} * ${aumentoFinal}), ${roundNumber}))`
+                    }
+                ];
 
-        await store.updateWhere(Tables.PRODUCTS_PRICES, updateCol, filters);
+                return await store.updateWhere(Tables.PRODUCTS_PRINCIPAL, updateCol2, filters);
+            }
+        })
     };
 
     const asignarCodBarra = async (id: number, codBarras: string) => {
         return await store.update(Tables.PRODUCTS_PRINCIPAL, { cod_barra: codBarras }, id)
     }
 
-    const updateCost = async (idProd: number, cost: number) => {
-        const data: Array<{ id: number }> = await store.getAnyCol(Tables.PRODUCTS_PRICES, { id_prod: idProd })
-        return new Promise((resolve, reject) => {
-            data.map(async (item, key) => {
-                try {
-                    await store.update(Tables.PRODUCTS_PRICES, { buy_price: cost }, item.id)
-                } catch (error) {
-                    reject(new Error("Inesperado"))
+    const updateCost = async (idProd: number, cost: number, globalName: string) => {
+        return new Promise(async (resolve, reject) => {
+            const updateCol: Array<IWhere> = [
+                {
+                    column: Columns.productsPrices.buy_price,
+                    object: String(cost)
                 }
-                if (key === data.length - 1) {
-                    resolve(await store.update(Tables.PRODUCTS_PRINCIPAL, { precio_compra: cost }, idProd))
+            ];
+            const updateCol2: Array<IWhere> = [
+                {
+                    column: Columns.prodPrincipal.precio_compra,
+                    object: String(cost)
                 }
-            })
+            ];
+            let filter: IWhereParams | undefined = undefined;
+            let filters: Array<IWhereParams> = [];
+
+            filter = {
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.none,
+                items: [
+                    { column: Columns.productsPrices.global_name, object: String(globalName) }
+                ]
+            };
+            filters.push(filter);
+            await store.updateWhere(Tables.PRODUCTS_PRICES, updateCol, filters)
+            resolve(await await store.updateWhere(Tables.PRODUCTS_PRINCIPAL, updateCol2, filters))
         })
     }
 

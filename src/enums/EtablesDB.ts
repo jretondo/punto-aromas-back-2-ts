@@ -48,7 +48,9 @@ enum ProductosPrincipal {
     category = "category",
     subcategory = "subcategory",
     unidad = "unidad",
-    id_group = "id_group"
+    id_group = "id_group",
+    precio_compra = "precio_compra",
+    global_name = "global_name"
 }
 
 enum ProductsPrices {

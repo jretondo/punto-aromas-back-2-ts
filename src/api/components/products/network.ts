@@ -129,7 +129,7 @@ const updateCost = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.updateCost(Number(req.params.id), req.body.cost)
+    Controller.updateCost(Number(req.params.id), req.body.cost, req.body.globalName)
         .then(data => {
             console.log('data :>> ', data);
             success({ req, res, message: data });
