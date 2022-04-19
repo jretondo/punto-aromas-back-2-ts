@@ -148,9 +148,31 @@ const getPrices = (
         }).catch(next)
 }
 
+const getPublicList = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.publicList()
+        .then(data => {
+            success({ req, res, message: data })
+        }).catch(next)
+}
+const funcion = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.corrector()
+        .then(data => {
+            success({ req, res, message: data })
+        }).catch(next)
+}
 router.get("/details/:id", secure(EPermissions.productos), get);
 router.get("/getCat", secure(EPermissions.productos), getCategorys);
 router.get("/getGetSubCat", secure(EPermissions.productos), getSubCategorys);
+router.get("/public", getPublicList);
+router.get("/corrector", funcion);
 router.get("/prices/", secure(EPermissions.productos), getPrices);
 router.get("/:page", secure(EPermissions.productos), list);
 router.post("/varCost", secure(EPermissions.productos), varCost);

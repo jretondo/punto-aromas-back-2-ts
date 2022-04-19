@@ -50,7 +50,8 @@ enum ProductosPrincipal {
     unidad = "unidad",
     id_group = "id_group",
     precio_compra = "precio_compra",
-    global_name = "global_name"
+    global_name = "global_name",
+    short_description = "short_description"
 }
 
 enum ProductsPrices {

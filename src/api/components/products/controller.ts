@@ -9,6 +9,7 @@ import OptimizeImg from '../../../utils/optimeImg';
 import { IJoin, Ipages, IWhere, IWhereParams } from 'interfaces/Ifunctions';
 import { INewPriceProduct, INewProduct, INewProductOnly, INewPV } from 'interfaces/Irequests';
 import { IImgProd } from 'interfaces/Itables';
+import controllerStock from '../stock';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
@@ -51,6 +52,8 @@ export = (injectedStore: typeof StoreType) => {
             const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, groupBy, pages, joinQuery);
             const cant = await store.list(Tables.PRODUCTS_PRINCIPAL, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
+            console.log('cant[0].COUNT, 10, Number(page) :>> ', cant[0].COUNT, 10, Number(page));
+            console.log('pagesObj :>> ', pagesObj);
             return {
                 data,
                 pagesObj
@@ -112,7 +115,8 @@ export = (injectedStore: typeof StoreType) => {
             precio_compra: body.precio_compra,
             prices: JSON.parse(String(body.prices)),
             variedades: JSON.parse(String(body.variedades)),
-            global_name: body.global_name
+            global_name: body.global_name,
+            short_description: body.short_description
         }
 
         if (body.id) {
@@ -126,7 +130,8 @@ export = (injectedStore: typeof StoreType) => {
                     unidad: body.unidad,
                     cod_barra: variedad.cod_barra,
                     precio_compra: body.precio_compra,
-                    global_name: body.global_name
+                    global_name: body.global_name,
+                    short_description: body.short_description
                 }
 
                 const result = await store.update(Tables.PRODUCTS_PRINCIPAL, product2, body.id || 0);
@@ -189,7 +194,8 @@ export = (injectedStore: typeof StoreType) => {
                     unidad: body.unidad,
                     cod_barra: variedad.cod_barra,
                     precio_compra: body.precio_compra,
-                    global_name: body.global_name
+                    global_name: body.global_name,
+                    short_description: body.short_description
                 }
 
                 const result = await store.insert(Tables.PRODUCTS_PRINCIPAL, product2);
@@ -226,19 +232,10 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const remove = async (id_prod: number) => {
-        const data: Array<IImgProd> = await store.query(Tables.PRODUCTS_IMG, { id_prod: id_prod });
-        if (data.length > 0) {
-            data.map(url => {
-                if (url.url_img !== "product.png") {
-                    const file: string = path.join(staticFolders.products, url.url_img || "");
-                    fs.unlinkSync(file);
-                }
-            })
-        }
         await store.remove(Tables.PRODUCTS_PRINCIPAL, { id: id_prod })
             .then(async (result: any) => {
                 if (result.affectedRows > 0) {
-                    await store.remove(Tables.PRODUCTS_PRINCIPAL, { id: id_prod })
+                    await store.remove(Tables.PRODUCTS_IMG, { id_prod: id_prod })
                 } else {
                     throw new Error();
                 }
@@ -416,6 +413,125 @@ export = (injectedStore: typeof StoreType) => {
         return await store.getAnyCol(Tables.PRODUCTS_PRICES, { global_name: globalName })
     }
 
+    const publicList = async () => {
+        const groupBy: Array<string> = [Columns.prodPrincipal.global_name];
+        const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], undefined, groupBy)
+        return new Promise((resolve, reject) => {
+            let products: Array<any> = []
+            lista.map(async (item, key) => {
+                const sku = item.global_name
+                const name = item.global_name
+
+                let filter: IWhereParams | undefined = undefined;
+                let filters: Array<IWhereParams> = [];
+
+                filter = {
+                    mode: EModeWhere.strict,
+                    concat: EConcatWhere.none,
+                    items: [
+                        { column: Columns.productsPrices.global_name, object: String(name) }
+                    ]
+                };
+
+                filters.push(filter);
+
+                let filter2: IWhereParams | undefined = undefined;
+                let filters2: Array<IWhereParams> = [];
+
+                filter2 = {
+                    mode: EModeWhere.strict,
+                    concat: EConcatWhere.none,
+                    items: [
+                        { column: Columns.prodImg.id_prod, object: String(item.id) }
+                    ]
+                };
+
+                filters2.push(filter2);
+
+                const prices = await store.list(Tables.PRODUCTS_PRICES, ["*"], filters)
+                const cat = item.category
+                const subCat = item.subcategory
+                const category = [cat, subCat]
+                const saleCount = 100
+                const nuevo = false
+                const discount = 0
+                const variation: any = await new Promise(async (resolve, reject) => {
+                    const varList: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], filters)
+                    let listadoVar: any = []
+                    varList.map(async (item, key) => {
+                        const stockVar = await controllerStock.totalStock(item.id || 0)
+                        listadoVar.push(
+                            {
+                                name: item.name.replace(`${item.global_name} - `, ""),
+                                stock: stockVar
+                            }
+                        )
+                        if (key === varList.length - 1) {
+                            resolve(listadoVar)
+                        }
+                    })
+                })
+
+                const shortDescription = item.short_description
+                const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2)
+                products.push({
+                    id: key,
+                    sku,
+                    name,
+                    prices,
+                    category,
+                    saleCount,
+                    nuevo,
+                    discount,
+                    variation,
+                    shortDescription,
+                    image
+                }
+                )
+                if (key === lista.length - 1) {
+                    resolve({
+                        products
+                    })
+                }
+            })
+        })
+    }
+
+    const corrector = async () => {
+        const listaProductos: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"])
+        return new Promise((resolve, reject) => {
+            listaProductos.map(async (item, key) => {
+                const idProd = item.id
+                let filter: IWhereParams | undefined = undefined;
+                let filters: Array<IWhereParams> = [];
+
+                filter = {
+                    mode: EModeWhere.strict,
+                    concat: EConcatWhere.none,
+                    items: [
+                        { column: Columns.prodImg.id_prod, object: String(idProd) }
+                    ]
+                };
+
+                filters.push(filter);
+                const imgData: Array<IImgProd> = await store.list(Tables.PRODUCTS_IMG, ["*"], filters)
+                if (imgData.length === 0) {
+                    const newImgage: IImgProd = {
+                        id_prod: idProd || 0,
+                        url_img: "product.png",
+                        global_name: item.global_name
+                    }
+                    await store.insert(Tables.PRODUCTS_IMG, newImgage)
+                }
+
+                if (key === listaProductos.length - 1) {
+                    resolve("listo")
+                }
+            })
+        })
+
+    }
+
     return {
         list,
         upsert,
@@ -427,6 +543,8 @@ export = (injectedStore: typeof StoreType) => {
         getPrincipal,
         asignarCodBarra,
         updateCost,
-        getPrices
+        getPrices,
+        publicList,
+        corrector
     }
 }

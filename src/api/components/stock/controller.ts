@@ -398,6 +398,26 @@ export = (injectedStore: typeof StoreType) => {
         }
     }
 
+    const totalStock = async (idProd: number) => {
+        const filter: IWhereParams = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.stock.id_prod, object: String(idProd) }
+            ]
+        };
+        const filters = [filter]
+        let groupBy: Array<string> = [Columns.stock.id_prod];
+        const stockRes = await store.list(Tables.STOCK, ["*", `SUM(${Columns.stock.cant}) as total`], filters, groupBy)
+        let total = 0
+        try {
+            total = stockRes[0].total
+        } catch (error) {
+            total = 0
+        }
+        return total
+    }
+
     return {
         list,
         upsert,
@@ -407,6 +427,7 @@ export = (injectedStore: typeof StoreType) => {
         moverStock,
         multipleInsertStock,
         ultStockList,
-        listaStock
+        listaStock,
+        totalStock
     }
 }

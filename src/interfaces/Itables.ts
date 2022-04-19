@@ -21,7 +21,8 @@ export interface IUserPermission {
 export interface IImgProd {
     id?: number,
     id_prod: number,
-    url_img: string
+    url_img: string,
+    global_name: string
 }
 export interface IProveedor {
     id?: number,
