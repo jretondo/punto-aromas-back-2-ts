@@ -38,7 +38,7 @@ export = (injectedStore: typeof StoreType) => {
             table: Tables.PRODUCTS_IMG,
             colJoin: Columns.prodImg.id_prod,
             colOrigin: Columns.prodPrincipal.id,
-            type: ETypesJoin.left
+            type: ETypesJoin.none
         };
 
         let pages: Ipages;
@@ -49,11 +49,12 @@ export = (injectedStore: typeof StoreType) => {
                 order: Columns.prodImg.id_prod,
                 asc: true
             };
-            const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, groupBy, pages, joinQuery);
+            const data = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], filters, groupBy, pages, joinQuery);
+            console.log('data :>> ', data);
             const cant = await store.list(Tables.PRODUCTS_PRINCIPAL, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
+
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
-            console.log('cant[0].COUNT, 10, Number(page) :>> ', cant[0].COUNT, 10, Number(page));
-            console.log('pagesObj :>> ', pagesObj);
+
             return {
                 data,
                 pagesObj
@@ -140,14 +141,10 @@ export = (injectedStore: typeof StoreType) => {
                     if (listImgDelete) {
                         try {
                             listImgDelete.map(async img => {
-                                const file: string = path.join(staticFolders.products, img || "");
-                                fs.unlinkSync(file);
-                                await store.remove(Tables.PRODUCTS_IMG, { url_img: img })
+                                await store.remove2(Tables.PRODUCTS_IMG, `url_img= '${img}' AND id_prod= '${body.id}'`)
                             })
                         } catch (error) {
-                            const file: string = path.join(staticFolders.products, String(listImgDelete) || "");
-                            fs.unlinkSync(file);
-                            await store.remove(Tables.PRODUCTS_IMG, { url_img: listImgDelete })
+                            await store.remove2(Tables.PRODUCTS_IMG, `url_img= '${listImgDelete}' AND id_prod= ${body.id}`)
                         }
                     }
 
@@ -246,6 +243,7 @@ export = (injectedStore: typeof StoreType) => {
         const productGral = await store.get(Tables.PRODUCTS_PRINCIPAL, id);
         const productImg = await store.query(Tables.PRODUCTS_IMG, { id_prod: id });
         const productTags = await store.query(Tables.PRODUCTS_TAGS, { id_prod: id });
+        console.log('globalName :>> ', globalName);
         const productPrices = await store.query(Tables.PRODUCTS_PRICES, { global_name: globalName })
         return {
             productGral,

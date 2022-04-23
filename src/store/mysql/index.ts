@@ -100,6 +100,18 @@ const remove = async (table: Tables, data: object) => {
     })
 }
 
+const remove2 = async (table: Tables, data: string) => {
+    return new Promise((resolve, reject) => {
+        connection.query(` DELETE FROM ${table} WHERE ${data} `, (err: Error, result: any) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(result)
+            }
+        })
+    })
+}
+
 const query = async (table: Tables, query: any, join?: IJoinMysql, groupBy?: Array<string>): Promise<any> => {
     let joinQuery: string = '';
     if (join) {
@@ -219,5 +231,6 @@ export = {
     list,
     updateWhere,
     getAnyCol,
-    updateWhereJoin
+    updateWhereJoin,
+    remove2
 }
