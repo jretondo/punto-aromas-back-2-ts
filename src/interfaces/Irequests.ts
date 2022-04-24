@@ -37,7 +37,6 @@ export interface INewPV {
 
 export interface INewProduct {
     id?: number,
-    short_description: string,
     name: string,
     short_descr: string,
     category: string,
@@ -52,7 +51,6 @@ export interface INewProduct {
 
 export interface INewProductOnly {
     id?: number,
-    short_description: string,
     name: string,
     short_descr: string,
     category: string,

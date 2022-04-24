@@ -2,12 +2,9 @@ import { EConcatWhere, EModeWhere, ESelectFunct, ETypesJoin } from '../../../enu
 import { Tables, Columns } from '../../../enums/EtablesDB';
 import StoreType from '../../../store/mysql';
 import getPages from '../../../utils/getPages';
-import path from 'path';
-import fs from 'fs';
-import { staticFolders } from '../../../enums/EStaticFiles';
 import OptimizeImg from '../../../utils/optimeImg';
 import { IJoin, Ipages, IWhere, IWhereParams } from 'interfaces/Ifunctions';
-import { INewPriceProduct, INewProduct, INewProductOnly, INewPV } from 'interfaces/Irequests';
+import { INewPriceProduct, INewProduct, INewProductOnly } from 'interfaces/Irequests';
 import { IImgProd } from 'interfaces/Itables';
 import controllerStock from '../stock';
 
@@ -38,7 +35,7 @@ export = (injectedStore: typeof StoreType) => {
             table: Tables.PRODUCTS_IMG,
             colJoin: Columns.prodImg.id_prod,
             colOrigin: Columns.prodPrincipal.id,
-            type: ETypesJoin.none
+            type: ETypesJoin.left
         };
 
         let pages: Ipages;
@@ -50,7 +47,7 @@ export = (injectedStore: typeof StoreType) => {
                 asc: true
             };
             const data = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], filters, groupBy, pages, joinQuery);
-            console.log('data :>> ', data);
+
             const cant = await store.list(Tables.PRODUCTS_PRINCIPAL, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
 
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
@@ -116,8 +113,7 @@ export = (injectedStore: typeof StoreType) => {
             precio_compra: body.precio_compra,
             prices: JSON.parse(String(body.prices)),
             variedades: JSON.parse(String(body.variedades)),
-            global_name: body.global_name,
-            short_description: body.short_description
+            global_name: body.global_name
         }
 
         if (body.id) {
@@ -131,8 +127,7 @@ export = (injectedStore: typeof StoreType) => {
                     unidad: body.unidad,
                     cod_barra: variedad.cod_barra,
                     precio_compra: body.precio_compra,
-                    global_name: body.global_name,
-                    short_description: body.short_description
+                    global_name: body.global_name
                 }
 
                 const result = await store.update(Tables.PRODUCTS_PRINCIPAL, product2, body.id || 0);
@@ -185,14 +180,13 @@ export = (injectedStore: typeof StoreType) => {
             product.variedades.map(async (variedad, key) => {
                 const product2: INewProductOnly = {
                     name: body.name + (variedad.variedad !== "" ? (" - " + variedad.variedad) : ""),
-                    short_descr: body.short_descr,
                     category: body.category,
                     subcategory: body.subcategory,
                     unidad: body.unidad,
                     cod_barra: variedad.cod_barra,
                     precio_compra: body.precio_compra,
                     global_name: body.global_name,
-                    short_description: body.short_description
+                    short_descr: body.short_descr
                 }
 
                 const result = await store.insert(Tables.PRODUCTS_PRINCIPAL, product2);
@@ -329,9 +323,10 @@ export = (injectedStore: typeof StoreType) => {
         }
 
         let roundNumber = 2
-        if (!roundBool) {
+        if (roundBool) {
             roundNumber = round
         }
+
         const groupBy: Array<string> = [Columns.prodPrincipal.global_name];
         const data: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, groupBy);
         data.map(async (item, key) => {
@@ -339,11 +334,11 @@ export = (injectedStore: typeof StoreType) => {
             const updateCol: Array<IWhere> = [
                 {
                     column: Columns.productsPrices.buy_price,
-                    object: `(${Columns.productsPrices.buy_price} + ROUND((${Columns.productsPrices.buy_price} * ${aumentoFinal}), ${roundNumber}))`
+                    object: `ROUND(${Columns.productsPrices.buy_price} + (${Columns.productsPrices.buy_price} * ${aumentoFinal}), ${roundNumber})`
                 },
                 {
                     column: Columns.productsPrices.sell_price,
-                    object: `(${Columns.productsPrices.sell_price} + ROUND((${Columns.productsPrices.sell_price} * ${aumentoFinal}), ${roundNumber}))`
+                    object: `ROUND(${Columns.productsPrices.sell_price}  + (${Columns.productsPrices.sell_price} * ${aumentoFinal}), ${roundNumber})`
                 },
             ];
             let filter2: IWhereParams | undefined = undefined;
@@ -356,7 +351,7 @@ export = (injectedStore: typeof StoreType) => {
                         { column: Columns.productsPrices.global_name, object: String(globalName) }
                     ]
                 };
-                filters.push(filter2);
+                filters2.push(filter2);
             }
             await store.updateWhere(Tables.PRODUCTS_PRICES, updateCol, filters2);
 
@@ -364,7 +359,7 @@ export = (injectedStore: typeof StoreType) => {
                 const updateCol2: Array<IWhere> = [
                     {
                         column: Columns.prodPrincipal.precio_compra,
-                        object: `(${Columns.prodPrincipal.precio_compra} + ROUND((${Columns.prodPrincipal.precio_compra} * ${aumentoFinal}), ${roundNumber}))`
+                        object: `ROUND(${Columns.prodPrincipal.precio_compra} + (${Columns.prodPrincipal.precio_compra} * ${aumentoFinal}), ${roundNumber})`
                     }
                 ];
 
@@ -470,7 +465,7 @@ export = (injectedStore: typeof StoreType) => {
                     })
                 })
 
-                const shortDescription = item.short_description
+                const shortDescription = item.short_descr
                 const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2)
                 products.push({
                     id: key,
@@ -495,6 +490,47 @@ export = (injectedStore: typeof StoreType) => {
         })
     }
 
+    const addVar = async (varName: string, codBarra: string, globalName: string) => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+
+        filter = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.none,
+            items: [
+                { column: Columns.prodPrincipal.global_name, object: String(globalName) }
+            ]
+        };
+        filters.push(filter);
+
+        const generalData: Array<INewProductOnly> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], filters);
+        const nvoProd: INewProductOnly = {
+            name: globalName + " - " + varName,
+            category: generalData[0].category,
+            subcategory: generalData[0].subcategory,
+            short_descr: generalData[0].short_descr,
+            unidad: generalData[0].unidad,
+            precio_compra: generalData[0].precio_compra,
+            global_name: generalData[0].global_name,
+            cod_barra: codBarra
+        }
+        return await store.insert(Tables.PRODUCTS_PRINCIPAL, nvoProd)
+            .then(async res => {
+                if (Number(res.affectedRows) > 0) {
+                    const result = await store.insert(Tables.PRODUCTS_IMG, {
+                        id_prod: res.insertId,
+                        url_img: "product.png"
+                    })
+
+                    if (Number(result.affectedRows) > 0) {
+                        return true
+                    }
+                } else {
+                    return false
+                }
+            })
+    }
+
     const corrector = async () => {
         const listaProductos: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"])
         return new Promise((resolve, reject) => {
@@ -516,8 +552,7 @@ export = (injectedStore: typeof StoreType) => {
                 if (imgData.length === 0) {
                     const newImgage: IImgProd = {
                         id_prod: idProd || 0,
-                        url_img: "product.png",
-                        global_name: item.global_name
+                        url_img: "product.png"
                     }
                     await store.insert(Tables.PRODUCTS_IMG, newImgage)
                 }
@@ -543,6 +578,7 @@ export = (injectedStore: typeof StoreType) => {
         updateCost,
         getPrices,
         publicList,
-        corrector
+        corrector,
+        addVar
     }
 }

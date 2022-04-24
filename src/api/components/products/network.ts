@@ -158,6 +158,7 @@ const getPublicList = (
             success({ req, res, message: data })
         }).catch(next)
 }
+
 const funcion = (
     req: Request,
     res: Response,
@@ -168,6 +169,22 @@ const funcion = (
             success({ req, res, message: data })
         }).catch(next)
 }
+
+const addVar = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.addVar(req.body.varName, req.body.codBarra, req.body.globalName)
+        .then(response => {
+            if (response) {
+                success({ req, res })
+            } else {
+                Error("No se pudo cargar algún valor nuevo")
+            }
+        }).catch(next)
+}
+
 router.get("/details/:id", secure(EPermissions.productos), get);
 router.get("/getCat", secure(EPermissions.productos), getCategorys);
 router.get("/getGetSubCat", secure(EPermissions.productos), getSubCategorys);
@@ -176,6 +193,7 @@ router.get("/corrector", funcion);
 router.get("/prices/", secure(EPermissions.productos), getPrices);
 router.get("/:page", secure(EPermissions.productos), list);
 router.post("/varCost", secure(EPermissions.productos), varCost);
+router.post("/var", secure(EPermissions.productos), addVar);
 router.put("/cost/:id", secure(EPermissions.productos), updateCost);
 router.post("/", secure(EPermissions.productos), uploadFile(staticFolders.products, ["product"]), upsert);
 router.put("/", secure(EPermissions.productos), uploadFile(staticFolders.products, ["product"]), upsert);
