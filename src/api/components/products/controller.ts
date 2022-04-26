@@ -144,7 +144,7 @@ export = (injectedStore: typeof StoreType) => {
                     }
 
                     if (body.filesName) {
-                        await store.remove(Tables.PRODUCTS_IMG, { url_img: "product.png" });
+                        await store.remove2(Tables.PRODUCTS_IMG, `url_img= '${listImgDelete}' AND id_prod= ${body.id}`)
                         try {
                             body.filesName.map(async file => {
                                 await store.insert(Tables.PRODUCTS_IMG, {
