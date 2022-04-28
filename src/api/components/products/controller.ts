@@ -435,7 +435,7 @@ export = (injectedStore: typeof StoreType) => {
 
                 let filter2: IWhereParams | undefined = undefined;
                 let filters2: Array<IWhereParams> = [];
-                const groupBy2: Array<string> = [Columns.prodImg.url_img];
+
                 filter2 = {
                     mode: EModeWhere.strict,
                     concat: EConcatWhere.none,
@@ -446,7 +446,7 @@ export = (injectedStore: typeof StoreType) => {
 
                 filters2.push(filter2);
 
-                const prices = await store.list(Tables.PRODUCTS_PRICES, ["*"], filters, groupBy2)
+                const prices = await store.list(Tables.PRODUCTS_PRICES, ["*"], filters)
                 const cat = item.category
                 const subCat = item.subcategory
                 const category = [cat, subCat]
@@ -469,9 +469,9 @@ export = (injectedStore: typeof StoreType) => {
                         }
                     })
                 })
-
+                const groupBy2: Array<string> = [Columns.prodImg.url_img];
                 const shortDescription = item.short_descr
-                const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2)
+                const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2, groupBy2)
                 products.push({
                     id: key,
                     sku,
