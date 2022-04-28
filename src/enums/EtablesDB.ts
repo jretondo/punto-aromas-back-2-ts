@@ -69,7 +69,8 @@ enum ProductsPrices {
 enum ProductsImg {
     id = "id",
     id_prod = "id_prod",
-    url_img = "url_img"
+    url_img = "url_img",
+    global_name = "global_name"
 }
 
 enum ProductsTag {

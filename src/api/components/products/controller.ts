@@ -149,14 +149,16 @@ export = (injectedStore: typeof StoreType) => {
                             body.filesName.map(async file => {
                                 await store.insert(Tables.PRODUCTS_IMG, {
                                     id_prod: body.id,
-                                    url_img: file.path
+                                    url_img: file.path,
+                                    global_name: product2.global_name
                                 })
                                 OptimizeImg(file.path);
                             });
                         } catch (error) {
                             await store.insert(Tables.PRODUCTS_IMG, {
                                 id_prod: body.id,
-                                url_img: body.filesName
+                                url_img: body.filesName,
+                                global_name: product2.global_name
                             })
                             OptimizeImg(String(body.filesName));
                         }
@@ -167,7 +169,8 @@ export = (injectedStore: typeof StoreType) => {
                     if (cantImg === 0) {
                         await store.insert(Tables.PRODUCTS_IMG, {
                             id_prod: body.id,
-                            url_img: "product.png"
+                            url_img: "product.png",
+                            global_name: product2.global_name
                         })
                     }
                     if (key === product.variedades.length - 1) {
@@ -197,20 +200,23 @@ export = (injectedStore: typeof StoreType) => {
                             body.filesName.map(async file => {
                                 await store.insert(Tables.PRODUCTS_IMG, {
                                     id_prod: result.insertId,
-                                    url_img: file.path
+                                    url_img: file.path,
+                                    global_name: product2.global_name
                                 })
                                 OptimizeImg(file.path);
                             });
                         } catch (error) {
                             await store.insert(Tables.PRODUCTS_IMG, {
                                 id_prod: result.insertId,
-                                url_img: body.filesName
+                                url_img: body.filesName,
+                                global_name: product2.global_name
                             })
                         }
                     } else {
                         await store.insert(Tables.PRODUCTS_IMG, {
                             id_prod: result.insertId,
-                            url_img: "product.png"
+                            url_img: "product.png",
+                            global_name: product2.global_name
                         })
                     }
                     if (key === product.variedades.length - 1) {
@@ -237,7 +243,6 @@ export = (injectedStore: typeof StoreType) => {
         const productGral = await store.get(Tables.PRODUCTS_PRINCIPAL, id);
         const productImg = await store.query(Tables.PRODUCTS_IMG, { id_prod: id });
         const productTags = await store.query(Tables.PRODUCTS_TAGS, { id_prod: id });
-        console.log('globalName :>> ', globalName);
         const productPrices = await store.query(Tables.PRODUCTS_PRICES, { global_name: globalName })
         return {
             productGral,
@@ -435,7 +440,7 @@ export = (injectedStore: typeof StoreType) => {
                     mode: EModeWhere.strict,
                     concat: EConcatWhere.none,
                     items: [
-                        { column: Columns.prodImg.id_prod, object: String(item.id) }
+                        { column: Columns.prodImg.global_name, object: String(item.global_name) }
                     ]
                 };
 
@@ -552,9 +557,14 @@ export = (injectedStore: typeof StoreType) => {
                 if (imgData.length === 0) {
                     const newImgage: IImgProd = {
                         id_prod: idProd || 0,
-                        url_img: "product.png"
+                        url_img: "product.png",
+                        global_name: item.global_name
                     }
                     await store.insert(Tables.PRODUCTS_IMG, newImgage)
+                } else {
+                    imgData.map(async itemImg => {
+                        await store.update(Tables.PRODUCTS_IMG, { global_name: item.global_name }, Number(itemImg.id))
+                    })
                 }
 
                 if (key === listaProductos.length - 1) {
