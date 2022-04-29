@@ -103,7 +103,7 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const upsert = async (body: INewProduct, listImgDelete?: Array<string>) => {
-
+        body.global_name = `${body.global_name} (${body.subcategory})`
         const product: INewProduct = {
             name: body.name,
             short_descr: body.short_descr,
@@ -412,7 +412,7 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const publicList = async () => {
-        const groupBy: Array<string> = [Columns.prodPrincipal.global_name];
+        const groupBy: Array<string> = [Columns.prodPrincipal.global_name, Columns.prodPrincipal.subcategory];
         const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], undefined, groupBy)
         return new Promise((resolve, reject) => {
             let products: Array<any> = []
@@ -460,7 +460,7 @@ export = (injectedStore: typeof StoreType) => {
                         const stockVar = await controllerStock.totalStock(item.id || 0)
                         listadoVar.push(
                             {
-                                name: item.name.replace(`${item.global_name} - `, ""),
+                                name: item.name.replace(`${(item.global_name.replace(` (${subCat})`, ""))} - `, ""),
                                 stock: stockVar
                             }
                         )
@@ -575,6 +575,82 @@ export = (injectedStore: typeof StoreType) => {
 
     }
 
+    const corrector2 = async () => {
+        const listaProductos: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"])
+        return new Promise((resolve, reject) => {
+            listaProductos.map(async (item, key) => {
+                const globalName = item.global_name
+                const newGlobalName = `${globalName} (${item.subcategory})`
+                resolve(await store.update(Tables.PRODUCTS_PRICES, { global_name: newGlobalName }, Number(item.id)))
+            })
+        })
+    }
+
+    const corrector3 = async () => {
+        const listaProductos: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"])
+        return new Promise((resolve, reject) => {
+            listaProductos.map(async (item, key) => {
+                const globalName = item.global_name
+                const arrayGlobalName = globalName.split("(")
+                const globalOld = arrayGlobalName[0].trim()
+
+                let filter: IWhereParams | undefined = undefined;
+                let filters: Array<IWhereParams> = [];
+
+                filter = {
+                    mode: EModeWhere.strict,
+                    concat: EConcatWhere.none,
+                    items: [
+                        { column: Columns.productsPrices.global_name, object: String(globalOld) }
+                    ]
+                };
+
+                filters.push(filter);
+                const updateCol: Array<IWhere> = [
+                    {
+                        column: Columns.productsPrices.global_name,
+                        object: `'${globalName}'`
+                    }
+                ];
+                resolve(await store.updateWhere(Tables.PRODUCTS_PRICES, updateCol, filters))
+            })
+        })
+    }
+
+    const corrector4 = async () => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+
+        filter = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.none,
+            items: [
+                { column: Columns.productsPrices.global_name, object: String("SAHUMERIO (AMBAR)") }
+            ]
+        };
+
+        filters.push(filter);
+        const listaPrices: Array<INewPriceProduct> = await store.list(Tables.PRODUCTS_PRICES, ["*"], filters)
+        listaPrices.map(async (item, key) => {
+            let newPrice: INewPriceProduct = {
+                buy_price: item.buy_price,
+                percentage_sell: item.percentage_sell,
+                iva: item.iva,
+                sell_price: item.sell_price,
+                round: item.round,
+                type_price_name: item.type_price_name,
+                min: item.min,
+                discount: item.discount,
+                global_name: "SAHUMERIO (SAPHIRUS)"
+            }
+            await store.insert(Tables.PRODUCTS_PRICES, newPrice)
+            if (listaPrices.length - 1 === key) {
+                return ""
+            }
+        })
+        return listaPrices
+    }
+
     return {
         list,
         upsert,
@@ -588,7 +664,7 @@ export = (injectedStore: typeof StoreType) => {
         updateCost,
         getPrices,
         publicList,
-        corrector,
+        corrector: corrector4,
         addVar
     }
 }

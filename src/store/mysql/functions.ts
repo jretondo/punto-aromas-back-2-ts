@@ -213,7 +213,7 @@ export const selectContructor = (
                 if (groupBy.length - 1 === key) {
                     query = `${query} ${item} `;
                 } else {
-                    query = `${query}, ${item} `;
+                    query = `${query} ${item}, `;
                 }
             }
         })
@@ -414,6 +414,5 @@ export const updateConstructorJoin = (
             }
         })
     }
-    console.log('query :>> ', query);
     return query;
 }
