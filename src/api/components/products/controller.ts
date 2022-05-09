@@ -449,7 +449,7 @@ export = (injectedStore: typeof StoreType) => {
                 const prices = await store.list(Tables.PRODUCTS_PRICES, ["*"], filters)
                 const cat = item.category
                 const subCat = item.subcategory
-                const category = [cat, subCat]
+                const category = [cat]
                 const saleCount = 100
                 const nuevo = false
                 const discount = 0
