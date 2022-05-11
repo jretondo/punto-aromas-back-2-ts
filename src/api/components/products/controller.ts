@@ -103,21 +103,21 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const upsert = async (body: INewProduct, listImgDelete?: Array<string>) => {
-        body.global_name = `${body.global_name} (${body.subcategory})`
-        const product: INewProduct = {
-            name: body.name,
-            short_descr: body.short_descr,
-            category: body.category,
-            subcategory: body.subcategory,
-            unidad: body.unidad,
-            precio_compra: body.precio_compra,
-            prices: JSON.parse(String(body.prices)),
-            variedades: JSON.parse(String(body.variedades)),
-            global_name: body.global_name
-        }
 
         if (body.id) {
+            const product: INewProduct = {
+                name: body.name,
+                short_descr: body.short_descr,
+                category: body.category,
+                subcategory: body.subcategory,
+                unidad: body.unidad,
+                precio_compra: body.precio_compra,
+                prices: JSON.parse(String(body.prices)),
+                variedades: JSON.parse(String(body.variedades)),
+                global_name: body.global_name
+            }
             await upsertPrices(product.prices, true, body.precio_compra, body.global_name)
+            await updateCost(body.id, product.precio_compra, body.global_name)
             product.variedades.map(async (variedad, key) => {
                 const product2: INewProductOnly = {
                     name: body.name + (variedad.variedad !== "" ? (" - " + variedad.variedad) : ""),
@@ -179,6 +179,18 @@ export = (injectedStore: typeof StoreType) => {
                 }
             })
         } else {
+            body.global_name = `${body.global_name} (${body.subcategory})`
+            const product: INewProduct = {
+                name: body.name,
+                short_descr: body.short_descr,
+                category: body.category,
+                subcategory: body.subcategory,
+                unidad: body.unidad,
+                precio_compra: body.precio_compra,
+                prices: JSON.parse(String(body.prices)),
+                variedades: JSON.parse(String(body.variedades)),
+                global_name: body.global_name
+            }
             await upsertPrices(product.prices, false, body.precio_compra, body.global_name)
             product.variedades.map(async (variedad, key) => {
                 const product2: INewProductOnly = {
@@ -651,6 +663,65 @@ export = (injectedStore: typeof StoreType) => {
         return listaPrices
     }
 
+    const getImagesProduct = async (prodId: number) => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+
+        filter = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.none,
+            items: [
+                { column: Columns.prodImg.id_prod, object: String(prodId) }
+            ]
+        };
+
+        filters.push(filter);
+        return await store.list(Tables.PRODUCTS_IMG, ["*"], filters)
+    }
+
+    const newImg = async (body: INewProduct, listImgDelete?: Array<string>) => {
+        if (listImgDelete) {
+            try {
+                listImgDelete.map(async img => {
+                    await store.remove2(Tables.PRODUCTS_IMG, `url_img= '${img}' AND id_prod= '${body.id}'`)
+                })
+            } catch (error) {
+                await store.remove2(Tables.PRODUCTS_IMG, `url_img= '${listImgDelete}' AND id_prod= ${body.id}`)
+            }
+        }
+
+        if (body.filesName) {
+            await store.remove2(Tables.PRODUCTS_IMG, `url_img= '${listImgDelete}' AND id_prod= ${body.id}`)
+            try {
+                body.filesName.map(async file => {
+                    await store.insert(Tables.PRODUCTS_IMG, {
+                        id_prod: body.id,
+                        url_img: file.path,
+                        global_name: body.global_name
+                    })
+                    OptimizeImg(file.path);
+                });
+            } catch (error) {
+                await store.insert(Tables.PRODUCTS_IMG, {
+                    id_prod: body.id,
+                    url_img: body.filesName,
+                    global_name: body.global_name
+                })
+                OptimizeImg(String(body.filesName));
+            }
+        }
+
+        const imgagesProd = await store.query(Tables.PRODUCTS_IMG, { id_prod: body.id });
+        const cantImg = imgagesProd.length
+        if (cantImg === 0) {
+            await store.insert(Tables.PRODUCTS_IMG, {
+                id_prod: body.id,
+                url_img: "product.png",
+                global_name: body.global_name
+            })
+        }
+    }
+
     return {
         list,
         upsert,
@@ -665,6 +736,8 @@ export = (injectedStore: typeof StoreType) => {
         getPrices,
         publicList,
         corrector: corrector4,
-        addVar
+        addVar,
+        getImagesProduct,
+        newImg
     }
 }
