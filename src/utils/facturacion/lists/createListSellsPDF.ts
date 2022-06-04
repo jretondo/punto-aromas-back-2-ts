@@ -91,7 +91,7 @@ export const createListSellsPDF = async (
 
         for (let i = 0; i < data.length; i++) {
             const current = data[i]
-            const fecha = moment(current.fecha).format("DD/MM/YYYY")
+            const fecha = moment(current.create_time).format("DD/MM/YYYY HH:mm") + " hs"
             const clienteName = current.raz_soc_cliente
             let cliente = ""
             if (clienteName === "") {

@@ -25,7 +25,22 @@ export const fiscalMiddle = () => {
                 any = req.body.dataFiscal
             if (dataFiscal.CbtesAsoc) {
                 asociado = dataFiscal.CbtesAsoc
+                try {
+                    if (Number(asociado[0].Cuit) === 0 && Number(newFact.n_doc_cliente) !== 0) {
+                        asociado[0].Cuit = newFact.n_doc_cliente
+                    } else {
+                        asociado[0] = {
+                            Tipo: asociado[0].Tipo,
+                            PtoVta: asociado[0].PtoVta,
+                            Nro: asociado[0].Nro
+                        }
+                    }
+                } catch (error) {
+
+                }
+
             }
+
             if (newFact.fiscal) {
                 let certDir = "drop_test.crt"
                 let keyDir = "drop.key"
@@ -36,10 +51,9 @@ export const fiscalMiddle = () => {
                     keyDir = pvData.key_file || "drop.key"
                     entornoAlt = true
                 }
+                console.log('newFact.cuit_origen :>> ', newFact.cuit_origen);
                 const afip = new AfipClass(newFact.cuit_origen, certDir, keyDir, entornoAlt);
                 const newDataFiscal = await afip.newFact(dataFiscal);
-                console.log('dataFiscal :>> ', dataFiscal);
-                console.log('newDataFiscal :>> ', newDataFiscal);
                 req.body.dataFiscal = newDataFiscal.data
                 req.body.dataFiscal.CbteTipo = String(newFact.t_fact)
                 req.body.newFact.cbte = req.body.dataFiscal.CbteDesde

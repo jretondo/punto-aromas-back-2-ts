@@ -50,12 +50,13 @@ const upsert = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.upsert(req.body, req.body.user)
+    Controller.upsert(req.body, req.body.user, true)
         .then(response => {
             if (response) {
                 success({
                     req,
-                    res
+                    res,
+                    message: response
                 });
             } else {
                 next(response);
@@ -140,8 +141,24 @@ const listaStock = (
         .catch(next);
 }
 
+const getStockProd = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.getStockProd(
+        Number(req.query.idProd),
+        Number(req.query.pvId)
+    )
+        .then(data => {
+            success({ req, res, message: data });
+        })
+        .catch(next)
+}
+
 router.get("/", secure(EPermissions.ventas), list);
 router.get("/ultMov/", secure(EPermissions.ventas), ultMov);
+router.get("/stockProd", secure(EPermissions.stock), getStockProd)
 router.get("/ultStockList/:page", secure(EPermissions.stock), ultStockList)
 router.get("/listaStock/:page", secure(EPermissions.stock), listaStock)
 router.post("/", secure(EPermissions.ventas), upsert);

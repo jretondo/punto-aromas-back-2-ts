@@ -1,4 +1,3 @@
-import { MetodosPago } from './../enums/EtablesDB';
 import { IObjectFiles } from "./Ifunctions";
 
 export interface INewUser {
@@ -49,10 +48,19 @@ export interface INewProduct {
     variedades: Array<INewVariedad>,
     filesName?: Array<IObjectFiles>
 }
-export interface INewVariedad {
-    variedad: string,
-    cod_barra: string
+
+export interface INewProductOnly {
+    id?: number,
+    name: string,
+    short_descr: string,
+    category: string,
+    subcategory: string,
+    unidad: number,
+    cod_barra: string,
+    precio_compra: number,
+    global_name: string
 }
+
 export interface INewPriceProduct {
     id?: number,
     buy_price: number,
@@ -65,17 +73,12 @@ export interface INewPriceProduct {
     discount: number,
     global_name: string
 }
-export interface INewProductOnly {
-    id?: number,
-    name: string,
-    short_descr: string,
-    category: string,
-    subcategory: string,
-    unidad: number,
-    cod_barra: string,
-    precio_compra: number,
-    global_name: string
+
+export interface INewVariedad {
+    variedad: string,
+    cod_barra: string
 }
+
 export interface INewStock {
     arrayBool: boolean,
     nvoStockSingle: number,
@@ -104,21 +107,15 @@ export interface INewFactura {
     cond_iva: number,
     forma_pago: number,
     enviar_email: boolean,
-    descuentoPerc: number,
+    global_name: string,
     lista_prod: Array<{
         id_prod: number,
         cant_prod: number,
-        id_price: number
+        type_price_id: number,
     }>,
     cliente_bool: boolean,
     cliente_tdoc?: number,
     cliente_ndoc?: number,
     cliente_email?: string,
-    cliente_name?: string,
-    det_rbo?: string,
-    variosPagos?: Array<{
-        tipo: MetodosPago,
-        tipo_txt: string,
-        importe: number
-    }>
+    cliente_name?: string
 }

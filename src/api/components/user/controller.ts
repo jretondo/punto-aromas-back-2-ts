@@ -78,7 +78,7 @@ export = (injectedStore: typeof StoreType) => {
                 usuario: user.usuario,
                 prov: 1
             }
-            return await Authcontroller.upsert(newAuth, body.email, (body.nombre + " " + body.apellido));
+            return await Authcontroller.upsert(newAuth, body.email);
         }
     }
 

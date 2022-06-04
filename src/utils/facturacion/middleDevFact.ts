@@ -12,16 +12,15 @@ const devFactMiddle = () => {
         res: Response,
         next: NextFunction
     ) => {
+        req.body.timer = Number(new Date())
         const idFact = req.body.id
         const fecha = req.body.fecha
         const dataFact: Array<IFactura> = await ControllerInvoices.get(idFact)
         const detFact: Array<IDetFactura> = await ControllerInvoices.getDetails(idFact)
         const user: IUser = req.body.user
         const pvData: Array<INewPV> = await ControllerPtoVta.get(dataFact[0].pv_id);
-
         const esFiscal = dataFact[0].fiscal
         const tipoFact = dataFact[0].t_fact
-
         let tipoNC: number = 0
         let letra: string = "DEV"
         if (esFiscal) {
@@ -76,9 +75,9 @@ const devFactMiddle = () => {
             total_compra: - dataFact[0].total_compra,
             forma_pago: dataFact[0].forma_pago,
             pv_id: dataFact[0].pv_id,
-            id_fact_asoc: dataFact[0].id || 0
+            id_fact_asoc: dataFact[0].id || 0,
+            descuento: dataFact[0].descuento
         }
-
         let newDet: Array<IDetFactura> = []
 
         new Promise((resolve, reject) => {
@@ -104,7 +103,10 @@ const devFactMiddle = () => {
             any = {}
 
         if (esFiscal) {
-            ivaList = await listaIva(detFact);
+
+            const descuentoPer = ((dataFact[0].descuento / (dataFact[0].total_fact + dataFact[0].descuento)) * 100)
+
+            ivaList = await listaIva(detFact, descuentoPer);
             dataFiscal = {
                 CantReg: 1,
                 PtoVta: dataFact[0].pv,
@@ -132,7 +134,6 @@ const devFactMiddle = () => {
         }
         req.body.newFact = newFact
         req.body.dataFiscal = dataFiscal
-        console.log('dataFiscal.CbtesAsoc :>> ', req.body.dataFiscal.CbtesAsoc);
         req.body.pvData = pvData[0]
         req.body.productsList = newDet
 
@@ -141,7 +142,7 @@ const devFactMiddle = () => {
     return middleware
 }
 
-const listaIva = async (listaProd: Array<IDetFactura>): Promise<Array<IIvaItem>> => {
+const listaIva = async (listaProd: Array<IDetFactura>, descuento: number): Promise<Array<IIvaItem>> => {
     listaProd.sort((a, b) => { return a.alicuota_id - b.alicuota_id })
     let ivaAnt = 0;
     let listaIva: Array<IIvaItem> = []
@@ -151,21 +152,39 @@ const listaIva = async (listaProd: Array<IDetFactura>): Promise<Array<IIvaItem>>
                 let ivaAux = perIvaAlicuotas.find(e => e.per === item.alicuota_id) || { per: 0, id: 3 };
                 const iva = ivaAux.id
                 if (iva !== ivaAnt) {
-                    listaIva.push({
-                        Id: iva,
-                        BaseImp: (Math.round((item.total_neto) * 100)) / 100,
-                        Importe: (Math.round((item.total_iva) * 100)) / 100
-                    })
+                    if (descuento > 0) {
+                        listaIva.push({
+                            Id: iva,
+                            BaseImp: (Math.round((item.total_neto - (item.total_neto * (descuento / 100))) * 100)) / 100,
+                            Importe: (Math.round((item.total_iva - (item.total_iva * (descuento / 100))) * 100)) / 100
+                        })
+
+                    } else {
+                        listaIva.push({
+                            Id: iva,
+                            BaseImp: (Math.round((item.total_neto) * 100)) / 100,
+                            Importe: (Math.round((item.total_iva) * 100)) / 100
+                        })
+                    }
                 } else {
                     const index = listaIva.length - 1
-                    listaIva[index] = {
-                        Id: iva,
-                        BaseImp: (Math.round((listaIva[index].BaseImp + (item.total_neto)) * 100)) / 100,
-                        Importe: (Math.round((listaIva[index].Importe + (item.total_iva)) * 100)) / 100
+                    if (descuento > 0) {
+                        listaIva[index] = {
+                            Id: iva,
+                            BaseImp: (Math.round((listaIva[index].BaseImp + (item.total_neto - (item.total_neto * (descuento / 100)))) * 100)) / 100,
+                            Importe: (Math.round((listaIva[index].Importe + (item.total_iva - (item.total_iva * (descuento / 100)))) * 100)) / 100
+                        }
+                    } else {
+                        listaIva[index] = {
+                            Id: iva,
+                            BaseImp: (Math.round((listaIva[index].BaseImp + (item.total_neto)) * 100)) / 100,
+                            Importe: (Math.round((listaIva[index].Importe + (item.total_iva)) * 100)) / 100
+                        }
                     }
                 }
                 ivaAnt = 5;
                 if (key === listaProd.length - 1) {
+
                     resolve(listaIva)
                 }
             })

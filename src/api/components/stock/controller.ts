@@ -1,5 +1,5 @@
 import { IChangeStock, Iorder, Ipages, IWhereParams } from 'interfaces/Ifunctions';
-import { INewProduct, INewPV, INewStock } from 'interfaces/Irequests';
+import { INewPriceProduct, INewProduct, INewPV, INewStock } from 'interfaces/Irequests';
 import { IDetFactura, IModPriceProd, IMovStock, IUser } from 'interfaces/Itables';
 import moment from 'moment';
 import getPages from '../../../utils/getPages';
@@ -65,9 +65,21 @@ export = (injectedStore: typeof StoreType) => {
         return await store.list(Tables.STOCK, [ESelectFunct.all], filters, undefined, orderBy, undefined);
     }
 
-    const upsert = async (body: INewStock, user: IUser) => {
+    const upsert = async (body: INewStock, user: IUser, act: Boolean) => {
 
         const prodData: Array<INewProduct> = await store.get(Tables.PRODUCTS_PRINCIPAL, body.idProd)
+
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+        filter = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.productsPrices.global_name, object: String(prodData[0].global_name) }
+            ]
+        };
+
+        const priceData: Array<INewPriceProduct> = await store.list(Tables.PRODUCTS_PRICES, ["*"], filters)
         const pvData: Array<INewPV> = await store.get(Tables.PUNTOS_VENTA, body.pv_id)
         const newMov: IMovStock = {
             fecha: new Date(),
@@ -76,8 +88,8 @@ export = (injectedStore: typeof StoreType) => {
             cant: body.nvoStockSingle,
             venta: false,
             nro_remito: body.obs,
-            costo: (body.costo) * (body.nvoStockSingle),
-            iva: body.iva,
+            costo: (prodData[0].precio_compra) * (body.nvoStockSingle),
+            iva: priceData[0].iva,
             id_user: user.id,
             prod_name: prodData[0].name,
             pv_descr: `${body.pv_id === 0 ? "Deposito" : pvData[0].direccion + ` (PV: ${pvData[0].pv})`}`,
@@ -85,7 +97,19 @@ export = (injectedStore: typeof StoreType) => {
             sub_category: prodData[0].subcategory
         };
 
-        return await store.insert(Tables.STOCK, newMov);
+        if (act) {
+            const NewPriceProd: IModPriceProd = {
+                id: body.idProd,
+                vta_fija: body.vta_fija,
+                vta_price: body.vta_price,
+                round: body.round,
+                porc_minor: body.porc_minor,
+                precio_compra: body.precio_compra
+            };
+            await store.update(Tables.PRODUCTS_PRINCIPAL, NewPriceProd, body.idProd);
+        }
+        const response = await store.insert(Tables.STOCK, newMov);
+        return response
     }
 
     const multipleInsertStock = async (prodList: Array<IDetFactura>, userId: number, pvId: number, factId: number) => {
@@ -155,8 +179,8 @@ export = (injectedStore: typeof StoreType) => {
     const moverStock = async (body: IChangeStock, user: IUser) => {
         const destino: INewStock = body.destino
         const origen: INewStock = body.origen
-        const result1 = await upsert(origen, user)
-        const result2 = await upsert(destino, user)
+        const result1 = await upsert(origen, user, false)
+        const result2 = await upsert(destino, user, false)
         return {
             result1,
             result2
@@ -274,8 +298,8 @@ export = (injectedStore: typeof StoreType) => {
             pages = {
                 currentPage: page,
                 cantPerPage: cantPerPage || 10,
-                order: Columns.prodImg.id_prod,
-                asc: true
+                order: Columns.stock.fecha,
+                asc: false
             };
             data = await store.list(Tables.STOCK, [ESelectFunct.all], filters, undefined, pages);
             const cant = await store.list(Tables.STOCK, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
@@ -418,6 +442,24 @@ export = (injectedStore: typeof StoreType) => {
         return total
     }
 
+    const getStockProd = async (idProd: number, pvId: number) => {
+        let filters: Array<IWhereParams> = [];
+        const filter: IWhereParams = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.stock.pv_id, object: String(pvId < 0 ? 0 : pvId) }, { column: Columns.stock.id_prod, object: String(idProd) }
+            ]
+        };
+        filters.push(filter)
+        const response = await store.list(Tables.STOCK, [`SUM(${Columns.stock.cant}) as cant`], filters);
+        try {
+            return response[0].cant
+        } catch (error) {
+            return 0
+        }
+    }
+
     return {
         list,
         upsert,
@@ -428,6 +470,7 @@ export = (injectedStore: typeof StoreType) => {
         multipleInsertStock,
         ultStockList,
         listaStock,
+        getStockProd,
         totalStock
     }
 }

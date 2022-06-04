@@ -54,6 +54,18 @@ enum ProductosPrincipal {
     short_description = "short_description"
 }
 
+enum ProductsPrices {
+    id = "id",
+    buy_price = "buy_price",
+    percentage_sell = "percentage_sell",
+    discount = "discount",
+    iva = "iva",
+    sell_price = "sell_price",
+    round = "round",
+    type_price_name = "type_price_name",
+    global_name = "global_name"
+}
+
 enum ProductsImg {
     id = "id",
     id_prod = "id_prod",
@@ -143,9 +155,7 @@ enum Facturas {
     total_compra = "total_compra",
     forma_pago = "forma_pago",
     pv_id = "pv_id",
-    id_fact_asoc = "id_fact_asoc",
-    create_time = "create_time",
-    det_rbo = "det_rbo"
+    id_fact_asoc = "id_fact_asoc"
 }
 
 enum DetalleFact {
@@ -164,46 +174,6 @@ enum DetalleFact {
     precio_ind = "precio_ind"
 }
 
-enum CtaCte {
-    id = "id",
-    fecha = "fecha",
-    id_cliente = "id_cliente",
-    id_factura = "id_factura",
-    id_recibo = "id_recibo",
-    forma_pago = "forma_pago",
-    importe = "importe",
-    detalle = "detalle"
-}
-
-enum FormasPago {
-    id = "id",
-    id_fact = "id_fact",
-    tipo = "tipo",
-    importe = "importe"
-}
-
-enum ProductsPrices {
-    id = "id",
-    buy_price = "buy_price",
-    percentage_sell = "percentage_sell",
-    discount = "discount",
-    iva = "iva",
-    sell_price = "sell_price",
-    round = "round",
-    type_price_name = "type_price_name",
-    global_name = "global_name"
-}
-
-export enum MetodosPago {
-    efectivo = 0,
-    mercaPago = 1,
-    debito = 2,
-    credito = 3,
-    ctaCte = 4,
-    varios = 5
-
-}
-
 export enum Tables {
     ADMIN = "administradores",
     AUTH_ADMIN = "auth_admin",
@@ -218,8 +188,6 @@ export enum Tables {
     STOCK = "stock",
     FACTURAS = "facturas",
     DET_FACTURAS = "detalle_fact",
-    CTA_CTE = "cta_cte",
-    FORMAS_PAGO = "formas_pago",
     PRODUCTS_PRICES = "products_prices"
 }
 
@@ -237,7 +205,5 @@ export const Columns = {
     stock: Stock,
     facturas: Facturas,
     detallesFact: DetalleFact,
-    ctaCte: CtaCte,
-    formasPago: FormasPago,
     productsPrices: ProductsPrices
 }

@@ -5,15 +5,16 @@ import Colors from '../data/Colors.json';
 import Links from '../data/Links.json';
 import Names from '../data/Names.json';
 import { formatMoney } from '../formatMoney';
-import { DocTipos } from '..//facturacion/AfipClass';
+import { DocTipos } from '../facturacion/AfipClass';
+import { IUser } from 'interfaces/Itables';
 
-export const sendInvoice = async (
-    filePath: string,
-    fileName: string,
+export const sendAvisoFact = async (
+    factura: string,
     notaCredito: boolean,
     importe: number,
     email: string,
     formaPago: string,
+    user: IUser,
     nombre?: string,
     tdocInt?: number,
     ndoc?: number,
@@ -28,12 +29,7 @@ export const sendInvoice = async (
         tdoc = 'Sin identificar'
     }
 
-    let asunto = "Factura de compra realizada"
-
-    const attachment = [{
-        filename: fileName,
-        path: filePath
-    }]
+    let asunto = "Factura Disponible en el sistema - " + factura
 
     let informationList: Array<any> = []
     let parrafosHead: Array<any> = []
@@ -45,31 +41,30 @@ export const sendInvoice = async (
         //Particular
         //Head
         titlePage: "Envío de Factura",
-        titleHead: "Hola " + nombre || "",
+        titleHead: "Hola " + user.nombre + " " + user.apellido || "",
         parrafosHead: parrafosHead,
 
         //InfoForm
-        titleInfoForm: "Sus Datos de envío",
+        titleInfoForm: "Los datos de la factura",
         informationList: informationList
     }
 
 
     if (notaCredito) {
-        asunto = "Compra anulada - Nota de Crédito"
+        asunto = "Nota de Crédito Disponible en el sistema - " + factura
         informationList = [
             {
                 col1: 6,
                 title1: "Nombre completo",
                 content1: nombre || "",
                 col2: 6,
-                title2: tdocInt === DocTipos['Sin identificar'] ? "" : tdoc || "",
+                title2: tdoc,
                 content2: tdocInt === DocTipos['Sin identificar'] ? "" : ndoc || ""
             },
             {
                 col1: 12,
-                title1: "Email",
-                content1: email,
-                col2: 6
+                title1: "Nº Nota de Crédito",
+                content1: factura,
             },
             {
                 col1: 12,
@@ -78,7 +73,7 @@ export const sendInvoice = async (
             }
         ]
         parrafosHead = [
-            "En el presente email le adjuntamos la nota de crédito de la cancelación de la compra."
+            "Le damos aviso que ya se encuentra disponible la Nota de Crédito en el sistema!"
         ]
 
         datos2 = {
@@ -87,17 +82,17 @@ export const sendInvoice = async (
             Names,
             //Particular
             //Head
-            titlePage: "Confirmar Email",
-            titleHead: "Hola " + nombre || "",
+            titlePage: "Envío de Factura",
+            titleHead: "Hola " + user.nombre + " " + user.apellido || "",
             parrafosHead: parrafosHead,
 
             //InfoForm
-            titleInfoForm: "Sus Datos",
+            titleInfoForm: "Los datos de la Nota de Crédito",
             informationList: informationList
         }
 
     } else {
-        asunto = "Factura de compra realizada"
+        asunto = "Factura Disponible en el sistema - " + factura
         informationList = [
             {
                 col1: 6,
@@ -109,7 +104,7 @@ export const sendInvoice = async (
             },
             {
                 col1: 6,
-                title1: tdocInt === DocTipos['Sin identificar'] ? "" : tdoc || "",
+                title1: tdoc,
                 content1: tdocInt === DocTipos['Sin identificar'] ? "" : ndoc || "",
                 col2: 6,
                 title2: "Forma de Pago",
@@ -117,14 +112,14 @@ export const sendInvoice = async (
             },
             {
                 col1: 12,
-                title1: "Email",
-                content1: email,
+                title1: "Nº Factura",
+                content1: factura,
             }
         ]
 
 
         parrafosHead = [
-            "En el presente email le adjuntamos la factura de su compra."
+            "Le damos aviso que ya se encuentra disponible la factura en el sistema!"
         ]
 
         datos2 = {
@@ -133,12 +128,12 @@ export const sendInvoice = async (
             Names,
             //Particular
             //Head
-            titlePage: "Confirmar Email",
-            titleHead: "Hola " + nombre || "",
+            titlePage: "Envío de Factura",
+            titleHead: "Hola " + user.nombre + " " + user.apellido || "",
             parrafosHead: parrafosHead,
 
             //InfoForm
-            titleInfoForm: "Sus Datos",
+            titleInfoForm: "Los datos de la factura",
             informationList: informationList
         }
     }
@@ -150,7 +145,7 @@ export const sendInvoice = async (
                 resolve(false);
             } else {
                 try {
-                    resolve(await sendEmail(email, asunto, data, attachment))
+                    resolve(await sendEmail(email, asunto, data))
                 } catch (error) {
                     console.error(error);
                     reject(error);

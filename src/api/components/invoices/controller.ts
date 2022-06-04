@@ -1,3 +1,7 @@
+import { ETypesJoin } from '../../../enums/EfunctMysql';
+import { MetodosPago } from './../../../enums/EtablesDB';
+import { sendAvisoFact } from './../../../utils/sendEmails/sendAvisoFact';
+import { IFormasPago, IMovCtaCte } from './../../../interfaces/Itables';
 import { createListSellsPDF } from './../../../utils/facturacion/lists/createListSellsPDF';
 import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
@@ -8,13 +12,15 @@ import {
     CbteTipos
 } from '../../../utils/facturacion/AfipClass'
 import ptosVtaController from '../ptosVta';
-import { Ipages, IWhereParams } from 'interfaces/Ifunctions';
-import { IClientes, IDetFactura, IFactura } from 'interfaces/Itables';
+import { Ipages, IWhereParams, IJoin } from 'interfaces/Ifunctions';
+import { IClientes, IDetFactura, IFactura, IUser } from 'interfaces/Itables';
 import { INewPV } from 'interfaces/Irequests';
 import ControllerStock from '../stock';
 import ControllerClientes from '../clientes';
 import fs from 'fs';
 import { NextFunction } from 'express';
+import controller from '../clientes';
+import { zfill } from '../../../utils/cerosIzq';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
@@ -113,6 +119,13 @@ export = (injectedStore: typeof StoreType) => {
 
         let pages: Ipages;
 
+        const joinQuery: IJoin = {
+            table: Tables.FORMAS_PAGO,
+            colJoin: Columns.formasPago.id_fact,
+            colOrigin: Columns.prodPrincipal.id,
+            type: ETypesJoin.left
+        };
+
         if (page) {
             pages = {
                 currentPage: page,
@@ -121,17 +134,19 @@ export = (injectedStore: typeof StoreType) => {
                 asc: true
             };
             const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined);
+            const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, joinQuery);
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, pages, undefined, { columns: [Columns.facturas.fecha], asc: false });
             const cant = await store.list(Tables.FACTURAS, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, undefined, undefined);
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
             return {
                 data,
                 pagesObj,
-                totales
+                totales,
+                totales2
             };
         } else {
-            const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined);
-            const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined);
+            const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined, joinQuery);
+            const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined, undefined, { columns: [Columns.facturas.fecha], asc: false });
 
             const dataFact = {
                 filePath: "",
@@ -140,7 +155,6 @@ export = (injectedStore: typeof StoreType) => {
 
             if (pdf) {
                 const cajaList = await createListSellsPDF(userId, ptoVtaId, desde, hasta, totales, data)
-                console.log('cajaList :>> ', cajaList);
                 return cajaList
             } else {
                 return {
@@ -170,7 +184,7 @@ export = (injectedStore: typeof StoreType) => {
             FactMonotribProd |
             FactMonotribProdNC |
             FactMonotribServ |
-            FactMonotribServNC) => {
+            FactMonotribServNC): Promise<any> => {
 
         if (newFact.fiscal) {
             newFact.cae = factFiscal.CAE
@@ -180,6 +194,7 @@ export = (injectedStore: typeof StoreType) => {
         const result = await store.insert(Tables.FACTURAS, newFact);
         if (result.affectedRows > 0) {
             const factId = result.insertId
+
             const headers: Array<string> = [
                 Columns.detallesFact.fact_id,
                 Columns.detallesFact.id_prod,
@@ -220,7 +235,8 @@ export = (injectedStore: typeof StoreType) => {
                 status: 200,
                 msg: {
                     resultinsert,
-                    resultInsertStock
+                    resultInsertStock,
+                    factId
                 }
             }
         } else {
@@ -314,34 +330,82 @@ export = (injectedStore: typeof StoreType) => {
         productsList: Array<IDetFactura>,
         fileName: string,
         filePath: string,
+        timer: number,
+        userData: IUser,
+        variosPagos: Array<{
+            tipo: MetodosPago,
+            tipo_txt: string,
+            importe: number
+        }>,
         next: NextFunction
     ) => {
+        const resultInsert = await insertFact(pvData.id || 0, newFact, productsList, factFiscal)
+        const clienteArray: { data: Array<IClientes> } = await controller.list(undefined, String(newFact.n_doc_cliente), undefined)
 
-        const resultInsert = insertFact(pvData.id || 0, newFact, productsList, factFiscal)
-        if (String(newFact.n_doc_cliente).length < 12 && String(newFact.n_doc_cliente).length > 6) {
-            let esDni = false
-            if (String(newFact.n_doc_cliente).length < 10) {
-                esDni = true
+        if (clienteArray.data.length === 0) {
+            if (String(newFact.n_doc_cliente).length < 12 && String(newFact.n_doc_cliente).length > 6) {
+                let esDni = false
+                if (String(newFact.n_doc_cliente).length < 10) {
+                    esDni = true
+                }
+                const newClient: IClientes = {
+                    cuit: esDni,
+                    ndoc: String(newFact.n_doc_cliente),
+                    razsoc: newFact.raz_soc_cliente,
+                    telefono: "",
+                    email: newFact.email_cliente,
+                    cond_iva: newFact.cond_iva_cliente
+                }
+                try {
+                    await ControllerClientes.upsert(newClient, next)
+                } catch (error) {
+                    console.log('error :>> ', error);
+                }
             }
-            const newClient: IClientes = {
-                cuit: esDni,
-                ndoc: String(newFact.n_doc_cliente),
-                razsoc: newFact.raz_soc_cliente,
-                telefono: "",
-                email: newFact.email_cliente,
-                cond_iva: newFact.cond_iva_cliente
-            }
-            try {
-                ControllerClientes.upsert(newClient, next)
-            } catch (error) {
+        }
 
-            }
+        await newmovCtaCte(newFact.forma_pago, newFact.total_fact, newFact.n_doc_cliente, resultInsert.msg.factId)
+
+        if (Number(newFact.forma_pago) === 5) {
+            variosPagos.map(async item => {
+                const dataForma: IFormasPago = {
+                    id_fact: resultInsert.msg.factId,
+                    tipo: item.tipo,
+                    importe: item.importe,
+                    tipo_txt: item.tipo_txt
+                }
+                await store.insert(Tables.FORMAS_PAGO, dataForma)
+                if (Number(item.tipo) === 4) {
+                    await newmovCtaCte(item.tipo, item.importe, newFact.n_doc_cliente, resultInsert.msg.factId)
+                }
+            })
+        }
+
+        if (newFact.id_fact_asoc !== 0) {
+            await store.update(Tables.FACTURAS, { id_fact_asoc: resultInsert.msg.factId }, newFact.id_fact_asoc)
         }
 
         setTimeout(() => {
             fs.unlinkSync(filePath)
         }, 6000);
-
+        const difTime = Number(new Date()) - timer
+        if (difTime > 5000) {
+            sendAvisoFact(
+                `${newFact.letra} ${zfill(newFact.pv, 5)} - ${zfill(newFact.cbte, 8)}`,
+                newFact.nota_cred,
+                newFact.total_fact,
+                String(userData.email),
+                newFact.forma_pago === 0 ? "Efectivo" :
+                    newFact.forma_pago === 1 ? "Mercado Pago" :
+                        newFact.forma_pago === 2 ? "Débito" :
+                            newFact.forma_pago === 3 ? "Crédito" :
+                                newFact.forma_pago === 4 ? "Cuenta Corriente" : "Varios",
+                userData,
+                newFact.raz_soc_cliente,
+                newFact.tipo_doc_cliente,
+                newFact.n_doc_cliente
+            )
+        }
         const dataFact = {
             fileName,
             filePath,
@@ -354,6 +418,21 @@ export = (injectedStore: typeof StoreType) => {
         return await store.getAnyCol(Tables.DET_FACTURAS, { fact_id })
     }
 
+    const newmovCtaCte = async (formaPago: number, importe: number, ndocCliente: number, idfact: number) => {
+        if (Number(formaPago) === 4) {
+            const clienteArray2: { data: Array<IClientes> } = await controller.list(undefined, String(ndocCliente), undefined)
+            const idCliente = clienteArray2.data[0].id
+            await newMovCtaCte({
+                id_cliente: idCliente || 0,
+                id_factura: idfact,
+                id_recibo: 0,
+                forma_pago: 4,
+                importe: - (importe),
+                detalle: "Compra de productos"
+            })
+        }
+    }
+
     const getDataFact = async (
         fileName: string,
         filePath: string,
@@ -362,7 +441,77 @@ export = (injectedStore: typeof StoreType) => {
             fileName,
             filePath
         }
+
+        setTimeout(() => {
+            fs.unlinkSync(filePath)
+        }, 6000);
+
         return dataFact
+    }
+
+    const newMovCtaCte = async (body: IMovCtaCte) => {
+        return await store.insert(Tables.CTA_CTE, body)
+    }
+
+    const changePayType = async (idPay: number, idType: number) => {
+        return await store.update(Tables.FACTURAS, { forma_pago: idType }, idPay)
+    }
+
+    const getFormasPago = async (idFact: number) => {
+        const filter: Array<IWhereParams> = [{
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.none,
+            items: [
+                { column: Columns.formasPago.id_fact, object: String(idFact) }
+            ]
+        }];
+
+        return await store.list(Tables.FORMAS_PAGO, ["*"], filter)
+    }
+
+    const dummyServers = async (certFile: string, keyFile: string, cuit: number) => {
+        let certDir = "drop_test.crt"
+        let keyDir = "drop.key"
+        let entornoAlt = false
+
+        if (process.env.ENTORNO === "PROD") {
+            certDir = certFile || "drop_test.crt"
+            keyDir = keyFile || "drop.key"
+            entornoAlt = true
+        }
+        const nowTime = Number(new Date())
+        const afip = new AfipClass(cuit, certDir, keyDir, entornoAlt);
+        const dummy = await afip.getServerStatusFact()
+        const afterTime = Number(new Date())
+        const difference = afterTime - nowTime
+        return {
+            statusDummy: dummy,
+            difference: difference
+        }
+    }
+
+    const correctorNC = async () => {
+        const filtersNC: Array<IWhereParams> = [{
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.nota_cred, object: String(1) }
+            ]
+        }];
+
+        const listNC: Array<IFactura> = await store.list(Tables.FACTURAS, ["*"], filtersNC)
+
+        listNC.map(async item => {
+            const idNC = item.id
+            const idFact = item.id_fact_asoc
+
+            await store.update(Tables.FACTURAS, { id_fact_asoc: idNC }, idFact)
+            console.log('idFact :>> ', idFact);
+        })
+
+        return {
+            listNC
+        }
     }
 
     return {
@@ -374,6 +523,11 @@ export = (injectedStore: typeof StoreType) => {
         getFiscalDataInvoice,
         cajaList,
         getDetails,
-        getDataFact
+        getDataFact,
+        changePayType,
+        dummyServers,
+        correctorNC,
+        newMovCtaCte,
+        getFormasPago
     }
 }

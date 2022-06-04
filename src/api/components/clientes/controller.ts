@@ -1,12 +1,14 @@
+import { INewInsert } from './../../../interfaces/Ifunctions';
+import { IFactura, IMovCtaCte } from './../../../interfaces/Itables';
 import { AfipClass } from './../../../utils/facturacion/AfipClass';
-
 import { Ipages, IWhereParams } from 'interfaces/Ifunctions';
-import { IClientes, IUser } from 'interfaces/Itables';
+import { IClientes, } from 'interfaces/Itables';
 import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
 import StoreType from '../../../store/mysql';
 import getPages from '../../../utils/getPages';
 import { NextFunction } from 'express';
+import fs from 'fs';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
@@ -73,7 +75,21 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const remove = async (idCliente: number) => {
-        return await store.remove(Tables.CLIENTES, { id: idCliente });
+        const listCtaCte: {
+            data: Array<IMovCtaCte>
+        } = await listCtaCteClient(idCliente, false, false)
+        const cant = listCtaCte.data.length
+        if (cant > 0) {
+            return 403
+        } else {
+            const result: any = await store.remove(Tables.CLIENTES, { id: idCliente });
+
+            if (result.affectedRows > 0) {
+                return 200
+            } else {
+                return 500
+            }
+        }
     }
 
     const get = async (idCliente: number) => {
@@ -87,10 +103,133 @@ export = (injectedStore: typeof StoreType) => {
             certDir = cert
             keyDir = key
         }
-        console.log('object :>> ', cuitPv, certDir, keyDir);
         const afip = new AfipClass(cuitPv, certDir, keyDir, true);
         const dataFiscal = await afip.getDataCUIT(cuit);
         return dataFiscal
+    }
+
+    const listCtaCteClient = async (idCliente: number, debit: boolean, credit: boolean, page?: number, cantPerPage?: number) => {
+
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+
+        if (!debit && !credit) {
+            filter = {
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.none,
+                items: [
+                    { column: Columns.ctaCte.id_cliente, object: String(idCliente) }
+                ]
+            };
+            filters.push(filter);
+        } else if (debit) {
+            filter = {
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.ctaCte.id_cliente, object: String(idCliente) },
+                ]
+            };
+            filters.push(filter);
+
+            filter = {
+                mode: EModeWhere.less,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.ctaCte.importe, object: String(0) },
+                ]
+            };
+            filters.push(filter);
+        } else if (credit) {
+            filter = {
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.ctaCte.id_cliente, object: String(idCliente) },
+                ]
+            };
+            filters.push(filter);
+
+            filter = {
+                mode: EModeWhere.higher,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.ctaCte.importe, object: String(0) },
+                ]
+            };
+            filters.push(filter);
+        }
+
+        let pages: Ipages;
+        if (page) {
+            pages = {
+                currentPage: page,
+                cantPerPage: cantPerPage || 10,
+                order: Columns.clientes.id,
+                asc: false
+            };
+            const data = await store.list(Tables.CTA_CTE, [ESelectFunct.all], filters, undefined, pages);
+            const cant = await store.list(Tables.CTA_CTE, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
+            const suma = await store.list(Tables.CTA_CTE, [`SUM(${Columns.ctaCte.importe}) as SUMA`], filters);
+            const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
+            return {
+                data,
+                pagesObj,
+                suma
+            };
+        } else {
+            const data = await store.list(Tables.CTA_CTE, [ESelectFunct.all], filters, undefined, undefined);
+            const suma = await store.list(Tables.CTA_CTE, [`SUM(${Columns.ctaCte.importe}) as SUMA`], filters);
+            return {
+                data,
+                suma
+            };
+        }
+    }
+
+    const registerPayment = async (
+        newFact: IFactura,
+        fileName: string,
+        filePath: string,
+        clienteData: IClientes,
+        next: NextFunction
+    ) => {
+        const result: INewInsert = await store.insert(Tables.FACTURAS, newFact)
+
+        if (result.affectedRows > 0) {
+            const ctacteData = {
+                id_cliente: clienteData.id || 0,
+                id_factura: result.insertId,
+                id_recibo: result.insertId,
+                forma_pago: newFact.forma_pago,
+                importe: (newFact.total_fact),
+                detalle: "Recibo de Pago"
+            }
+            const resultCtaCte = await store.insert(Tables.CTA_CTE, ctacteData)
+
+            setTimeout(() => {
+                fs.unlinkSync(filePath)
+            }, 6000);
+
+            const dataFact = {
+                fileName,
+                filePath,
+                resultInsert: resultCtaCte
+            }
+            return dataFact
+        } else {
+            throw new Error("Error interno. No se pudo registrar el nuevo recibo.")
+        }
+    }
+
+    const getDataPayment = async (
+        fileName: string,
+        filePath: string) => {
+        const dataFact = {
+            fileName,
+            filePath
+        }
+        return dataFact
     }
 
     return {
@@ -98,6 +237,9 @@ export = (injectedStore: typeof StoreType) => {
         upsert,
         remove,
         get,
-        dataFiscalPadron
+        dataFiscalPadron,
+        listCtaCteClient,
+        registerPayment,
+        getDataPayment
     }
 }

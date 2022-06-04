@@ -5,7 +5,7 @@ import getPages from '../../../utils/getPages';
 import OptimizeImg from '../../../utils/optimeImg';
 import { IJoin, Ipages, IWhere, IWhereParams } from 'interfaces/Ifunctions';
 import { INewPriceProduct, INewProduct, INewProductOnly } from 'interfaces/Irequests';
-import { IImgProd } from 'interfaces/Itables';
+import { IImgProd, IModPriceProd } from 'interfaces/Itables';
 import controllerStock from '../stock';
 
 export = (injectedStore: typeof StoreType) => {
@@ -423,6 +423,10 @@ export = (injectedStore: typeof StoreType) => {
         return await store.getAnyCol(Tables.PRODUCTS_PRICES, { global_name: globalName })
     }
 
+    const getPrice = async (idPrice: number) => {
+        return await store.getAnyCol(Tables.PRODUCTS_PRICES, { id: idPrice })
+    }
+
     const publicList = async () => {
         const groupBy: Array<string> = [Columns.prodPrincipal.global_name, Columns.prodPrincipal.subcategory];
         const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], undefined, groupBy)
@@ -738,6 +742,7 @@ export = (injectedStore: typeof StoreType) => {
         corrector: corrector4,
         addVar,
         getImagesProduct,
-        newImg
+        newImg,
+        getPrice
     }
 }
