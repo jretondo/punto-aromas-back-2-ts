@@ -14,53 +14,71 @@ export = (injectedStore: typeof StoreType) => {
     const list = async (page?: number, item?: string, cantPerPage?: number) => {
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
+        let conID = false
+        let idProd = 0
+
         if (item) {
-            filter = {
-                mode: EModeWhere.like,
-                concat: EConcatWhere.or,
-                items: [
-                    { column: Columns.prodPrincipal.name, object: String(item) },
-                    { column: Columns.prodPrincipal.subcategory, object: String(item) },
-                    { column: Columns.prodPrincipal.category, object: String(item) },
-                    { column: Columns.prodPrincipal.short_decr, object: String(item) },
-                    { column: Columns.prodPrincipal.cod_barra, object: String(item) }
-                ]
-            };
-            filters.push(filter);
+            if (item.includes("id:")) {
+                conID = true
+                idProd = Number(item.replace("id:", ""))
+            } else {
+                const arrayStr = item.split(" ")
+                arrayStr.map(subItem => {
+                    filter = {
+                        mode: EModeWhere.like,
+                        concat: EConcatWhere.or,
+                        items: [
+                            { column: Columns.prodPrincipal.name, object: String(subItem) },
+                            { column: Columns.prodPrincipal.subcategory, object: String(subItem) },
+                            { column: Columns.prodPrincipal.category, object: String(subItem) },
+                            { column: Columns.prodPrincipal.short_decr, object: String(subItem) },
+                            { column: Columns.prodPrincipal.cod_barra, object: String(subItem) }
+                        ]
+                    };
+                    filters.push(filter);
+                })
+            }
         }
-
-        const groupBy: Array<string> = [Columns.prodImg.id_prod];
-
-        const joinQuery: IJoin = {
-            table: Tables.PRODUCTS_IMG,
-            colJoin: Columns.prodImg.id_prod,
-            colOrigin: Columns.prodPrincipal.id,
-            type: ETypesJoin.left
-        };
-
-        let pages: Ipages;
-        if (page) {
-            pages = {
-                currentPage: page,
-                cantPerPage: cantPerPage || 10,
-                order: Columns.prodImg.id_prod,
-                asc: true
-            };
-            const data = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], filters, groupBy, pages, joinQuery);
-
-            const cant = await store.list(Tables.PRODUCTS_PRINCIPAL, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
-
-            const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
-
-            return {
-                data,
-                pagesObj
-            };
-        } else {
-            const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, undefined, undefined, joinQuery);
+        if (conID) {
+            let data = await store.get(Tables.PRODUCTS_PRINCIPAL, idProd)
+            data[0].id_prod = data[0].id
             return {
                 data
+            }
+        } else {
+            const groupBy: Array<string> = [Columns.prodImg.id_prod];
+
+            const joinQuery: IJoin = {
+                table: Tables.PRODUCTS_IMG,
+                colJoin: Columns.prodImg.id_prod,
+                colOrigin: Columns.prodPrincipal.id,
+                type: ETypesJoin.left
             };
+
+            let pages: Ipages;
+            if (page) {
+                pages = {
+                    currentPage: page,
+                    cantPerPage: cantPerPage || 10,
+                    order: Columns.prodImg.id_prod,
+                    asc: true
+                };
+                const data = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], filters, groupBy, pages, joinQuery);
+
+                const cant = await store.list(Tables.PRODUCTS_PRINCIPAL, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
+
+                const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
+
+                return {
+                    data,
+                    pagesObj
+                };
+            } else {
+                const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, undefined, undefined, joinQuery);
+                return {
+                    data
+                };
+            }
         }
     }
 
