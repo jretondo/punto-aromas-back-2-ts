@@ -11,12 +11,11 @@ import controllerStock from '../stock';
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
 
-    const list = async (page?: number, item?: string, cantPerPage?: number) => {
+    const list = async (page?: number, item?: string, cantPerPage?: number, forsell?: number) => {
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
         let conID = false
         let idProd = 0
-
         if (item) {
             if (item.includes("id:")) {
                 conID = true
@@ -69,9 +68,18 @@ export = (injectedStore: typeof StoreType) => {
 
                 const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
 
+                let prices: Array<IModPriceProd> = []
+
+                if (forsell === 1) {
+                    const products: INewProduct = data[0]
+                    prices = await getPrices(products.global_name)
+                    prices = prices
+
+                }
                 return {
                     data,
-                    pagesObj
+                    pagesObj,
+                    prices
                 };
             } else {
                 const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, undefined, undefined, joinQuery);

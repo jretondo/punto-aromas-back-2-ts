@@ -87,7 +87,8 @@ enum Clientes {
     razsoc = "razsoc",
     telefono = "telefono",
     email = "email",
-    cond_iva = "cond_iva"
+    cond_iva = "cond_iva",
+    vendedor_id = "vendedor_id"
 }
 
 enum Permissions {

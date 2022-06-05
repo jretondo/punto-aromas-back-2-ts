@@ -127,25 +127,47 @@ const factuMiddel = () => {
                 any = {}
 
             if (body.fiscal) {
-                ivaList = await listaIva(productsList.listaProd, descuentoPer);
-                dataFiscal = {
-                    CantReg: 1,
-                    PtoVta: pvData[0].pv,
-                    CbteTipo: body.t_fact,
-                    DocTipo: cliente.cliente_tdoc,
-                    DocNro: cliente.cliente_ndoc,
-                    CbteFch: moment(body.fecha, "YYYY-MM-DD").format("YYYYMMDD"),
-                    ImpTotal: (Math.round((productsList.totalFact) * 100)) / 100,
-                    MonCotiz: 1,
-                    MonId: "PES",
-                    Concepto: Conceptos.Productos,
-                    ImpTotConc: 0,
-                    ImpNeto: (Math.round((productsList.totalNeto) * 100)) / 100,
-                    ImpOpEx: 0,
-                    ImpIVA: (Math.round((productsList.totalIva) * 100)) / 100,
-                    ImpTrib: 0,
-                    Iva: ivaList
+                if (body.t_fact === 1) {
+                    ivaList = await listaIva(productsList.listaProd, descuentoPer);
+                    dataFiscal = {
+                        CantReg: 1,
+                        PtoVta: pvData[0].pv,
+                        CbteTipo: body.t_fact,
+                        DocTipo: cliente.cliente_tdoc,
+                        DocNro: cliente.cliente_ndoc,
+                        CbteFch: moment(body.fecha, "YYYY-MM-DD").format("YYYYMMDD"),
+                        ImpTotal: (Math.round((productsList.totalFact) * 100)) / 100,
+                        MonCotiz: 1,
+                        MonId: "PES",
+                        Concepto: Conceptos.Productos,
+                        ImpTotConc: 0,
+                        ImpNeto: (Math.round((productsList.totalNeto) * 100)) / 100,
+                        ImpOpEx: 0,
+                        ImpIVA: (Math.round((productsList.totalIva) * 100)) / 100,
+                        ImpTrib: 0,
+                        Iva: ivaList
+                    }
+                } else {
+                    ivaList = await listaIva(productsList.listaProd, descuentoPer);
+                    dataFiscal = {
+                        CantReg: 1,
+                        PtoVta: pvData[0].pv,
+                        CbteTipo: body.t_fact,
+                        DocTipo: cliente.cliente_tdoc,
+                        DocNro: cliente.cliente_ndoc,
+                        CbteFch: moment(body.fecha, "YYYY-MM-DD").format("YYYYMMDD"),
+                        ImpTotal: (Math.round((productsList.totalFact) * 100)) / 100,
+                        MonCotiz: 1,
+                        MonId: "PES",
+                        Concepto: Conceptos.Productos,
+                        ImpTotConc: 0,
+                        ImpNeto: (Math.round((productsList.totalNeto) * 100)) / 100,
+                        ImpOpEx: 0,
+                        ImpIVA: 0,
+                        ImpTrib: 0
+                    }
                 }
+
             }
             req.body.newFact = newFact
             req.body.dataFiscal = dataFiscal

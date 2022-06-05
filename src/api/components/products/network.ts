@@ -15,7 +15,8 @@ const list = (
     Controller.list(
         Number(req.params.page),
         String(req.query.query),
-        Number(req.query.cantPerPage)
+        Number(req.query.cantPerPage),
+        Number(req.query.forSell)
     )
         .then((lista: any) => {
             success({
