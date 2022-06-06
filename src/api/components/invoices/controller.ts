@@ -396,20 +396,25 @@ export = (injectedStore: typeof StoreType) => {
         }, 6000);
 
         const difTime = Number(new Date()) - timer
+        if (String(newFact.n_doc_cliente).length > 5) {
+            try {
+                const dataClient: Array<IClientes> = await controller.getCuit(newFact.n_doc_cliente)
+                const idVende: number = dataClient[0].vendedor_id || 0
+                if (idVende > 0) {
+                    const comision: number = newFact.total_fact - totalRevende
+                    const newComision: IVendedoresCtaCte = {
+                        id_factura: resultInsert.msg.factId,
+                        id_vendedor: idVende,
+                        importe: -(Math.round(comision * 100)) / 100,
+                        forma_pago: newFact.forma_pago,
+                        id_recibo: 0,
+                        detalle: "Compra de Cliente"
+                    }
+                    await store.insert(Tables.VENDEDORES_CTA_CTE, newComision)
+                }
+            } catch (error) {
 
-        const dataClient: Array<IClientes> = await controller.getCuit(newFact.n_doc_cliente)
-        const idVende: number = dataClient[0].vendedor_id || 0
-        if (idVende > 0) {
-            const comision: number = newFact.total_fact - totalRevende
-            const newComision: IVendedoresCtaCte = {
-                id_factura: resultInsert.msg.factId,
-                id_vendedor: idVende,
-                importe: -(Math.round(comision * 100)) / 100,
-                forma_pago: newFact.forma_pago,
-                id_recibo: 0,
-                detalle: "Compra de Cliente"
             }
-            await store.insert(Tables.VENDEDORES_CTA_CTE, newComision)
         }
 
         if (difTime > 5000) {
