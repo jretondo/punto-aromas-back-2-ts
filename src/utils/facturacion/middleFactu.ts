@@ -30,6 +30,7 @@ const factuMiddel = () => {
             const productsList: IfactCalc = await calcProdLista(body.lista_prod);
             const fiscalBool = req.body.fiscal
             const variosPagos = body.variosPagos
+
             if (parseInt(fiscalBool) === 0) {
                 body.fiscal = false
             }
@@ -44,7 +45,6 @@ const factuMiddel = () => {
                     cliente_ndoc: body.cliente_ndoc || 0
                 }
             }
-            console.log('body.cond_iva :>> ', body.cond_iva);
             let letra = "";
             if (body.fiscal) {
                 if (pvData[0].cond_iva === 1) {

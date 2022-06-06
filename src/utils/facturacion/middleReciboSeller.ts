@@ -1,15 +1,15 @@
-import { IWhereParams } from './../../interfaces/Ifunctions';
-import { EModeWhere, EConcatWhere } from './../../enums/EfunctMysql';
-import { Tables, Columns } from './../../enums/EtablesDB';
+import { IWhereParams } from '../../interfaces/Ifunctions';
+import { EModeWhere, EConcatWhere } from '../../enums/EfunctMysql';
+import { Tables, Columns } from '../../enums/EtablesDB';
 import { NextFunction, Request, Response } from 'express';
 import { INewPV } from 'interfaces/Irequests';
-import { IClientes, IFactura, IUser } from 'interfaces/Itables';
+import { IFactura, IUser } from 'interfaces/Itables';
 import ptosVtaController from '../../api/components/ptosVta';
-import clientesController from '../../api/components/clientes';
+import usersController from '../../api/components/user';
 import errorSend from '../error';
 import store from '../../store/mysql';
 
-const paymentMiddle = () => {
+const paymentMiddleSeller = () => {
     const middleware = async (
         req: Request,
         res: Response,
@@ -33,7 +33,7 @@ const paymentMiddle = () => {
             const pvData: Array<INewPV> = await ptosVtaController.get(pvId)
             const tFact: number = -1
             const letra = "REC"
-            const getHighterNum: Array<{ last: number }> = await store.list(Tables.FACTURAS, [`MAX(${Columns.facturas.cbte}) as last`], filters)
+            const getHighterNum: Array<{ last: number }> = await store.list(Tables.RECIBOS_VENDEDORES, [`MAX(${Columns.facturas.cbte}) as last`], filters)
             const lastNumber = 0
             console.log('lastNumber :>> ', lastNumber);
             console.log('getHighterNum :>> ', getHighterNum);
@@ -47,7 +47,7 @@ const paymentMiddle = () => {
                 cbte = lastNumber
             }
 
-            const clienteData: Array<IClientes> = await clientesController.get(clienteID)
+            const clienteData: Array<IUser> = await usersController.getUser(clienteID)
 
             const newFact: IFactura = {
                 fecha: (new Date()),
@@ -61,13 +61,13 @@ const paymentMiddle = () => {
                 direccion_origen: pvData[0].direccion,
                 raz_soc_origen: pvData[0].raz_soc,
                 cond_iva_origen: pvData[0].cond_iva,
-                tipo_doc_cliente: Number(clienteData[0].cuit) === 0 ? 80 : 96,
-                n_doc_cliente: Number(clienteData[0].ndoc),
-                cond_iva_cliente: Number(clienteData[0].cond_iva),
+                tipo_doc_cliente: 96,
+                n_doc_cliente: 0,
+                cond_iva_cliente: 0,
                 email_cliente: clienteData[0].email,
                 nota_cred: false,
                 fiscal: false,
-                raz_soc_cliente: clienteData[0].razsoc,
+                raz_soc_cliente: clienteData[0].nombre + " " + clienteData[0].apellido,
                 user_id: user.id || 0,
                 seller_name: `${user.nombre} ${user.apellido}`,
                 total_fact: (Math.round((importe) * 100)) / 100,
@@ -93,4 +93,4 @@ const paymentMiddle = () => {
     return middleware
 }
 
-export = paymentMiddle
+export = paymentMiddleSeller

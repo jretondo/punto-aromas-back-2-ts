@@ -143,3 +143,14 @@ export interface IFormasPago {
     importe: number,
     tipo_txt: string
 }
+
+export interface IVendedoresCtaCte {
+    id?: number,
+    fecha?: Date,
+    id_vendedor: number,
+    id_factura: number,
+    id_recibo: number,
+    forma_pago: number,
+    importe: number,
+    detalle: string
+}

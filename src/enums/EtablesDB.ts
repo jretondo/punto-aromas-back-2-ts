@@ -195,13 +195,25 @@ enum ProductsPrices {
     global_name = "global_name"
 }
 
+
+enum Vendedores_cta_cte {
+    id = "id",
+    fecha = "fecha",
+    id_vendedor = "id_vendedor",
+    id_factura = "id_factura",
+    id_recibo = "id_recibo",
+    forma_pago = "forma_pago",
+    importe = "importe",
+    detalle = "detalle"
+}
 export enum MetodosPago {
     efectivo = 0,
     mercaPago = 1,
     debito = 2,
     credito = 3,
     ctaCte = 4,
-    varios = 5
+    varios = 5,
+    cheque = 6
 
 }
 
@@ -221,7 +233,9 @@ export enum Tables {
     DET_FACTURAS = "detalle_fact",
     CTA_CTE = "cta_cte",
     FORMAS_PAGO = "formas_pago",
-    PRODUCTS_PRICES = "products_prices"
+    PRODUCTS_PRICES = "products_prices",
+    VENDEDORES_CTA_CTE = "vendedores_cta_cte",
+    RECIBOS_VENDEDORES = "recibos_vendedores"
 }
 
 export const Columns = {
@@ -240,5 +254,6 @@ export const Columns = {
     detallesFact: DetalleFact,
     ctaCte: CtaCte,
     formasPago: FormasPago,
-    productsPrices: ProductsPrices
+    productsPrices: ProductsPrices,
+    vendedores_cta_cte: Vendedores_cta_cte
 }

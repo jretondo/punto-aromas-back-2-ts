@@ -1,7 +1,7 @@
 import { ETypesJoin } from '../../../enums/EfunctMysql';
 import { MetodosPago } from './../../../enums/EtablesDB';
 import { sendAvisoFact } from './../../../utils/sendEmails/sendAvisoFact';
-import { IFormasPago, IMovCtaCte } from './../../../interfaces/Itables';
+import { IFormasPago, IMovCtaCte, IVendedoresCtaCte } from './../../../interfaces/Itables';
 import { createListSellsPDF } from './../../../utils/facturacion/lists/createListSellsPDF';
 import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
@@ -13,7 +13,7 @@ import {
 } from '../../../utils/facturacion/AfipClass'
 import ptosVtaController from '../ptosVta';
 import { Ipages, IWhereParams, IJoin } from 'interfaces/Ifunctions';
-import { IClientes, IDetFactura, IFactura, IUser } from 'interfaces/Itables';
+import { IClientes, IDetFactura, IFactura, IUser, IModPriceProd } from 'interfaces/Itables';
 import { INewPV } from 'interfaces/Irequests';
 import ControllerStock from '../stock';
 import ControllerClientes from '../clientes';
@@ -169,6 +169,10 @@ export = (injectedStore: typeof StoreType) => {
         return await store.get(Tables.FACTURAS, id);
     }
 
+    const get2 = async (id: number) => {
+        return await store.get(Tables.RECIBOS_VENDEDORES, id);
+    }
+
     const remove = async (id: number) => {
         return await store.remove(Tables.FACTURAS, { id });
     }
@@ -249,6 +253,7 @@ export = (injectedStore: typeof StoreType) => {
 
     const lastInvoice = async (pvId: number, fiscal: boolean, tipo: CbteTipos, entorno: boolean): Promise<{ lastInvoice: number }> => {
         const pvData: Array<INewPV> = await ptosVtaController.get(pvId);
+        console.log('pvData :>> ', pvData);
         if (fiscal) {
             let certDir = "drop_test.crt"
             let keyDir = "drop.key"
@@ -337,6 +342,7 @@ export = (injectedStore: typeof StoreType) => {
             tipo_txt: string,
             importe: number
         }>,
+        totalRevende: number,
         next: NextFunction
     ) => {
         const resultInsert = await insertFact(pvData.id || 0, newFact, productsList, factFiscal)
@@ -371,12 +377,12 @@ export = (injectedStore: typeof StoreType) => {
                 const dataForma: IFormasPago = {
                     id_fact: resultInsert.msg.factId,
                     tipo: item.tipo,
-                    importe: item.importe,
+                    importe: (Math.round(item.importe * 100)) / 100,
                     tipo_txt: item.tipo_txt
                 }
                 await store.insert(Tables.FORMAS_PAGO, dataForma)
                 if (Number(item.tipo) === 4) {
-                    await newmovCtaCte(item.tipo, item.importe, newFact.n_doc_cliente, resultInsert.msg.factId)
+                    await newmovCtaCte(item.tipo, (Math.round(item.importe * 100)) / 100, newFact.n_doc_cliente, resultInsert.msg.factId)
                 }
             })
         }
@@ -388,7 +394,24 @@ export = (injectedStore: typeof StoreType) => {
         setTimeout(() => {
             fs.unlinkSync(filePath)
         }, 6000);
+
         const difTime = Number(new Date()) - timer
+
+        const dataClient: Array<IClientes> = await controller.getCuit(newFact.n_doc_cliente)
+        const idVende: number = dataClient[0].vendedor_id || 0
+        if (idVende > 0) {
+            const comision: number = newFact.total_fact - totalRevende
+            const newComision: IVendedoresCtaCte = {
+                id_factura: resultInsert.msg.factId,
+                id_vendedor: idVende,
+                importe: -(Math.round(comision * 100)) / 100,
+                forma_pago: newFact.forma_pago,
+                id_recibo: 0,
+                detalle: "Compra de Cliente"
+            }
+            await store.insert(Tables.VENDEDORES_CTA_CTE, newComision)
+        }
+
         if (difTime > 5000) {
             sendAvisoFact(
                 `${newFact.letra} ${zfill(newFact.pv, 5)} - ${zfill(newFact.cbte, 8)}`,
@@ -528,6 +551,7 @@ export = (injectedStore: typeof StoreType) => {
         dummyServers,
         correctorNC,
         newMovCtaCte,
-        getFormasPago
+        getFormasPago,
+        get2
     }
 }

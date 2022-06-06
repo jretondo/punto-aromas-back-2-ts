@@ -147,6 +147,23 @@ const getDataPaymentPDF = (
     }
 }
 
+const functSellers = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const type: boolean = req.body.type
+    if (type) {
+        Controller.asignarVendedor(req.body.seller, req.body.client).then(data => {
+            success({ req, res, message: data });
+        }).catch(next)
+    } else {
+        Controller.desAsignarVendedor(req.body.seller, req.body.client).then(data => {
+            success({ req, res, message: data });
+        }).catch(next)
+    }
+}
+
 router
     .get("/dataFiscal", secure(EPermissions.clientes), dataFiscalPadron)
     .get("/ctaCte/:page", secure(EPermissions.clientes), listCtaCteClient)
@@ -157,6 +174,7 @@ router
     .get("/", secure(EPermissions.clientes), list)
     .post("/payments", secure(EPermissions.clientes), secure(EPermissions.ventas), paymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), newPayment)
     .post("/", secure(EPermissions.clientes), upsert)
+    .put("/sellers", secure(EPermissions.userAdmin), functSellers)
     .put("/", secure(EPermissions.clientes), upsert)
 
 export = router;

@@ -1,8 +1,9 @@
+import { sendAvisoClienteSeller } from './../../../utils/sendEmails/sendAvisoClientsSellers';
 import { INewInsert } from './../../../interfaces/Ifunctions';
 import { IFactura, IMovCtaCte } from './../../../interfaces/Itables';
 import { AfipClass } from './../../../utils/facturacion/AfipClass';
 import { Ipages, IWhereParams } from 'interfaces/Ifunctions';
-import { IClientes, } from 'interfaces/Itables';
+import { IClientes, IUser } from 'interfaces/Itables';
 import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
 import StoreType from '../../../store/mysql';
@@ -60,7 +61,8 @@ export = (injectedStore: typeof StoreType) => {
             razsoc: body.razsoc,
             telefono: body.telefono,
             email: body.email,
-            cond_iva: body.cond_iva
+            cond_iva: body.cond_iva,
+            vendedor_id: body.vendedor_id
         }
 
         try {
@@ -94,6 +96,39 @@ export = (injectedStore: typeof StoreType) => {
 
     const get = async (idCliente: number) => {
         return await store.get(Tables.CLIENTES, idCliente);
+    }
+
+    const getCuit = async (ndocClient: number) => {
+
+        let filters: Array<IWhereParams> = [{
+            mode: EModeWhere.like,
+            concat: EConcatWhere.or,
+            items: [
+                { column: Columns.clientes.ndoc, object: String(ndocClient) }
+            ]
+        }];
+        return await store.list(Tables.CLIENTES, ["*"], filters);
+    }
+
+    const asignarVendedor = async (sellerData: IUser, clienteData: IClientes) => {
+        const resp: INewInsert = await store.update(Tables.CLIENTES, { vendedor_id: sellerData.id }, clienteData.id || 0)
+        if (resp.affectedRows > 0) {
+            await sendAvisoClienteSeller(sellerData, clienteData, true)
+            return ""
+        } else {
+            throw new Error("Error desconocido")
+        }
+    }
+
+
+    const desAsignarVendedor = async (sellerData: IUser, clienteData: IClientes) => {
+        const resp: INewInsert = await store.update(Tables.CLIENTES, { vendedor_id: null }, clienteData.id || 0)
+        if (resp.affectedRows > 0) {
+            await sendAvisoClienteSeller(sellerData, clienteData, false)
+            return ""
+        } else {
+            throw new Error("Error desconocido")
+        }
     }
 
     const dataFiscalPadron = async (cuit: number, cert: string, key: string, cuitPv: number) => {
@@ -240,6 +275,9 @@ export = (injectedStore: typeof StoreType) => {
         dataFiscalPadron,
         listCtaCteClient,
         registerPayment,
-        getDataPayment
+        getDataPayment,
+        asignarVendedor,
+        desAsignarVendedor,
+        getCuit
     }
 }
