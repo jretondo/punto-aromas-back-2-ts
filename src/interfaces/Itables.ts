@@ -45,7 +45,9 @@ export interface IClientes {
     telefono: string,
     email: string,
     cond_iva: number,
-    vendedor_id?: number
+    direccion: string,
+    vendedor_id?: number,
+    price_default?: string
 }
 export interface IMovStock {
     id?: number,

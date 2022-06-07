@@ -360,7 +360,8 @@ export = (injectedStore: typeof StoreType) => {
                     razsoc: newFact.raz_soc_cliente,
                     telefono: "",
                     email: newFact.email_cliente,
-                    cond_iva: newFact.cond_iva_cliente
+                    cond_iva: newFact.cond_iva_cliente,
+                    direccion: ""
                 }
                 try {
                     await ControllerClientes.upsert(newClient, next)
