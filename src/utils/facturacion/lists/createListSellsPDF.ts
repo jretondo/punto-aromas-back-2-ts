@@ -20,6 +20,10 @@ export const createListSellsPDF = async (
         SUMA: number,
         forma_pago: number
     }>,
+    totales2: Array<{
+        SUMA: number,
+        tipo: number
+    }>,
     data: Array<IFactura>
 ) => {
     return new Promise(async (resolve, reject) => {
@@ -56,38 +60,40 @@ export const createListSellsPDF = async (
             totalStr: string
         }> = []
 
-        for (let i = 0; i < totales.length; i++) {
-            const suma = formatMoney(totales[i].SUMA)
-            let tipoStr = ""
-            switch (totales[i].forma_pago) {
-                case 0:
-                    tipoStr = "Efectivo"
-                    break;
-                case 1:
-                    tipoStr = "Mercado Pago"
-                    break;
-                case 2:
-                    tipoStr = "Débito"
-                    break;
-                case 3:
-                    tipoStr = "Crédito"
-                    break;
-                case 4:
-                    tipoStr = "Cuenta Corriente"
-                    break;
-                case 5:
-                    tipoStr = "Transferencia"
-                    break;
-                default:
-                    tipoStr = "Efectivo"
-                    break;
+        const metodos = [
+            {
+                typeNumber: 0,
+                typeStr: "Efectivo"
+            },
+            {
+                typeNumber: 1,
+                typeStr: "Mercado Pago"
+            },
+            {
+                typeNumber: 2,
+                typeStr: "Débito"
+            },
+            {
+                typeNumber: 3,
+                typeStr: "Crédito"
+            },
+            {
+                typeNumber: 4,
+                typeStr: "Cuenta Corriente"
             }
-            totaleslista.push({
-                tipoStr: tipoStr,
-                totalStr: String(suma)
-            })
-        }
+        ]
 
+        metodos.map((metodo, key) => {
+
+            const tot1Filtr1 = totales.filter(total => Number(total.forma_pago) === Number(metodo.typeNumber)).filter(total => total.forma_pago !== null)
+            const tot1Filtr2 = totales2.filter(total => Number(total.tipo) === Number(metodo.typeNumber)).filter(total => total.tipo !== null)
+
+            const totalTipo = (tot1Filtr1.length > 0 ? tot1Filtr1[0].SUMA : 0) + (tot1Filtr2.length > 0 ? tot1Filtr2[0].SUMA : 0)
+            totaleslista.push({
+                tipoStr: metodo.typeStr,
+                totalStr: String(formatMoney(totalTipo))
+            })
+        })
 
         for (let i = 0; i < data.length; i++) {
             const current = data[i]
@@ -118,7 +124,7 @@ export const createListSellsPDF = async (
                     formaPagoStr = "Cuenta Corriente"
                     break;
                 case 5:
-                    formaPagoStr = "Transferencia"
+                    formaPagoStr = "Varios Metodos"
                     break;
                 default:
                     formaPagoStr = "Efectivo"
