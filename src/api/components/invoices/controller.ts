@@ -230,7 +230,7 @@ export = (injectedStore: typeof StoreType) => {
                 })
             })
             const resultinsert = await store.mInsert(Tables.DET_FACTURAS, { headers: headers, rows: await rows })
-            const resultInsertStock = await ControllerStock.multipleInsertStock(newDetFact, newFact.user_id, pvId, factId)
+            const resultInsertStock = await ControllerStock.multipleInsertStock(newDetFact, newFact.user_id, pvId, factId, newFact.total_fact < 0 ? true : false)
             return {
                 status: 200,
                 msg: {
@@ -249,7 +249,7 @@ export = (injectedStore: typeof StoreType) => {
 
     const lastInvoice = async (pvId: number, fiscal: boolean, tipo: CbteTipos, entorno: boolean): Promise<{ lastInvoice: number }> => {
         const pvData: Array<INewPV> = await ptosVtaController.get(pvId);
-        console.log('pvData :>> ', pvData);
+
         if (fiscal) {
             let certDir = "drop_test.crt"
             let keyDir = "drop.key"
@@ -531,7 +531,7 @@ export = (injectedStore: typeof StoreType) => {
             const idFact = item.id_fact_asoc
 
             await store.update(Tables.FACTURAS, { id_fact_asoc: idNC }, idFact)
-            console.log('idFact :>> ', idFact);
+
         })
 
         return {

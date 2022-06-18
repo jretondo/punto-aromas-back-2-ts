@@ -112,7 +112,7 @@ export = (injectedStore: typeof StoreType) => {
         return response
     }
 
-    const multipleInsertStock = async (prodList: Array<IDetFactura>, userId: number, pvId: number, factId: number) => {
+    const multipleInsertStock = async (prodList: Array<IDetFactura>, userId: number, pvId: number, factId: number, isDev: boolean) => {
 
         const headers: Array<string> = [
             Columns.stock.fecha,
@@ -140,9 +140,9 @@ export = (injectedStore: typeof StoreType) => {
                 values.push(moment(new Date()).format("YYYY-MM-DD HH:mm:ss"))
                 values.push(item.id_prod)
                 values.push(pvId)
-                values.push(- item.cant_prod)
+                values.push(isDev ? item.cant_prod : - item.cant_prod)
                 values.push(1)
-                values.push("Venta Stock")
+                values.push(isDev ? "Devolución de Prod." : "Venta Stock")
                 values.push(0)
                 values.push(item.alicuota_id)
                 values.push(userId)
