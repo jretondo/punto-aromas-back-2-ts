@@ -1,7 +1,8 @@
+import { EPermissions } from './../enums/EfunctMysql';
 import { NextFunction, Request, Response } from 'express';
 import auth from './index';
 
-const checkAuth = (idPermission?: number) => {
+const checkAuth = (idPermission?: Array<EPermissions>) => {
     const middleware = async (
         req: Request,
         res: Response,

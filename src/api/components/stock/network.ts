@@ -156,13 +156,13 @@ const getStockProd = (
         .catch(next)
 }
 
-router.get("/", secure(EPermissions.ventas), list);
-router.get("/ultMov/", secure(EPermissions.ventas), ultMov);
-router.get("/stockProd", secure(EPermissions.stock), getStockProd)
-router.get("/ultStockList/:page", secure(EPermissions.stock), ultStockList)
-router.get("/listaStock/:page", secure(EPermissions.stock), listaStock)
-router.post("/", secure(EPermissions.ventas), upsert);
-router.post("/moverStock", secure(EPermissions.ventas), moverStock);
-router.delete("/:id", secure(EPermissions.ventas), remove);
+router.get("/", secure([EPermissions.ventas]), list);
+router.get("/ultMov/", secure([EPermissions.ventas]), ultMov);
+router.get("/stockProd", secure([EPermissions.stock]), getStockProd)
+router.get("/ultStockList/:page", secure([EPermissions.stock]), ultStockList)
+router.get("/listaStock/:page", secure([EPermissions.stock]), listaStock)
+router.post("/", secure([EPermissions.ventas]), upsert);
+router.post("/moverStock", secure([EPermissions.ventas]), moverStock);
+router.delete("/:id", secure([EPermissions.ventas]), remove);
 
 export = router;

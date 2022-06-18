@@ -1,3 +1,4 @@
+import { EPermissions } from './../enums/EfunctMysql';
 import { Request, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import err from '../utils/error';
@@ -10,15 +11,25 @@ const sign = (data: string) => {
 }
 
 const check = {
-    permission: async (req: Request, next: NextFunction, idPermission?: number) => {
+    permission: async (req: Request, next: NextFunction, idPermission?: Array<EPermissions>) => {
         if (!idPermission) {
             const decoded = decodeHeader(req, next)
             next()
         } else {
             const decoded = decodeHeader(req, next)
-            const permision = await permissions.getPermision(req.body.user.id, idPermission);
-            const hayPermisos = permision.length;
-            if (hayPermisos < 1) {
+            let cantPermissions = 0
+            await new Promise((resolve) => {
+                idPermission.map(async (item, key) => {
+                    const permision = await permissions.getPermision(req.body.user.id, item);
+                    const hayPermisos = permision.length;
+                    cantPermissions = cantPermissions + hayPermisos
+                    if (key === idPermission.length - 1) {
+                        resolve("")
+                    }
+                })
+            })
+
+            if (cantPermissions < 1) {
                 next(error("No tiene los permisos"));
             } else {
                 next();
@@ -51,7 +62,7 @@ const decodeHeader = (req: Request, next: NextFunction) => {
         req.body.user = decoded
         return decoded
     } catch (error) {
-        next(err("Token invalido"))
+        //next(err("Token invalido"))
     }
 };
 

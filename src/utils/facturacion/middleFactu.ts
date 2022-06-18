@@ -213,7 +213,7 @@ const calcProdLista = (productsList: INewFactura["lista_prod"]): Promise<IfactCa
             const totalIva = (Math.round((totalNeto * (price[0].iva / 100)) * 100)) / 100;
 
             const newProdFact: IDetFactura = {
-                nombre_prod: dataProd[0].name,
+                nombre_prod: `${dataProd[0].name} (marca: ${dataProd[0].subcategory})`,
                 cant_prod: prod.cant_prod,
                 unidad_tipo_prod: dataProd[0].unidad,
                 id_prod: prod.id_prod,

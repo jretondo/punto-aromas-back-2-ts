@@ -100,13 +100,13 @@ const getUserPv = (
         .catch(next);
 };
 
-router.get("/:page", secure(EPermissions.ptosVta), list);
-router.get("/list", secure(EPermissions.ptosVta), list2);
-router.get("/", secure(EPermissions.ptosVta), list);
-router.get("/details/:id", secure(EPermissions.ptosVta), get);
-router.get("/userPv", secure(EPermissions.ptosVta), getUserPv);
-router.post("/", secure(EPermissions.ptosVta), uploadFile(staticFolders.certAfip, ["cert", "key"]), upsert);
-router.put("/", secure(EPermissions.ptosVta), uploadFile(staticFolders.certAfip, ["cert", "key"]), upsert);
-router.delete("/:id", secure(EPermissions.ptosVta), remove);
+router.get("/:page", secure([EPermissions.ptosVta]), list);
+router.get("/list", secure([EPermissions.ptosVta]), list2);
+router.get("/", secure([EPermissions.ptosVta]), list);
+router.get("/details/:id", secure([EPermissions.ptosVta]), get);
+router.get("/userPv", secure([EPermissions.ptosVta]), getUserPv);
+router.post("/", secure([EPermissions.ptosVta]), uploadFile(staticFolders.certAfip, ["cert", "key"]), upsert);
+router.put("/", secure([EPermissions.ptosVta]), uploadFile(staticFolders.certAfip, ["cert", "key"]), upsert);
+router.delete("/:id", secure([EPermissions.ptosVta]), remove);
 
 export = router;

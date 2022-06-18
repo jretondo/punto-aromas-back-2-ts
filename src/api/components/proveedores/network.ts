@@ -86,11 +86,11 @@ const get = (
         .catch(next)
 }
 
-router.get("/", secure(EPermissions.proveedores), list);
-router.get("/:page", secure(EPermissions.proveedores), listPagination);
-router.get("/details/:id", secure(EPermissions.proveedores), get);
-router.post("/", secure(EPermissions.proveedores), upsert);
-router.put("/", secure(EPermissions.proveedores), upsert);
-router.delete("/:id", secure(EPermissions.proveedores), remove);
+router.get("/", secure([EPermissions.proveedores]), list);
+router.get("/:page", secure([EPermissions.proveedores]), listPagination);
+router.get("/details/:id", secure([EPermissions.proveedores]), get);
+router.post("/", secure([EPermissions.proveedores]), upsert);
+router.put("/", secure([EPermissions.proveedores]), upsert);
+router.delete("/:id", secure([EPermissions.proveedores]), remove);
 
 export = router;

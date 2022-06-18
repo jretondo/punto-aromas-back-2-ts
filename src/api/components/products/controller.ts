@@ -446,7 +446,23 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const getPrices = async (globalName: string) => {
-        return await store.getAnyCol(Tables.PRODUCTS_PRICES, { global_name: globalName })
+
+
+        let filters: Array<IWhereParams> = [{
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.productsPrices.global_name, object: String(globalName) }
+            ]
+        }, {
+            mode: EModeWhere.dif,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.productsPrices.type_price_name, object: String("") }
+            ]
+        }];
+
+        return await store.list(Tables.PRODUCTS_PRICES, ["*"], filters)
     }
 
     const getPrice = async (idPrice: number) => {

@@ -176,17 +176,17 @@ const functSellers = (
 }
 
 router
-    .get("/dataFiscal", secure(EPermissions.clientes), dataFiscalPadron)
-    .get("/ctaCte/:page", secure(EPermissions.clientes), listCtaCteClient)
-    .get("/details/:id", secure(EPermissions.clientes), get)
-    .get("/pricesType", secure(EPermissions.clientes), pricesProdType)
-    .get("/payments/:id", secure(EPermissions.ventas), dataPaymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), getDataPaymentPDF)
-    .get("/:page", secure(EPermissions.clientes), listPagination)
-    .delete("/:id", secure(EPermissions.clientes), remove)
-    .get("/", secure(EPermissions.clientes), list)
-    .post("/payments", secure(EPermissions.clientes), secure(EPermissions.ventas), paymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), newPayment)
-    .post("/", secure(EPermissions.clientes), upsert)
-    .put("/sellers", secure(EPermissions.userAdmin), functSellers)
-    .put("/", secure(EPermissions.clientes), upsert)
+    .get("/dataFiscal", secure([EPermissions.clientes]), dataFiscalPadron)
+    .get("/ctaCte/:page", secure([EPermissions.clientes]), listCtaCteClient)
+    .get("/details/:id", secure([EPermissions.clientes]), get)
+    .get("/pricesType", secure([EPermissions.clientes]), pricesProdType)
+    .get("/payments/:id", secure([EPermissions.ventas]), dataPaymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), getDataPaymentPDF)
+    .get("/:page", secure([EPermissions.clientes, EPermissions.ventas]), listPagination)
+    .delete("/:id", secure([EPermissions.clientes]), remove)
+    .get("/", secure([EPermissions.clientes]), list)
+    .post("/payments", secure([EPermissions.clientes, EPermissions.ventas]), paymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), newPayment)
+    .post("/", secure([EPermissions.clientes]), upsert)
+    .put("/sellers", secure([EPermissions.userAdmin]), functSellers)
+    .put("/", secure([EPermissions.clientes]), upsert)
 
 export = router;

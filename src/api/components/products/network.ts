@@ -211,21 +211,21 @@ const insertImages = (
         .catch(next)
 }
 
-router.get("/details/:id", secure(EPermissions.productos), get);
-router.get("/getCat", secure(EPermissions.productos), getCategorys);
-router.get("/getGetSubCat", secure(EPermissions.productos), getSubCategorys);
+router.get("/details/:id", secure([EPermissions.productos]), get);
+router.get("/getCat", secure([EPermissions.productos]), getCategorys);
+router.get("/getGetSubCat", secure([EPermissions.productos]), getSubCategorys);
 router.get("/public", getPublicList);
-router.get("/images/:id", secure(EPermissions.productos), getImages)
+router.get("/images/:id", secure([EPermissions.productos]), getImages)
 //router.get("/corrector", funcion);
-router.get("/prices/", secure(EPermissions.productos), getPrices);
-router.get("/:page", secure(EPermissions.productos), list);
-router.post("/varCost", secure(EPermissions.productos), varCost);
-router.post("/var", secure(EPermissions.productos), addVar);
-router.post("/", secure(EPermissions.productos), uploadFile(staticFolders.products, ["product"]), upsert);
-router.put("/codBarra/:id", secure(EPermissions.productos), updateCodBarras)
-router.put("/cost/:id", secure(EPermissions.productos), updateCost);
-router.put("/images", secure(EPermissions.productos), uploadFile(staticFolders.products, ["product"]), insertImages)
-router.put("/", secure(EPermissions.productos), uploadFile(staticFolders.products, ["product"]), upsert);
-router.delete("/:id", secure(EPermissions.productos), remove);
+router.get("/prices/", secure([EPermissions.productos]), getPrices);
+router.get("/:page", secure([EPermissions.productos, EPermissions.ventas]), list);
+router.post("/varCost", secure([EPermissions.productos]), varCost);
+router.post("/var", secure([EPermissions.productos]), addVar);
+router.post("/", secure([EPermissions.productos]), uploadFile(staticFolders.products, ["product"]), upsert);
+router.put("/codBarra/:id", secure([EPermissions.productos]), updateCodBarras)
+router.put("/cost/:id", secure([EPermissions.productos]), updateCost);
+router.put("/images", secure([EPermissions.productos]), uploadFile(staticFolders.products, ["product"]), insertImages)
+router.put("/", secure([EPermissions.productos]), uploadFile(staticFolders.products, ["product"]), upsert);
+router.delete("/:id", secure([EPermissions.productos]), remove);
 
 export = router;

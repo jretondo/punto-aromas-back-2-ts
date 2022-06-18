@@ -51,7 +51,6 @@ export class App {
         this.app.use('/api', test);
         this.app.use("/api/user", user);
         this.app.use("/api/auth", auth);
-        this.app.use("/api/views", views);
         this.app.use("/api/permissions", permissions);
         this.app.use("/api/routes", routesApp);
         this.app.use("/api/ptosVta", ptosVta);

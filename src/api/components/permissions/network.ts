@@ -55,10 +55,10 @@ const getPermissions = (
 }
 
 //Routes
-router.post("/", secure(EPermissions.userAdmin), upsert);
-router.put("/", secure(EPermissions.userAdmin), upsert);
+router.post("/", secure([EPermissions.userAdmin]), upsert);
+router.put("/", secure([EPermissions.userAdmin]), upsert);
 router.get("/", secure(), get);
-router.get("/list", secure(EPermissions.userAdmin), getPermissions);
-router.get("/:id", secure(EPermissions.userAdmin), getOther)
+router.get("/list", secure([EPermissions.userAdmin]), getPermissions);
+router.get("/:id", secure([EPermissions.userAdmin]), getOther)
 
 export = router;
