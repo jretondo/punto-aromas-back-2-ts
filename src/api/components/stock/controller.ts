@@ -96,7 +96,7 @@ export = (injectedStore: typeof StoreType) => {
             category: prodData[0].category,
             sub_category: prodData[0].subcategory
         };
-//borre esto
+        
         const response = await store.insert(Tables.STOCK, newMov);
         return response
     }
