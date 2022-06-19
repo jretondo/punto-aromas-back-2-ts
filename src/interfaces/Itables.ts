@@ -53,7 +53,7 @@ export interface IMovStock {
     id?: number,
     fecha: Date,
     id_prod: number,
-    pv_id: number,
+    pv: number,
     cant: number,
     venta: boolean,
     nro_remito: string,
