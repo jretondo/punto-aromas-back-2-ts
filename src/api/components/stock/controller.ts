@@ -84,7 +84,7 @@ export = (injectedStore: typeof StoreType) => {
         const newMov: IMovStock = {
             fecha: new Date(),
             id_prod: body.idProd,
-            pv_id: body.pv_id,
+            pv: body.pv_id,
             cant: body.nvoStockSingle,
             venta: false,
             nro_remito: body.obs,
