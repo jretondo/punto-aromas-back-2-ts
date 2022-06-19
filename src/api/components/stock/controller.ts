@@ -97,17 +97,6 @@ export = (injectedStore: typeof StoreType) => {
             sub_category: prodData[0].subcategory
         };
 
-        if (act) {
-            const NewPriceProd: IModPriceProd = {
-                id: body.idProd,
-                vta_fija: body.vta_fija,
-                vta_price: body.vta_price,
-                round: body.round,
-                porc_minor: body.porc_minor,
-                precio_compra: body.precio_compra
-            };
-            await store.update(Tables.PRODUCTS_PRINCIPAL, NewPriceProd, body.idProd);
-        }
         const response = await store.insert(Tables.STOCK, newMov);
         return response
     }
