@@ -94,9 +94,10 @@ export = (injectedStore: typeof StoreType) => {
             prod_name: prodData[0].name,
             pv_descr: `${body.pv_id === 0 ? "Deposito" : pvData[0].direccion + ` (PV: ${pvData[0].pv})`}`,
             category: prodData[0].category,
-            sub_category: prodData[0].subcategory
+            sub_category: prodData[0].subcategory,
+            pv_id: body.pv_id
         };
-        
+
         const response = await store.insert(Tables.STOCK, newMov);
         return response
     }

@@ -80,6 +80,7 @@ export interface INewStock {
     arrayBool: boolean,
     nvoStockSingle: number,
     pv_id: number,
+    pv: number,
     idProd: number,
     obs: string,
     costo: number,

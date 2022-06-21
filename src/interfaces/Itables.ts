@@ -63,6 +63,7 @@ export interface IMovStock {
     pv_descr: string,
     category: string,
     sub_category: string,
+    pv_id: number,
     id_user?: number
 }
 
