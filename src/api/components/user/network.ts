@@ -161,7 +161,7 @@ const getDataPaymentPDF = (
 
 router.get("/details/:id", secure([EPermissions.userAdmin]), get);
 router.get("/mydata", secure(), myDataUser)
-router.get("/sellers", secure([EPermissions.userAdmin]), sellersList)
+router.get("/sellers", secure([EPermissions.userAdmin, EPermissions.ventas]), sellersList)
 router.get("/payments/:id", secure([EPermissions.ventas]), dataPaymentMiddleSeller(), paymentPDFMiddleSeller(), sendFactMiddle(), getDataPaymentPDF)
 router.get("/ctaCte/:page", secure([EPermissions.userAdmin]), listCtaCteSeller)
 router.get("/:page", secure([EPermissions.userAdmin]), listPagination);
