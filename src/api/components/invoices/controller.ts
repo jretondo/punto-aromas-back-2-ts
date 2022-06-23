@@ -135,6 +135,7 @@ export = (injectedStore: typeof StoreType) => {
             };
             const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined);
             const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, joinQuery);
+            const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, pages, undefined, { columns: [Columns.facturas.fecha], asc: false });
             const cant = await store.list(Tables.FACTURAS, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, undefined, undefined);
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
@@ -142,20 +143,23 @@ export = (injectedStore: typeof StoreType) => {
                 data,
                 pagesObj,
                 totales,
-                totales2
+                totales2,
+                totalCosto: totalCosto[0].COMPRA
             };
         } else {
             const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined, joinQuery);
             const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, joinQuery);
+            const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined, undefined, { columns: [Columns.facturas.fecha], asc: false });
 
             if (pdf) {
-                const cajaList = await createListSellsPDF(userId, ptoVtaId, desde, hasta, totales, totales2, data)
+                const cajaList = await createListSellsPDF(userId, ptoVtaId, desde, hasta, totales, totales2, totalCosto[0].COMPRA, data)
                 return cajaList
             } else {
                 return {
                     data,
-                    totales
+                    totales,
+                    totalCosto: totalCosto[0].COMPRA
                 };
             }
         }

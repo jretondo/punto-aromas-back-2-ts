@@ -24,6 +24,7 @@ export const createListSellsPDF = async (
         SUMA: number,
         tipo: number
     }>,
+    totalCosto: number,
     data: Array<IFactura>
 ) => {
     return new Promise(async (resolve, reject) => {
@@ -141,6 +142,10 @@ export const createListSellsPDF = async (
             })
 
         }
+        totaleslista.push({
+            tipoStr: "Costo Total",
+            totalStr: String(formatMoney(totalCosto))
+        })
         const datos = {
             logo: 'data:image/png;base64,' + logo,
             style: "<style>" + estilo + "</style>",
