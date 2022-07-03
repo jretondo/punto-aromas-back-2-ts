@@ -39,26 +39,34 @@ enum PtosVta {
 }
 
 enum ProductosPrincipal {
-    id = "id",
+    id_prod = "id_prod",
     fecha_carga = "fecha_carga",
-    cod_barra = "cod_barra",
     name = "name",
     short_decr = "short_descr",
     enabled = "enabled",
     category = "category",
     subcategory = "subcategory",
     unidad = "unidad",
-    id_group = "id_group",
-    precio_compra = "precio_compra",
-    global_name = "global_name",
-    short_description = "short_description"
+    costo = "costo",
+    minorista = "minorista",
+    mayorista_1 = "mayorista_1",
+    mayorista_2 = "mayorista_2",
+    mayorista_3 = "mayorista_3",
+    revendedor = "revendedor",
+    supermercado = "supermercado"
+}
+
+enum ProductosVariedad {
+    cod_barra = "cod_barra",
+    id_prod = "id_prod",
+    id_var = "id_var",
+    name_var = "name_var"
 }
 
 enum ProductsImg {
-    id = "id",
+    id_img = "id_img",
     id_prod = "id_prod",
     url_img = "url_img",
-    global_name = "global_name"
 }
 
 enum ProductsTag {
@@ -185,19 +193,6 @@ enum FormasPago {
     importe = "importe"
 }
 
-enum ProductsPrices {
-    id = "id",
-    buy_price = "buy_price",
-    percentage_sell = "percentage_sell",
-    discount = "discount",
-    iva = "iva",
-    sell_price = "sell_price",
-    round = "round",
-    type_price_name = "type_price_name",
-    global_name = "global_name"
-}
-
-
 enum Vendedores_cta_cte {
     id = "id",
     fecha = "fecha",
@@ -208,6 +203,17 @@ enum Vendedores_cta_cte {
     importe = "importe",
     detalle = "detalle"
 }
+
+export enum Tipos_Precios {
+    costo = "costo",
+    minorista = "minorista",
+    mayorista_1 = "mayorista_1",
+    mayorista_2 = "mayorista_2",
+    mayorista_3 = "mayorista_3",
+    revendedor = "revendedor",
+    supermercado = "supermercado"
+}
+
 export enum MetodosPago {
     efectivo = 0,
     mercaPago = 1,
@@ -227,6 +233,7 @@ export enum Tables {
     PRODUCTS_PRINCIPAL = "products_principal",
     PRODUCTS_IMG = "products_img",
     PRODUCTS_TAGS = "produscts_tags",
+    PRODUCTS_VAR = "prod_variedades",
     PROVEEDORES = "proveedores",
     CLIENTES = "clientes",
     PERMISSIONS = "permissions",
@@ -235,7 +242,6 @@ export enum Tables {
     DET_FACTURAS = "detalle_fact",
     CTA_CTE = "cta_cte",
     FORMAS_PAGO = "formas_pago",
-    PRODUCTS_PRICES = "products_prices",
     VENDEDORES_CTA_CTE = "vendedores_cta_cte",
     RECIBOS_VENDEDORES = "recibos_vendedores"
 }
@@ -248,6 +254,7 @@ export const Columns = {
     prodPrincipal: ProductosPrincipal,
     prodImg: ProductsImg,
     prodTags: ProductsTag,
+    prodVar: ProductosVariedad,
     proveedores: Proveedores,
     clientes: Clientes,
     permissions: Permissions,
@@ -256,6 +263,5 @@ export const Columns = {
     detallesFact: DetalleFact,
     ctaCte: CtaCte,
     formasPago: FormasPago,
-    productsPrices: ProductsPrices,
     vendedores_cta_cte: Vendedores_cta_cte
 }

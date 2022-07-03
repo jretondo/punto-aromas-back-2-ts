@@ -10,7 +10,6 @@ import StoreType from '../../../store/mysql';
 import getPages from '../../../utils/getPages';
 import { NextFunction } from 'express';
 import fs from 'fs';
-import { IModPriceProd } from 'interfacesold/Itables';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
@@ -270,11 +269,6 @@ export = (injectedStore: typeof StoreType) => {
         return dataFact
     }
 
-    const dataPrices = async () => {
-        const groupBy: Array<string> = [Columns.productsPrices.type_price_name]
-        return await store.list(Tables.PRODUCTS_PRICES, [Columns.productsPrices.type_price_name], undefined, groupBy)
-    }
-
     return {
         list,
         upsert,
@@ -286,7 +280,6 @@ export = (injectedStore: typeof StoreType) => {
         getDataPayment,
         asignarVendedor,
         desAsignarVendedor,
-        getCuit,
-        dataPrices
+        getCuit
     }
 }

@@ -15,8 +15,7 @@ const list = (
     Controller.list(
         Number(req.params.page),
         String(req.query.query),
-        Number(req.query.cantPerPage),
-        Number(req.query.forSell)
+        Number(req.query.cantPerPage)
     )
         .then((lista: any) => {
             success({
@@ -82,7 +81,7 @@ const get = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.get(Number(req.params.id), String(req.query.globalName))
+    Controller.get(Number(req.params.id))
         .then(data => {
             success({ req, res, message: data });
         })
@@ -130,23 +129,12 @@ const updateCost = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.updateCost(Number(req.params.id), req.body.cost, req.body.globalName)
+    Controller.updateCost(Number(req.params.id), req.body.cost, req.body.oldCost)
         .then(data => {
             console.log('data :>> ', data);
             success({ req, res, message: data });
         })
         .catch(next);
-}
-
-const getPrices = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    Controller.getPrices(String(req.query.globalName))
-        .then(data => {
-            success({ req, res, message: data })
-        }).catch(next)
 }
 
 const getPublicList = (
@@ -157,32 +145,6 @@ const getPublicList = (
     Controller.publicList()
         .then(data => {
             success({ req, res, message: data })
-        }).catch(next)
-}
-
-const funcion = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    Controller.corrector()
-        .then(data => {
-            success({ req, res, message: data })
-        }).catch(next)
-}
-
-const addVar = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    Controller.addVar(req.body.varName, req.body.codBarra, req.body.globalName)
-        .then(response => {
-            if (response) {
-                success({ req, res })
-            } else {
-                Error("No se pudo cargar algún valor nuevo")
-            }
         }).catch(next)
 }
 
@@ -211,16 +173,25 @@ const insertImages = (
         .catch(next)
 }
 
+const correct = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.correctVariedades()
+        .then(data => {
+            success({ req, res, message: data })
+        }).catch(next)
+}
+
 router.get("/details/:id", secure([EPermissions.productos]), get);
+//router.get("/correct", correct)
 router.get("/getCat", secure([EPermissions.productos]), getCategorys);
 router.get("/getGetSubCat", secure([EPermissions.productos]), getSubCategorys);
 router.get("/public", getPublicList);
 router.get("/images/:id", secure([EPermissions.productos]), getImages)
-//router.get("/corrector", funcion);
-router.get("/prices/", secure([EPermissions.productos]), getPrices);
 router.get("/:page", secure([EPermissions.productos, EPermissions.ventas]), list);
 router.post("/varCost", secure([EPermissions.productos]), varCost);
-router.post("/var", secure([EPermissions.productos]), addVar);
 router.post("/", secure([EPermissions.productos]), uploadFile(staticFolders.products, ["product"]), upsert);
 router.put("/codBarra/:id", secure([EPermissions.productos]), updateCodBarras)
 router.put("/cost/:id", secure([EPermissions.productos]), updateCost);

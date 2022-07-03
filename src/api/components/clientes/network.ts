@@ -147,17 +147,6 @@ const getDataPaymentPDF = (
     }
 }
 
-const pricesProdType = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    Controller.dataPrices().then(data => {
-        success({ req, res, message: data })
-    }).catch(next)
-
-}
-
 const functSellers = (
     req: Request,
     res: Response,
@@ -179,7 +168,6 @@ router
     .get("/dataFiscal", secure([EPermissions.clientes]), dataFiscalPadron)
     .get("/ctaCte/:page", secure([EPermissions.clientes]), listCtaCteClient)
     .get("/details/:id", secure([EPermissions.clientes]), get)
-    .get("/pricesType", secure([EPermissions.clientes]), pricesProdType)
     .get("/payments/:id", secure([EPermissions.ventas]), dataPaymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), getDataPaymentPDF)
     .get("/:page", secure([EPermissions.clientes, EPermissions.ventas]), listPagination)
     .delete("/:id", secure([EPermissions.clientes]), remove)

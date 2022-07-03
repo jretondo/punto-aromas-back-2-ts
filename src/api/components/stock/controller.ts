@@ -1,6 +1,6 @@
 import { IChangeStock, Iorder, Ipages, IWhereParams } from 'interfaces/Ifunctions';
-import { INewPriceProduct, INewProduct, INewPV, INewStock } from 'interfaces/Irequests';
-import { IDetFactura, IModPriceProd, IMovStock, IUser } from 'interfaces/Itables';
+import { INewProduct, INewPV, INewStock } from 'interfaces/Irequests';
+import { IDetFactura, IMovStock, IUser } from 'interfaces/Itables';
 import moment from 'moment';
 import getPages from '../../../utils/getPages';
 import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
@@ -67,19 +67,7 @@ export = (injectedStore: typeof StoreType) => {
 
     const upsert = async (body: INewStock, user: IUser, act: Boolean) => {
 
-        const prodData: Array<INewProduct> = await store.get(Tables.PRODUCTS_PRINCIPAL, body.idProd)
-
-        let filter: IWhereParams | undefined = undefined;
-        let filters: Array<IWhereParams> = [];
-        filter = {
-            mode: EModeWhere.strict,
-            concat: EConcatWhere.and,
-            items: [
-                { column: Columns.productsPrices.global_name, object: String(prodData[0].global_name) }
-            ]
-        };
-
-        const priceData: Array<INewPriceProduct> = await store.list(Tables.PRODUCTS_PRICES, ["*"], filters)
+        const prodData: Array<INewProduct> = await store.get(Tables.PRODUCTS_PRINCIPAL, body.idProd, "id_prod")
         const pvData: Array<INewPV> = await store.get(Tables.PUNTOS_VENTA, body.pv_id)
         const newMov: IMovStock = {
             fecha: new Date(),
@@ -88,8 +76,8 @@ export = (injectedStore: typeof StoreType) => {
             cant: body.nvoStockSingle,
             venta: false,
             nro_remito: body.obs,
-            costo: (prodData[0].precio_compra) * (body.nvoStockSingle),
-            iva: priceData[0].iva,
+            costo: (prodData[0].costo) * (body.nvoStockSingle),
+            iva: prodData[0].iva,
             id_user: user.id,
             prod_name: prodData[0].name,
             pv_descr: `${body.pv_id === 0 ? "Deposito" : pvData[0].direccion + ` (PV: ${pvData[0].pv})`}`,
@@ -124,7 +112,7 @@ export = (injectedStore: typeof StoreType) => {
         const rows: Promise<Array<Array<any>>> = new Promise((resolve, reject) => {
             const rowsvalues: Array<Array<any>> = []
             prodList.map(async (item, key) => {
-                const prodData: Array<INewProduct> = await store.get(Tables.PRODUCTS_PRINCIPAL, item.id_prod)
+                const prodData: Array<INewProduct> = await store.get(Tables.PRODUCTS_PRINCIPAL, item.id_prod, "id_prod")
                 const pvData: Array<INewPV> = await store.get(Tables.PUNTOS_VENTA, pvId)
                 const values = []
                 values.push(moment(new Date()).format("YYYY-MM-DD HH:mm:ss"))

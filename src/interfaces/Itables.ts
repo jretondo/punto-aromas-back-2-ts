@@ -19,12 +19,6 @@ export interface IUserPermission {
     id_user: number,
     id_permission: number
 }
-export interface IImgProd {
-    id?: number,
-    id_prod: number,
-    url_img: string,
-    global_name: string
-}
 export interface IProveedor {
     id?: number,
     cuit: boolean,
@@ -156,4 +150,36 @@ export interface IVendedoresCtaCte {
     forma_pago: number,
     importe: number,
     detalle: string
+}
+
+export interface IImgProd {
+    id_img?: number,
+    id_prod: number,
+    url_img: string
+}
+
+export interface IProdPrinc {
+    id_prod?: number,
+    fecha_carga?: Date,
+    name: string,
+    short_descr: string,
+    enabled: boolean,
+    category: string,
+    subcategory: string,
+    unidad: number,
+    iva: number,
+    costo: number,
+    minorista: number,
+    mayorista_1: number,
+    mayorista_2: number,
+    mayorista_3: number,
+    revendedor: number,
+    supermercado: number
+}
+
+export interface IProdVar {
+    id_var?: number,
+    name_var: string,
+    cod_barra: string,
+    id_prod: number
 }

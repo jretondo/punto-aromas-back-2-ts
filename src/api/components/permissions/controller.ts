@@ -1,4 +1,4 @@
-
+import { INewPermissions } from './../../../interfaces/Irequests';
 import { IJoinMysql, IWhereParams } from 'interfaces/Ifunctions';
 import { EModeWhere, EConcatWhere, ESelectFunct } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
@@ -16,7 +16,7 @@ export = (injectedStore: typeof StoreType) => {
 
             const permissions: Promise<Array<Array<number>>> = new Promise((resolve, reject) => {
                 let prov: Array<any> = [];
-                body.permisos.map((item, key) => {
+                body.permisos.map((item: any, key: number) => {
                     prov.push([item.idPermiso, body.idUser]);
                     if (key === body.permisos.length - 1) {
                         resolve(prov);

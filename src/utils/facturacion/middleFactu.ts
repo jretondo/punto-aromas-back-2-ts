@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { INewFactura, INewProduct, INewPV, INewPriceProduct } from 'interfaces/Irequests';
+import { INewFactura, INewProduct, INewPV } from 'interfaces/Irequests';
 import { IDetFactura, IFactura, IUser, IModPriceProd } from 'interfaces/Itables';
 import ptosVtaController from '../../api/components/ptosVta';
 import prodController from '../../api/components/products';
@@ -200,17 +200,16 @@ const calcProdLista = (productsList: INewFactura["lista_prod"]): Promise<IfactCa
             if (prod.id_prod === idAnt) {
                 dataProd = dataAnt
             } else {
-                dataProd = await (await prodController.getPrincipal(prod.id_prod)).productGral
+                dataProd = await (await prodController.get(prod.id_prod)).productGral
             }
             idAnt = prod.id_prod
             dataAnt = dataProd
 
-            const price: Array<INewPriceProduct> = await prodController.getPrice(prod.id_price)
 
-            const totalCosto = (Math.round(((dataProd[0].precio_compra * prod.cant_prod)) * 100)) / 100;
-            const totalProd = (Math.round(((price[0].sell_price * prod.cant_prod)) * 100)) / 100;
-            const totalNeto = (Math.round((totalProd / (1 + (price[0].iva / 100))) * 100)) / 100;
-            const totalIva = (Math.round((totalNeto * (price[0].iva / 100)) * 100)) / 100;
+            const totalCosto = (Math.round(((dataProd[0].costo * prod.cant_prod)) * 100)) / 100;
+            const totalProd = (Math.round(((prod.price * prod.cant_prod)) * 100)) / 100;
+            const totalNeto = (Math.round((totalProd / (1 + (dataProd[0].iva / 100))) * 100)) / 100;
+            const totalIva = (Math.round((totalNeto * (dataProd[0].iva / 100)) * 100)) / 100;
 
             const newProdFact: IDetFactura = {
                 nombre_prod: `${dataProd[0].name} (marca: ${dataProd[0].subcategory})`,
@@ -219,10 +218,10 @@ const calcProdLista = (productsList: INewFactura["lista_prod"]): Promise<IfactCa
                 id_prod: prod.id_prod,
                 total_prod: totalProd,
                 total_iva: totalIva,
-                alicuota_id: price[0].iva,
+                alicuota_id: dataProd[0].iva,
                 total_costo: totalCosto,
                 total_neto: totalNeto,
-                precio_ind: price[0].sell_price
+                precio_ind: prod.price
             }
 
             factura.listaProd.push(newProdFact);

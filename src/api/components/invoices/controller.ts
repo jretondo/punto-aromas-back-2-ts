@@ -122,7 +122,7 @@ export = (injectedStore: typeof StoreType) => {
         const joinQuery: IJoin = {
             table: Tables.FORMAS_PAGO,
             colJoin: Columns.formasPago.id_fact,
-            colOrigin: Columns.prodPrincipal.id,
+            colOrigin: Columns.facturas.id,
             type: ETypesJoin.left
         };
 
@@ -134,7 +134,7 @@ export = (injectedStore: typeof StoreType) => {
                 asc: true
             };
             const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined);
-            const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, joinQuery);
+            const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, [joinQuery]);
             const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, pages, undefined, { columns: [Columns.facturas.fecha], asc: false });
             const cant = await store.list(Tables.FACTURAS, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, undefined, undefined);
@@ -147,8 +147,8 @@ export = (injectedStore: typeof StoreType) => {
                 totalCosto: totalCosto[0].COMPRA
             };
         } else {
-            const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined, joinQuery);
-            const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, joinQuery);
+            const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined, [joinQuery]);
+            const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, [joinQuery]);
             const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined, undefined, { columns: [Columns.facturas.fecha], asc: false });
 

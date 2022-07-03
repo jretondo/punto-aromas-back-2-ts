@@ -75,10 +75,11 @@ const mInsert = async (
 const update = async (
     table: Tables,
     data: object,
-    id: number
+    id: number,
+    customId?: string
 ): Promise<any> => {
     return new Promise((resolve, reject) => {
-        connection.query(` UPDATE ${table} SET ? WHERE id = ? `, [data, id], (err: Error, result: any) => {
+        connection.query(` UPDATE ${table} SET ? WHERE ${customId || "id"} = ? `, [data, id], (err: Error, result: any) => {
             if (err) {
                 reject(err)
             } else {
@@ -140,9 +141,9 @@ const query = async (table: Tables, query: any, join?: IJoinMysql, groupBy?: Arr
     })
 }
 
-const get = async (table: Tables, id: number): Promise<any> => {
+const get = async (table: Tables, id: number, custoId?: string): Promise<any> => {
     return new Promise((resolve, reject) => {
-        connection.query(` SELECT * FROM ${table} WHERE id = '${id}' `, (err: Error, data: any) => {
+        connection.query(` SELECT * FROM ${table} WHERE ${custoId || "id"} = '${id}' `, (err: Error, data: any) => {
             if (err) {
                 reject(err)
             } else {
@@ -169,7 +170,7 @@ const list = (
     whereParams?: Array<IWhereParams>,
     groupBy?: Array<string>,
     pages?: Ipages,
-    join?: IJoin,
+    join?: Array<IJoin>,
     order?: Iorder
 ): Promise<any> => {
     const query = selectContructor(table, colSelect, whereParams, groupBy, pages, join, order);
