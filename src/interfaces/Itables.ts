@@ -183,3 +183,8 @@ export interface IProdVar {
     cod_barra: string,
     id_prod: number
 }
+
+export interface IPrices {
+    type_price_name: string,
+    sell_price: number
+}

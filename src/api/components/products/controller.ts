@@ -1,6 +1,6 @@
 import { IProgGral } from './../../../interfaces/Iresponses';
 import { INewInsert, IWhere } from './../../../interfaces/Ifunctions';
-import { IProdVar, IProdPrinc, IImgProd } from './../../../interfaces/Itables';
+import { IProdVar, IProdPrinc, IImgProd, IModPriceProd, IPrices } from './../../../interfaces/Itables';
 import { INewVariedad } from './../../../interfaces/Irequests';
 import { EConcatWhere, EModeWhere, ESelectFunct, ETypesJoin } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
@@ -452,6 +452,34 @@ export = (injectedStore: typeof StoreType) => {
                         }
                     })
                 })
+                const prices: Array<IPrices> = [
+                    {
+                        type_price_name: "MINORISTA",
+                        sell_price: item.minorista
+                    },
+                    {
+                        type_price_name: "MAYORISTA 1",
+                        sell_price: item.mayorista_1
+                    },
+                    {
+                        type_price_name: "MAYORISTA 2",
+                        sell_price: item.mayorista_2
+                    },
+                    {
+                        type_price_name: "MAYORISTA 3",
+                        sell_price: item.mayorista_3
+                    },
+                    {
+                        type_price_name: "SUPERMERCADO",
+                        sell_price: item.supermercado
+                    },
+                    {
+                        type_price_name: "REVENDEDOR",
+                        sell_price: item.revendedor
+                    }
+
+
+                ]
                 const groupBy2: Array<string> = [Columns.prodImg.url_img];
                 const shortDescription = item.short_descr
                 const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2, groupBy2)
@@ -465,7 +493,8 @@ export = (injectedStore: typeof StoreType) => {
                     discount,
                     variation,
                     shortDescription,
-                    image
+                    image,
+                    prices
                 }
                 )
                 if (key === lista.length - 1) {
