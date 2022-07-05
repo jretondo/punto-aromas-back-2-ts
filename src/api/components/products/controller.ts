@@ -452,6 +452,10 @@ export = (injectedStore: typeof StoreType) => {
                             }
                         })
                     } else {
+                        listadoVar = [{
+                            name: "",
+                            stock: 50
+                        }]
                         resolve(listadoVar)
                     }
                 })
