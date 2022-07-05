@@ -1,6 +1,5 @@
-import { IProgGral } from './../../../interfaces/Iresponses';
 import { INewInsert, IWhere } from './../../../interfaces/Ifunctions';
-import { IProdVar, IProdPrinc, IImgProd, IModPriceProd, IPrices } from './../../../interfaces/Itables';
+import { IProdVar, IProdPrinc, IImgProd, IPrices } from './../../../interfaces/Itables';
 import { INewVariedad } from './../../../interfaces/Irequests';
 import { EConcatWhere, EModeWhere, ESelectFunct, ETypesJoin } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
@@ -417,7 +416,6 @@ export = (injectedStore: typeof StoreType) => {
             lista.map(async (item, key) => {
                 const sku = item.name
                 const name = item.name
-                let filters: Array<IWhereParams> = [];
                 let filter2: IWhereParams | undefined = undefined;
                 let filters2: Array<IWhereParams> = [];
 
@@ -438,19 +436,24 @@ export = (injectedStore: typeof StoreType) => {
                 const nuevo = false
                 const discount = 0
                 const variation: any = await new Promise(async (resolve, reject) => {
-                    const varList: Array<IProdVar> = await store.list(Tables.PRODUCTS_VAR, ["*"], filters)
+                    const varList: Array<IProdVar> = await store.get(Tables.PRODUCTS_VAR, item.id_prod || 0, "id_prod")
+                    console.log('varList :>> ', varList);
                     let listadoVar: any = []
-                    varList.map(async (item, key) => {
-                        listadoVar.push(
-                            {
-                                name: item.name_var,
-                                stock: 50
+                    if (varList.length > 0) {
+                        varList.map(async (item, key2) => {
+                            listadoVar.push(
+                                {
+                                    name: item.name_var,
+                                    stock: 50
+                                }
+                            )
+                            if (key2 === varList.length - 1) {
+                                resolve(listadoVar)
                             }
-                        )
-                        if (key === varList.length - 1) {
-                            resolve(listadoVar)
-                        }
-                    })
+                        })
+                    } else {
+                        resolve(listadoVar)
+                    }
                 })
                 const prices: Array<IPrices> = [
                     {
@@ -495,9 +498,9 @@ export = (injectedStore: typeof StoreType) => {
                     shortDescription,
                     image,
                     prices
-                }
-                )
+                })
                 if (key === lista.length - 1) {
+                    console.log('pasa :>> ');
                     resolve({
                         products
                     })
