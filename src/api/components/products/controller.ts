@@ -129,7 +129,7 @@ export = (injectedStore: typeof StoreType) => {
             await upsertVariedades(JSON.parse(String(body.variedades)), true, body.id_prod)
             const result = await store.update(Tables.PRODUCTS_PRINCIPAL, product, body.id_prod || 0, "id_prod");
             if (result.affectedRows > 0) {
-
+                console.log('listImgDelete :>> ', listImgDelete);
                 if (listImgDelete) {
                     try {
                         listImgDelete.map(async img => {
