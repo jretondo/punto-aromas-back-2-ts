@@ -132,8 +132,14 @@
           <tr>
             <th style="border: 1px solid white;" class="total">SUB-TOTAL: $<%- subTotalNoFiscal %>
             </th>
+            <th style="border: 1px solid white;" class="total">ENVÍO: $<%- totalEnvio %>
+            </th>
             <th style="border: 1px solid white;" class="total">
-              DESC.: $<%- totalDesc %>
+              <% if(parseFloat(totalDesc)<0){ %>
+                DESC.: $ <%- totalDesc %>
+                  <% }else{ %>
+                    RECARGO: $ <%- totalDesc %>
+                      <% } %>
             </th>
             <th style="border: 1px solid white;" class="total" style="font-size: 1.2em;font-weight: bold;">TOTAL: $<%-
                 totalFact %>

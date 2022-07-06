@@ -370,8 +370,9 @@ export = (injectedStore: typeof StoreType) => {
                 }
             }
         }
-
-        await newmovCtaCte(newFact.forma_pago, newFact.total_fact, newFact.n_doc_cliente, resultInsert.msg.factId)
+        if (Number(newFact.forma_pago) === 4) {
+            await newmovCtaCte(newFact.forma_pago, newFact.total_fact, newFact.n_doc_cliente, resultInsert.msg.factId)
+        }
 
         if (Number(newFact.forma_pago) === 5) {
             variosPagos.map(async item => {
@@ -401,7 +402,7 @@ export = (injectedStore: typeof StoreType) => {
             try {
                 const dataClient: Array<IClientes> = await controller.getCuit(newFact.n_doc_cliente)
                 const idVende: number = dataClient[0].vendedor_id || 0
-                if (idVende > 0) {
+                if (idVende > 0 && Number(newFact.forma_pago) !== 4) {
                     const comision: number = newFact.total_fact - totalRevende
                     const newComision: IVendedoresCtaCte = {
                         id_factura: resultInsert.msg.factId,

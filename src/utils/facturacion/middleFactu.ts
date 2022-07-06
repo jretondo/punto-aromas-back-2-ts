@@ -27,7 +27,7 @@ const factuMiddel = () => {
             const user: IUser = req.body.user
             const pvId = body.pv_id;
             const pvData: Array<INewPV> = await ptosVtaController.get(pvId);
-            const productsList: IfactCalc = await calcProdLista(body.lista_prod);
+
             const fiscalBool = req.body.fiscal
             const variosPagos = body.variosPagos
 
@@ -71,6 +71,7 @@ const factuMiddel = () => {
                 body.t_fact = 0
                 letra = "X"
             }
+            const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.costoEnvio, pvData[0].cond_iva);
 
             if (body.t_fact === 6 && productsList.totalFact < 10000 && body.cliente_tdoc === 99) {
                 body.cliente_ndoc = 0
@@ -79,12 +80,21 @@ const factuMiddel = () => {
             const descuento: number = body.descuentoPerc
             let descuentoNumber: number = 0
             let descuentoPer = 0
-            if (descuento > 0) {
-                descuentoNumber = Math.round(((productsList.totalFact * (descuento / 100)) * 100)) / 100
+
+            let costoIvaEnvio: number = 0
+            let netoEnvio: number = body.costoEnvio
+
+            if (pvData[0].cond_iva === 1) {
+                netoEnvio = body.costoEnvio / 1.21
+                costoIvaEnvio = body.costoEnvio - netoEnvio
+            }
+
+            if (descuento !== 0) {
+                descuentoNumber = Math.round((((productsList.totalFact - body.costoEnvio) * (descuento / 100)) * 100)) / 100
                 descuentoPer = descuento
-                productsList.totalFact = (productsList.totalFact) - (productsList.totalFact * (descuento / 100))
-                productsList.totalIva = (productsList.totalIva) - (productsList.totalIva * (descuento / 100))
-                productsList.totalNeto = (productsList.totalNeto) - (productsList.totalNeto * (descuento / 100))
+                productsList.totalFact = (productsList.totalFact) - ((productsList.totalFact - body.costoEnvio) * (descuento / 100))
+                productsList.totalIva = (productsList.totalIva) - ((productsList.totalIva - costoIvaEnvio) * (descuento / 100))
+                productsList.totalNeto = (productsList.totalNeto) - ((productsList.totalNeto - netoEnvio) * (descuento / 100))
             }
 
             const newFact: IFactura = {
@@ -115,7 +125,8 @@ const factuMiddel = () => {
                 forma_pago: body.forma_pago,
                 pv_id: body.pv_id,
                 id_fact_asoc: 0,
-                descuento: descuentoNumber
+                descuento: descuentoNumber,
+                costo_envio: body.costoEnvio
             }
 
             let ivaList: Array<IIvaItem> = [];
@@ -183,7 +194,7 @@ const factuMiddel = () => {
     return middleware
 }
 
-const calcProdLista = (productsList: INewFactura["lista_prod"]): Promise<IfactCalc> => {
+const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: number, condIva: number): Promise<IfactCalc> => {
     let dataAnt: Array<INewProduct> = [];
     let idAnt: number = 0;
     productsList.sort((a, b) => { return a.id_prod - b.id_prod })
@@ -205,11 +216,10 @@ const calcProdLista = (productsList: INewFactura["lista_prod"]): Promise<IfactCa
             idAnt = prod.id_prod
             dataAnt = dataProd
 
-
-            const totalCosto = (Math.round(((dataProd[0].costo * prod.cant_prod)) * 100)) / 100;
-            const totalProd = (Math.round(((prod.price * prod.cant_prod)) * 100)) / 100;
-            const totalNeto = (Math.round((totalProd / (1 + (dataProd[0].iva / 100))) * 100)) / 100;
-            const totalIva = (Math.round((totalNeto * (dataProd[0].iva / 100)) * 100)) / 100;
+            const totalCosto: number = (Math.round(((dataProd[0].costo * prod.cant_prod)) * 100)) / 100;
+            const totalProd: number = (Math.round(((prod.price * prod.cant_prod)) * 100)) / 100;
+            const totalNeto: number = (Math.round((totalProd / (1 + (dataProd[0].iva / 100))) * 100)) / 100;
+            const totalIva: number = (Math.round((totalNeto * (dataProd[0].iva / 100)) * 100)) / 100;
 
             const newProdFact: IDetFactura = {
                 nombre_prod: `${dataProd[0].name} (marca: ${dataProd[0].subcategory})`,
@@ -225,12 +235,23 @@ const calcProdLista = (productsList: INewFactura["lista_prod"]): Promise<IfactCa
             }
 
             factura.listaProd.push(newProdFact);
+
             factura.totalFact = (Math.round((factura.totalFact + (totalProd)) * 100)) / 100;
             factura.totalIva = (Math.round((factura.totalIva + (totalIva)) * 100)) / 100;
             factura.totalNeto = (Math.round((factura.totalNeto + (totalNeto)) * 100)) / 100;
             factura.totalCosto = (Math.round((factura.totalCosto + (totalCosto)) * 100)) / 100;
 
             if (key === productsList.length - 1) {
+                let costoIvaEnvio: number = 0
+                let netoEnvio: number = costoEnvio
+                if (condIva === 1) {
+                    netoEnvio = costoEnvio / 1.21
+                    costoIvaEnvio = costoEnvio - netoEnvio
+                }
+
+                factura.totalFact = (Math.round((factura.totalFact + Number(costoEnvio)) * 100)) / 100;
+                factura.totalIva = (Math.round((factura.totalIva + Number(costoIvaEnvio)) * 100)) / 100;
+                factura.totalNeto = (Math.round((factura.totalNeto + Number(netoEnvio)) * 100)) / 100;
                 resolve(factura)
             }
         })

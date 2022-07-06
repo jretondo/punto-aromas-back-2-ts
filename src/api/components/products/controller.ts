@@ -17,7 +17,6 @@ export = (injectedStore: typeof StoreType) => {
         let filters: Array<IWhereParams> = [];
         let conID = false
         let idProd = 0
-        console.log('item :>> ', item);
         if (item) {
             if (item.includes("id:")) {
                 conID = true
@@ -41,7 +40,7 @@ export = (injectedStore: typeof StoreType) => {
         }
         if (conID) {
             let data = await store.get(Tables.PRODUCTS_PRINCIPAL, idProd, Columns.prodPrincipal.id_prod)
-            data[0].id_prod = data[0].id
+
             return {
                 data
             }
@@ -437,7 +436,7 @@ export = (injectedStore: typeof StoreType) => {
                 const discount = 0
                 const variation: any = await new Promise(async (resolve, reject) => {
                     const varList: Array<IProdVar> = await store.get(Tables.PRODUCTS_VAR, item.id_prod || 0, "id_prod")
-                    console.log('varList :>> ', varList);
+
                     let listadoVar: any = []
                     if (varList.length > 0) {
                         varList.map(async (item, key2) => {
@@ -504,7 +503,6 @@ export = (injectedStore: typeof StoreType) => {
                     prices
                 })
                 if (key === lista.length - 1) {
-                    console.log('pasa :>> ');
                     resolve({
                         products
                     })
@@ -576,7 +574,6 @@ export = (injectedStore: typeof StoreType) => {
         dataProduct.map(async (item, key) => {
             const idProd = item.id_prod
             const imageList: Array<IImgProd> = await store.query(Tables.PRODUCTS_IMG, { id_prod: idProd })
-            console.log('imageList :>> ', imageList);
             if (imageList.length === 0) {
                 const image: IImgProd = {
                     id_prod: idProd || 0,

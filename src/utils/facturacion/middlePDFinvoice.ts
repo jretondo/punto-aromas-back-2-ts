@@ -163,11 +163,12 @@ export const invoicePDFMiddle = () => {
             }
 
             const totales = {
-                subTotal: formatMoney((newFact.total_neto < 0 ? -newFact.total_neto : newFact.total_neto) + (newFact.descuento < 0 ? -newFact.descuento : newFact.descuento)),
-                subTotalNoFiscal: formatMoney((newFact.total_neto < 0 ? -newFact.total_neto : newFact.total_neto) + (newFact.total_iva < 0 ? -newFact.total_iva : newFact.total_iva) + (newFact.descuento < 0 ? -newFact.descuento : newFact.descuento)),
+                subTotal: formatMoney(((newFact.total_neto < 0 ? -newFact.total_neto : newFact.total_neto - newFact.costo_envio)) + newFact.descuento),
+                subTotalNoFiscal: formatMoney(((newFact.total_neto < 0 ? -newFact.total_neto : newFact.total_neto - newFact.costo_envio) + (newFact.total_iva < 0 ? -newFact.total_iva : newFact.total_iva)) + newFact.descuento),
                 totalIva: formatMoney(newFact.total_iva < 0 ? -newFact.total_iva : newFact.total_iva),
                 totalFact: formatMoney(newFact.total_fact < 0 ? (-newFact.total_fact) : newFact.total_fact),
-                totalDesc: formatMoney(newFact.descuento),
+                totalDesc: formatMoney(- newFact.descuento),
+                totalEnvio: formatMoney(newFact.costo_envio),
             }
             let formapagoStr = ""
             switch (newFact.forma_pago) {

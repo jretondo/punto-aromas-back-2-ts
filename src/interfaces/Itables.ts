@@ -103,6 +103,7 @@ export interface IFactura {
     pv_id: number,
     id_fact_asoc: number,
     descuento: number,
+    costo_envio: number,
     det_rbo?: string
 }
 

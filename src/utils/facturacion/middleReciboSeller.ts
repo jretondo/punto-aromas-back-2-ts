@@ -78,7 +78,8 @@ const paymentMiddleSeller = () => {
                 pv_id: pvId,
                 id_fact_asoc: 0,
                 descuento: 0,
-                det_rbo: detalle
+                det_rbo: detalle,
+                costo_envio: 0
             }
 
             req.body.newFact = newFact
