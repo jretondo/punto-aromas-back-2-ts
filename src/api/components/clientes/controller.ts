@@ -1,6 +1,6 @@
 import { sendAvisoClienteSeller } from './../../../utils/sendEmails/sendAvisoClientsSellers';
 import { INewInsert } from './../../../interfaces/Ifunctions';
-import { IFactura, IMovCtaCte } from './../../../interfaces/Itables';
+import { IFactura, IMovCtaCte, IVendedoresCtaCte } from './../../../interfaces/Itables';
 import { AfipClass } from './../../../utils/facturacion/AfipClass';
 import { Ipages, IWhereParams } from 'interfaces/Ifunctions';
 import { IClientes, IUser } from 'interfaces/Itables';
@@ -242,8 +242,39 @@ export = (injectedStore: typeof StoreType) => {
                 importe: (newFact.total_fact),
                 detalle: "Recibo de Pago"
             }
-            const resultCtaCte = await store.insert(Tables.CTA_CTE, ctacteData)
+            const resultCtaCte: INewInsert = await store.insert(Tables.CTA_CTE, ctacteData)
+            if (resultCtaCte.affectedRows > 0) {
+                const filter: Array<IWhereParams> = [
+                    {
+                        mode: EModeWhere.strict,
+                        concat: EConcatWhere.none,
+                        items: [{ column: Columns.ctaCte.id_cliente, object: String(clienteData.id || 0) }]
+                    }
+                ]
+                const totalPend = await store.list(Tables.CTA_CTE, [`SUM(${Columns.ctaCte.importe}) AS totalPend`], filter)
+                const totalComisiones = await store.list(Tables.CTA_CTE, [`SUM(${Columns.ctaCte.comision}) AS totalComision`], filter)
 
+                if (Number(totalPend[0].totalPend) >= 0) {
+                    try {
+                        const dataClient: Array<IClientes> = await getCuit(newFact.n_doc_cliente)
+                        const idVende: number = dataClient[0].vendedor_id || 0
+                        if (idVende > 0 && Number(newFact.forma_pago) !== 4) {
+                            const comision: number = totalComisiones
+                            const newComision: IVendedoresCtaCte = {
+                                id_factura: result.insertId,
+                                id_vendedor: idVende,
+                                importe: -(Math.round(comision * 100)) / 100,
+                                forma_pago: newFact.forma_pago,
+                                id_recibo: 0,
+                                detalle: "Compra de Cliente"
+                            }
+                            await store.insert(Tables.VENDEDORES_CTA_CTE, newComision)
+                        }
+                    } catch (error) {
+
+                    }
+                }
+            }
             setTimeout(() => {
                 fs.unlinkSync(filePath)
             }, 6000);

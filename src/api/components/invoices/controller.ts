@@ -371,7 +371,7 @@ export = (injectedStore: typeof StoreType) => {
             }
         }
         if (Number(newFact.forma_pago) === 4) {
-            await newmovCtaCte(newFact.forma_pago, newFact.total_fact, newFact.n_doc_cliente, resultInsert.msg.factId)
+            await newmovCtaCte(newFact.forma_pago, newFact.total_fact, newFact.n_doc_cliente, resultInsert.msg.factId, newFact.total_fact - totalRevende)
         }
 
         if (Number(newFact.forma_pago) === 5) {
@@ -384,7 +384,7 @@ export = (injectedStore: typeof StoreType) => {
                 }
                 await store.insert(Tables.FORMAS_PAGO, dataForma)
                 if (Number(item.tipo) === 4) {
-                    await newmovCtaCte(item.tipo, (Math.round(item.importe * 100)) / 100, newFact.n_doc_cliente, resultInsert.msg.factId)
+                    await newmovCtaCte(item.tipo, (Math.round(item.importe * 100)) / 100, newFact.n_doc_cliente, resultInsert.msg.factId, newFact.total_fact - totalRevende)
                 }
             })
         }
@@ -448,7 +448,7 @@ export = (injectedStore: typeof StoreType) => {
         return await store.getAnyCol(Tables.DET_FACTURAS, { fact_id })
     }
 
-    const newmovCtaCte = async (formaPago: number, importe: number, ndocCliente: number, idfact: number) => {
+    const newmovCtaCte = async (formaPago: number, importe: number, ndocCliente: number, idfact: number, comision: number) => {
         if (Number(formaPago) === 4) {
             const clienteArray2: { data: Array<IClientes> } = await controller.list(undefined, String(ndocCliente), undefined)
             const idCliente = clienteArray2.data[0].id
@@ -458,7 +458,8 @@ export = (injectedStore: typeof StoreType) => {
                 id_recibo: 0,
                 forma_pago: 4,
                 importe: - (importe),
-                detalle: "Compra de productos"
+                detalle: "Compra de productos",
+                comision: comision
             })
         }
     }

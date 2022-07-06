@@ -183,7 +183,8 @@ enum CtaCte {
     id_recibo = "id_recibo",
     forma_pago = "forma_pago",
     importe = "importe",
-    detalle = "detalle"
+    detalle = "detalle",
+    comision = "comision"
 }
 
 enum FormasPago {

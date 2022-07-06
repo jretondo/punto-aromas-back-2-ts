@@ -131,7 +131,8 @@ export interface IMovCtaCte {
     id_recibo: number,
     forma_pago: number,
     importe: number,
-    detalle: string
+    detalle: string,
+    comision: number
 }
 
 export interface IFormasPago {
