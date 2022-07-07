@@ -143,21 +143,25 @@ export = (injectedStore: typeof StoreType) => {
             };
             const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined);
             const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, [joinQuery]);
-            const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
-            const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], [...filters, filter3], undefined, pages, undefined, { columns: [Columns.facturas.fecha], asc: false });
+            const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], [...filters, filter3])
+            const totalCosto2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
+            const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, pages, undefined, { columns: [Columns.facturas.fecha], asc: false });
             const cant = await store.list(Tables.FACTURAS, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, undefined, undefined);
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
+
             return {
                 data,
                 pagesObj,
                 totales,
                 totales2,
-                totalCosto: totalCosto[0].COMPRA
+                totalCosto: totalCosto[0].COMPRA,
+                totalCosto2: totalCosto2[0].COMPRA
             };
         } else {
             const totales = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_fact}) AS SUMA`, Columns.facturas.forma_pago], filters, [Columns.facturas.forma_pago], undefined, [joinQuery]);
             const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, [joinQuery]);
-            const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
+            const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], [...filters, filter3])
+            const totalCosto2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined, undefined, { columns: [Columns.facturas.fecha], asc: false });
 
             if (pdf) {
@@ -167,7 +171,8 @@ export = (injectedStore: typeof StoreType) => {
                 return {
                     data,
                     totales,
-                    totalCosto: totalCosto[0].COMPRA
+                    totalCosto: totalCosto[0].COMPRA,
+                    totalCosto2: totalCosto2[0].COMPRA
                 };
             }
         }
@@ -457,6 +462,10 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const newmovCtaCte = async (formaPago: number, importe: number, ndocCliente: number, idfact: number, comision: number) => {
+        let comision2 = comision
+        if (comision === NaN) {
+            comision2 = 0
+        }
         if (Number(formaPago) === 4) {
             const clienteArray2: { data: Array<IClientes> } = await controller.list(undefined, String(ndocCliente), undefined)
             const idCliente = clienteArray2.data[0].id
@@ -467,7 +476,7 @@ export = (injectedStore: typeof StoreType) => {
                 forma_pago: 4,
                 importe: - (importe),
                 detalle: "Compra de productos",
-                comision: comision
+                comision: comision2
             })
         }
     }

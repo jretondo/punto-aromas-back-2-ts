@@ -174,6 +174,7 @@ const list = (
     order?: Iorder
 ): Promise<any> => {
     const query = selectContructor(table, colSelect, whereParams, groupBy, pages, join, order);
+
     return new Promise((resolve, reject) => {
         connection.query(query, (err: Error, data: any) => {
             if (err) {
