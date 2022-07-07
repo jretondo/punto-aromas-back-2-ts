@@ -383,6 +383,9 @@ export = (injectedStore: typeof StoreType) => {
                 }
             }
         }
+        console.log('newFact.total_fact :>> ', newFact.total_fact);
+        console.log('totalRevende :>> ', totalRevende);
+
         if (Number(newFact.forma_pago) === 4) {
             await newmovCtaCte(newFact.forma_pago, newFact.total_fact, newFact.n_doc_cliente, resultInsert.msg.factId, newFact.total_fact - totalRevende)
         }
@@ -462,10 +465,12 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const newmovCtaCte = async (formaPago: number, importe: number, ndocCliente: number, idfact: number, comision: number) => {
-        let comision2: any = comision
-        if (comision2 === "NaN") {
+        let comision2 = comision
+        if (comision2 === NaN) {
             comision2 = 0
         }
+        console.log('comision2 :>> ', comision2);
+        console.log('comision :>> ', comision);
         if (Number(formaPago) === 4) {
             const clienteArray2: { data: Array<IClientes> } = await controller.list(undefined, String(ndocCliente), undefined)
             const idCliente = clienteArray2.data[0].id
