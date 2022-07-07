@@ -462,8 +462,8 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const newmovCtaCte = async (formaPago: number, importe: number, ndocCliente: number, idfact: number, comision: number) => {
-        let comision2 = comision
-        if (comision === NaN) {
+        let comision2: any = comision
+        if (comision2 === "NaN") {
             comision2 = 0
         }
         if (Number(formaPago) === 4) {
