@@ -156,7 +156,17 @@ enum Facturas {
     pv_id = "pv_id",
     id_fact_asoc = "id_fact_asoc",
     create_time = "create_time",
-    det_rbo = "det_rbo"
+    det_rbo = "det_rbo",
+    costo_envio = "costo_envio",
+    comision = "comision",
+    comision_paga = "comision_paga",
+    costo_imputar = "costo_imputar",
+    monto_pago_cta_cte = "monto_pago_cta_cte",
+    cancelada = "cancelada",
+    monto_cta_cte = "monto_cta_cte",
+    comision_imputar = "comision_imputar",
+    comision_total = "comision_total",
+    id_seller_comision = "id_seller_comision "
 }
 
 enum DetalleFact {
@@ -175,34 +185,11 @@ enum DetalleFact {
     precio_ind = "precio_ind"
 }
 
-enum CtaCte {
-    id = "id",
-    fecha = "fecha",
-    id_cliente = "id_cliente",
-    id_factura = "id_factura",
-    id_recibo = "id_recibo",
-    forma_pago = "forma_pago",
-    importe = "importe",
-    detalle = "detalle",
-    comision = "comision"
-}
-
 enum FormasPago {
     id = "id",
     id_fact = "id_fact",
     tipo = "tipo",
     importe = "importe"
-}
-
-enum Vendedores_cta_cte {
-    id = "id",
-    fecha = "fecha",
-    id_vendedor = "id_vendedor",
-    id_factura = "id_factura",
-    id_recibo = "id_recibo",
-    forma_pago = "forma_pago",
-    importe = "importe",
-    detalle = "detalle"
 }
 
 export enum Tipos_Precios {
@@ -241,10 +228,7 @@ export enum Tables {
     STOCK = "stock",
     FACTURAS = "facturas",
     DET_FACTURAS = "detalle_fact",
-    CTA_CTE = "cta_cte",
     FORMAS_PAGO = "formas_pago",
-    VENDEDORES_CTA_CTE = "vendedores_cta_cte",
-    RECIBOS_VENDEDORES = "recibos_vendedores"
 }
 
 export const Columns = {
@@ -262,7 +246,5 @@ export const Columns = {
     stock: Stock,
     facturas: Facturas,
     detallesFact: DetalleFact,
-    ctaCte: CtaCte,
-    formasPago: FormasPago,
-    vendedores_cta_cte: Vendedores_cta_cte
+    formasPago: FormasPago
 }

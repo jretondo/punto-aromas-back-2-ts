@@ -1,5 +1,4 @@
 import { MetodosPago } from './../enums/EtablesDB';
-import { EModeWhere, EConcatWhere, ETypesJoin } from "../enums/EfunctMysql";
 export interface Iauth {
     id?: number,
     usuario: string,
@@ -60,8 +59,6 @@ export interface IMovStock {
     pv_id: number,
     id_user?: number
 }
-
-
 export interface IModPriceProd {
     id: number,
     precio_compra: number,
@@ -104,7 +101,16 @@ export interface IFactura {
     id_fact_asoc: number,
     descuento: number,
     costo_envio: number,
-    det_rbo?: string
+    det_rbo?: string,
+    comision: number,
+    comision_paga: number,
+    costo_imputar: number,
+    monto_pago_cta_cte: number,
+    cancelada: boolean,
+    monto_cta_cte: number,
+    comision_imputar: number,
+    comision_total: number,
+    id_seller_comision: number
 }
 
 export interface IDetFactura {
@@ -122,36 +128,12 @@ export interface IDetFactura {
     alicuota_id: number,
     precio_ind: number
 }
-
-export interface IMovCtaCte {
-    id?: number,
-    fecha?: Date,
-    id_cliente: number,
-    id_factura: number,
-    id_recibo: number,
-    forma_pago: number,
-    importe: number,
-    detalle: string,
-    comision: number
-}
-
 export interface IFormasPago {
     id?: number,
     id_fact: number,
     tipo: MetodosPago,
     importe: number,
     tipo_txt: string
-}
-
-export interface IVendedoresCtaCte {
-    id?: number,
-    fecha?: Date,
-    id_vendedor: number,
-    id_factura: number,
-    id_recibo: number,
-    forma_pago: number,
-    importe: number,
-    detalle: string
 }
 
 export interface IImgProd {

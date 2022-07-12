@@ -76,7 +76,7 @@ const newInvoice = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.newInvoice(req.body.pvData, req.body.newFact, req.body.dataFiscal, req.body.productsList, req.body.fileName, req.body.filePath, req.body.timer, req.body.user, req.body.variosPagos, req.body.totalRevende, next)
+    Controller.newInvoice(req.body.pvData, req.body.newFact, req.body.dataFiscal, req.body.productsList, req.body.fileName, req.body.filePath, req.body.timer, req.body.user, req.body.variosPagos, next)
         .then((dataFact) => {
             file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);
         })

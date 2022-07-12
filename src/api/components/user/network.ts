@@ -34,8 +34,7 @@ const listCtaCteSeller = (
 ) => {
     Controller.listCtaCteSeller(
         Number(req.query.idCliente),
-        Boolean(req.query.debit),
-        Boolean(req.query.credit),
+        Boolean(req.query.pendiente),
         Number(req.params.page)).then((lista) => {
             success({
                 req,
@@ -159,11 +158,27 @@ const getDataPaymentPDF = (
     }
 }
 
+const listaDetCtaCte = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.getDetailsFact(Number(req.query.idFact)).then((lista) => {
+        success({
+            req,
+            res,
+            status: 200,
+            message: lista
+        });
+    }).catch(next)
+};
+
 router.get("/details/:id", secure([EPermissions.userAdmin]), get);
 router.get("/mydata", secure(), myDataUser)
 router.get("/sellers", secure([EPermissions.userAdmin, EPermissions.ventas]), sellersList)
 router.get("/payments/:id", secure([EPermissions.ventas]), dataPaymentMiddleSeller(), paymentPDFMiddleSeller(), sendFactMiddle(), getDataPaymentPDF)
 router.get("/ctaCte/:page", secure([EPermissions.userAdmin]), listCtaCteSeller)
+router.get("/factDet", secure([EPermissions.clientes]), listaDetCtaCte)
 router.get("/:page", secure([EPermissions.userAdmin]), listPagination);
 router.get("/", secure([EPermissions.userAdmin]), list);
 router.post("/payments", secure([EPermissions.clientes, EPermissions.ventas]), paymentMiddleSeller(), paymentPDFMiddleSeller(), sendFactMiddle(), newPayment)

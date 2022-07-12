@@ -1,4 +1,4 @@
-import { MetodosPago, Tipos_Precios } from './../enums/EtablesDB';
+import { MetodosPago } from './../enums/EtablesDB';
 import { IObjectFiles } from "./Ifunctions";
 
 export interface INewUser {
@@ -105,3 +105,10 @@ export interface INewFactura {
         importe: number
     }>
 }
+
+export interface ImodifyFactPay {
+    costo_imputar: number,
+    monto_pago_cta_cte: number,
+    cancelada: boolean,
+    comision_imputar: number
+} 

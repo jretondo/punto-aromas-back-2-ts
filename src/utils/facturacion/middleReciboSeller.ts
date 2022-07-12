@@ -20,23 +20,21 @@ const paymentMiddleSeller = () => {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.none,
                 items: [
-                    { column: Columns.facturas.t_fact, object: String(-1) }
+                    { column: Columns.facturas.t_fact, object: String(-2) }
                 ]
             }];
 
             const detalle: string = req.body.detalle
             const formaPago: number = req.body.formaPago
             const importe: number = req.body.importe
-            const clienteID: number = req.body.clienteID
+            const clienteID: number = req.body.vendedorId
             const user: IUser = req.body.user
             const pvId = req.body.pvId;
             const pvData: Array<INewPV> = await ptosVtaController.get(pvId)
-            const tFact: number = -1
-            const letra = "REC"
-            const getHighterNum: Array<{ last: number }> = await store.list(Tables.RECIBOS_VENDEDORES, [`MAX(${Columns.facturas.cbte}) as last`], filters)
+            const tFact: number = -2
+            const letra = "PAGO"
+            const getHighterNum: Array<{ last: number }> = await store.list(Tables.FACTURAS, [`MAX(${Columns.facturas.cbte}) as last`], filters)
             const lastNumber = 0
-            console.log('lastNumber :>> ', lastNumber);
-            console.log('getHighterNum :>> ', getHighterNum);
             let cbte = 0
             try {
                 cbte = getHighterNum[0].last
@@ -70,16 +68,25 @@ const paymentMiddleSeller = () => {
                 raz_soc_cliente: clienteData[0].nombre + " " + clienteData[0].apellido,
                 user_id: user.id || 0,
                 seller_name: `${user.nombre} ${user.apellido}`,
-                total_fact: (Math.round((importe) * 100)) / 100,
+                total_fact: - (Math.round((importe) * 100)) / 100,
                 total_iva: 0,
-                total_neto: (Math.round((importe) * 100)) / 100,
+                total_neto: - (Math.round((importe) * 100)) / 100,
                 total_compra: 0,
                 forma_pago: formaPago,
                 pv_id: pvId,
                 id_fact_asoc: 0,
                 descuento: 0,
                 det_rbo: detalle,
-                costo_envio: 0
+                costo_envio: 0,
+                costo_imputar: 0,
+                comision: 0,
+                comision_imputar: 0,
+                comision_paga: 0,
+                monto_cta_cte: 0,
+                monto_pago_cta_cte: 0,
+                cancelada: false,
+                comision_total: (Math.round((importe) * 100)) / 100,
+                id_seller_comision: clienteData[0].id || 0
             }
 
             req.body.newFact = newFact

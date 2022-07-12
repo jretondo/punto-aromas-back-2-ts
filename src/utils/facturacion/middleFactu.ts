@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { INewFactura, INewProduct, INewPV } from 'interfaces/Irequests';
-import { IDetFactura, IFactura, IUser, IModPriceProd } from 'interfaces/Itables';
+import { IClientes, IDetFactura, IFactura, IUser } from 'interfaces/Itables';
 import ptosVtaController from '../../api/components/ptosVta';
 import prodController from '../../api/components/products';
 import {
@@ -14,6 +14,7 @@ import {
 } from './AfipClass';
 import moment from 'moment';
 import errorSend from '../error';
+import clientesController from '../../api/components/clientes';
 
 const factuMiddel = () => {
     const middleware = async (
@@ -30,6 +31,12 @@ const factuMiddel = () => {
 
             const fiscalBool = req.body.fiscal
             const variosPagos = body.variosPagos
+            let montoCtaCte = 0
+            let costo = 0
+            let costoImputar = 0
+            let comision = 0
+            let comisionImputar = 0
+            let porcPago = 0
 
             if (parseInt(fiscalBool) === 0) {
                 body.fiscal = false
@@ -72,6 +79,7 @@ const factuMiddel = () => {
                 letra = "X"
             }
             const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.costoEnvio, pvData[0].cond_iva);
+            const clienteData: Array<IClientes> = await clientesController.getCuit2(body.cliente_ndoc || 0)
 
             if (body.t_fact === 6 && productsList.totalFact < 10000 && body.cliente_tdoc === 99) {
                 body.cliente_ndoc = 0
@@ -97,6 +105,22 @@ const factuMiddel = () => {
                 productsList.totalNeto = (productsList.totalNeto) - ((productsList.totalNeto - netoEnvio) * (descuento / 100))
             }
 
+            if (Number(body.forma_pago) === 4) {
+                montoCtaCte = productsList.totalFact
+            } else if (Number(body.forma_pago) === 5) {
+                variosPagos?.map(item => {
+                    if (Number(item.tipo) === 4) {
+                        montoCtaCte = Number(montoCtaCte) + Number(item.importe)
+                    }
+                })
+            }
+
+            porcPago = (productsList.totalFact - montoCtaCte) / productsList.totalFact
+            costo = productsList.totalCosto * porcPago
+            costoImputar = productsList.totalCosto - costo
+            comision = (productsList.totalFact - productsList.totalReventa) * porcPago
+            comisionImputar = (productsList.totalFact - productsList.totalReventa) - comision
+
             const newFact: IFactura = {
                 fecha: body.fecha,
                 pv: pvData[0].pv,
@@ -121,12 +145,21 @@ const factuMiddel = () => {
                 total_fact: (Math.round((productsList.totalFact) * 100)) / 100,
                 total_iva: (Math.round((productsList.totalIva) * 100)) / 100,
                 total_neto: (Math.round((productsList.totalNeto) * 100)) / 100,
-                total_compra: (Math.round((productsList.totalCosto) * 100)) / 100,
+                total_compra: (Math.round((costo) * 100)) / 100,
                 forma_pago: body.forma_pago,
                 pv_id: body.pv_id,
                 id_fact_asoc: 0,
                 descuento: descuentoNumber,
-                costo_envio: body.costoEnvio
+                costo_envio: body.costoEnvio,
+                comision: ((Math.round((comision) * 100)) / 100),
+                comision_paga: 0,
+                costo_imputar: ((Math.round((costoImputar) * 100)) / 100),
+                monto_pago_cta_cte: 0,
+                cancelada: false,
+                monto_cta_cte: ((Math.round((montoCtaCte) * 100)) / 100),
+                comision_imputar: ((Math.round((comisionImputar) * 100)) / 100),
+                comision_total: ((Math.round((comisionImputar + comision) * 100)) / 100),
+                id_seller_comision: clienteData[0].vendedor_id || 0
             }
 
             let ivaList: Array<IIvaItem> = [];
@@ -204,7 +237,8 @@ const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: numb
             totalFact: 0,
             totalIva: 0,
             totalNeto: 0,
-            totalCosto: 0
+            totalCosto: 0,
+            totalReventa: 0
         }
         productsList.map(async (prod, key) => {
             let dataProd: Array<INewProduct> = [];
@@ -220,6 +254,7 @@ const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: numb
             const totalProd: number = (Math.round(((prod.price * prod.cant_prod)) * 100)) / 100;
             const totalNeto: number = (Math.round((totalProd / (1 + (dataProd[0].iva / 100))) * 100)) / 100;
             const totalIva: number = (Math.round((totalNeto * (dataProd[0].iva / 100)) * 100)) / 100;
+            const totalRevende: number = (Math.round(((dataProd[0].revendedor * prod.cant_prod)) * 100)) / 100;
 
             const newProdFact: IDetFactura = {
                 nombre_prod: `${dataProd[0].name} (marca: ${dataProd[0].subcategory})`,
@@ -240,6 +275,7 @@ const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: numb
             factura.totalIva = (Math.round((factura.totalIva + (totalIva)) * 100)) / 100;
             factura.totalNeto = (Math.round((factura.totalNeto + (totalNeto)) * 100)) / 100;
             factura.totalCosto = (Math.round((factura.totalCosto + (totalCosto)) * 100)) / 100;
+            factura.totalReventa = (Math.round((factura.totalReventa + (totalRevende)) * 100)) / 100;
 
             if (key === productsList.length - 1) {
                 let costoIvaEnvio: number = 0
@@ -314,7 +350,8 @@ interface IfactCalc {
     totalFact: number,
     totalIva: number,
     totalNeto: number,
-    totalCosto: number
+    totalCosto: number,
+    totalReventa: number
 }
 interface IIvaItem {
     Id: AlicuotasIva,

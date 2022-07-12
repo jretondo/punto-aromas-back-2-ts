@@ -109,8 +109,7 @@ const listCtaCteClient = (
 ) => {
     Controller.listCtaCteClient(
         Number(req.query.idCliente),
-        Boolean(req.query.debit),
-        Boolean(req.query.credit),
+        Boolean(req.query.pendiente),
         Number(req.params.page)).then((lista) => {
             success({
                 req,
@@ -121,12 +120,27 @@ const listCtaCteClient = (
         }).catch(next)
 };
 
+const listaDetCtaCte = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.getDetailsFact(Number(req.query.idFact)).then((lista) => {
+        success({
+            req,
+            res,
+            status: 200,
+            message: lista
+        });
+    }).catch(next)
+};
+
 const newPayment = (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
-    Controller.registerPayment(req.body.newFact, req.body.fileName, req.body.filePath, req.body.clienteData, next).then(dataFact => {
+    Controller.registerPayment(req.body.newFact, req.body.fileName, req.body.filePath, req.body.modifyFact).then(dataFact => {
         file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);
     }).catch(next)
 }
@@ -168,6 +182,7 @@ router
     .get("/dataFiscal", secure([EPermissions.clientes]), dataFiscalPadron)
     .get("/ctaCte/:page", secure([EPermissions.clientes]), listCtaCteClient)
     .get("/details/:id", secure([EPermissions.clientes]), get)
+    .get("/factDet", secure([EPermissions.clientes]), listaDetCtaCte)
     .get("/payments/:id", secure([EPermissions.ventas]), dataPaymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), getDataPaymentPDF)
     .get("/:page", secure([EPermissions.clientes, EPermissions.ventas]), listPagination)
     .delete("/:id", secure([EPermissions.clientes]), remove)

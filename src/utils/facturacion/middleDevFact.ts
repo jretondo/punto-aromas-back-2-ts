@@ -76,9 +76,19 @@ const devFactMiddle = () => {
             forma_pago: dataFact[0].forma_pago,
             pv_id: dataFact[0].pv_id,
             id_fact_asoc: dataFact[0].id || 0,
-            descuento: dataFact[0].descuento,
-            costo_envio: dataFact[0].costo_envio
+            descuento: - dataFact[0].descuento,
+            costo_envio: - dataFact[0].costo_envio,
+            costo_imputar: - dataFact[0].costo_imputar,
+            comision: - dataFact[0].comision,
+            comision_paga: - dataFact[0].comision_paga,
+            monto_cta_cte: - dataFact[0].monto_cta_cte,
+            monto_pago_cta_cte: - dataFact[0].monto_pago_cta_cte,
+            cancelada: dataFact[0].cancelada,
+            comision_imputar: - dataFact[0].comision_imputar,
+            comision_total: - dataFact[0].comision_total,
+            id_seller_comision: dataFact[0].id_seller_comision
         }
+
         let newDet: Array<IDetFactura> = []
 
         new Promise((resolve, reject) => {

@@ -1,4 +1,3 @@
-import { IVendedoresCtaCte } from './../../../interfaces/Itables';
 import { INewInsert } from './../../../interfaces/Ifunctions';
 import { NextFunction } from 'express';
 import { Ipages, IWhereParams } from 'interfaces/Ifunctions';
@@ -30,16 +29,18 @@ export = (injectedStore: typeof StoreType) => {
             filters.push(filter);
         }
 
-        if (idUsu) {
-            const filter: IWhereParams | undefined = {
-                mode: EModeWhere.dif,
-                concat: EConcatWhere.and,
-                items: [
-                    { column: Columns.admin.id, object: String(idUsu) }
-                ]
-            };
-            filters.push(filter);
-        }
+        /*
+         if (idUsu) {
+             const filter: IWhereParams | undefined = {
+                 mode: EModeWhere.dif,
+                 concat: EConcatWhere.and,
+                 items: [
+                     { column: Columns.admin.id, object: String(idUsu) }
+                 ]
+             };
+             filters.push(filter);
+         }
+        */
 
         let pages: Ipages;
         if (page) {
@@ -125,19 +126,46 @@ export = (injectedStore: typeof StoreType) => {
         ultRbo: number,
         next: NextFunction
     ) => {
-
-        const result: INewInsert = await store.insert(Tables.RECIBOS_VENDEDORES, newFact)
+        const result: INewInsert = await store.insert(Tables.FACTURAS, newFact)
 
         if (result.affectedRows > 0) {
-            const ctacteData: IVendedoresCtaCte = {
-                id_vendedor: sellerData.id || 0,
-                id_factura: result.insertId,
-                id_recibo: result.insertId,
-                forma_pago: newFact.forma_pago,
-                importe: (newFact.total_fact),
-                detalle: "Recibo de Pago"
-            }
-            const resultCtaCte = await store.insert(Tables.VENDEDORES_CTA_CTE, ctacteData)
+            const importe: number = - newFact.total_fact
+            const idVendedor: number = newFact.id_seller_comision
+
+            const resDataComsionPend: {
+                data: Array<IFactura>,
+                suma: Array<number>
+            } = await listCtaCteSeller(idVendedor, true, undefined, undefined, true, true)
+            const dataComsionPend = resDataComsionPend.data
+
+            let importePend = importe
+
+            await new Promise((resolve, reject) => {
+                dataComsionPend.map(async (item, key) => {
+
+                    const resDetComsiones: {
+                        data: Array<IFactura>,
+                        suma: Array<{ SUMA: number }>
+                    } = await getDetailsFact(item.id || 0)
+
+                    const comisionTotal = Number(resDetComsiones.suma[0].SUMA)
+                    const comisionPaga = Number(item.comision_paga)
+                    const comisionPend = Number(comisionTotal - comisionPaga)
+
+                    if (Number(comisionPend) > importePend) {
+                        const importeNvo = importePend + comisionPaga
+                        importePend = 0
+                        await store.update(Tables.FACTURAS, { comision_paga: (importeNvo) }, item.id || 0)
+                    } else {
+                        const importeNvo = comisionTotal
+                        importePend = importePend - comisionPend
+                        await store.update(Tables.FACTURAS, { comision_paga: (importeNvo) }, item.id || 0)
+                    }
+                    if (key === dataComsionPend.length - 1) {
+                        resolve("")
+                    }
+                })
+            })
 
             setTimeout(() => {
                 fs.unlinkSync(filePath)
@@ -146,7 +174,7 @@ export = (injectedStore: typeof StoreType) => {
             const dataFact = {
                 fileName,
                 filePath,
-                resultInsert: resultCtaCte
+                resultInsert: result
             }
             return dataFact
         } else {
@@ -165,53 +193,90 @@ export = (injectedStore: typeof StoreType) => {
     }
 
 
-    const listCtaCteSeller = async (idVendedor: number, debit: boolean, credit: boolean, page?: number, cantPerPage?: number) => {
+    const listCtaCteSeller = async (idVendedor: number, pendiente: boolean, page?: number, cantPerPage?: number, asc?: boolean, sinRec?: boolean) => {
+
 
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
+        let filters2: Array<IWhereParams> = [];
 
-        if (!debit && !credit) {
-            filter = {
-                mode: EModeWhere.strict,
-                concat: EConcatWhere.none,
-                items: [
-                    { column: Columns.vendedores_cta_cte.id_vendedor, object: String(idVendedor) }
-                ]
-            };
-            filters.push(filter);
-        } else if (debit) {
-            filter = {
-                mode: EModeWhere.strict,
-                concat: EConcatWhere.and,
-                items: [
-                    { column: Columns.vendedores_cta_cte.id_vendedor, object: String(idVendedor) },
-                ]
-            };
-            filters.push(filter);
+        if (pendiente) {
 
             filter = {
-                mode: EModeWhere.less,
-                concat: EConcatWhere.and,
-                items: [
-                    { column: Columns.vendedores_cta_cte.importe, object: String(0) },
-                ]
-            };
-            filters.push(filter);
-        } else if (credit) {
-            filter = {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: Columns.vendedores_cta_cte.id_vendedor, object: String(idVendedor) },
+                    { column: Columns.facturas.id_seller_comision, object: String(idVendedor) },
+                    { column: Columns.facturas.nota_cred, object: String(0) }
                 ]
             };
             filters.push(filter);
+            filters2.push(filter)
+            filter = {
+                mode: EModeWhere.dif,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.t_fact, object: String(-1) },
+                    { column: `(${Columns.facturas.comision_total} - ${Columns.facturas.comision_paga})`, object: String(0) },
+                ]
+            };
+            filters.push(filter);
+
+            if (sinRec) {
+                filter = {
+                    mode: EModeWhere.dif,
+                    concat: EConcatWhere.and,
+                    items: [
+                        { column: Columns.facturas.t_fact, object: String(-2) },
+                    ]
+                };
+                filters.push(filter);
+            }
 
             filter = {
                 mode: EModeWhere.higher,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: Columns.vendedores_cta_cte.importe, object: String(0) },
+                    { column: Columns.facturas.comision_total, object: String(0) },
+                ]
+            };
+            filters.push(filter);
+        } else {
+            filter = {
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.id_seller_comision, object: String(idVendedor) },
+                    { column: Columns.facturas.nota_cred, object: String(0) }
+                ]
+            };
+            filters.push(filter);
+            filters2.push(filter)
+            filter = {
+                mode: EModeWhere.dif,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.t_fact, object: String(-1) },
+                ]
+            };
+            filters.push(filter);
+
+            if (sinRec) {
+                filter = {
+                    mode: EModeWhere.dif,
+                    concat: EConcatWhere.and,
+                    items: [
+                        { column: Columns.facturas.t_fact, object: String(-2) },
+                    ]
+                };
+                filters.push(filter);
+            }
+
+            filter = {
+                mode: EModeWhere.higher,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.comision_total, object: String(0) },
                 ]
             };
             filters.push(filter);
@@ -222,12 +287,13 @@ export = (injectedStore: typeof StoreType) => {
             pages = {
                 currentPage: page,
                 cantPerPage: cantPerPage || 10,
-                order: Columns.clientes.id,
-                asc: false
+                order: Columns.facturas.id,
+                asc: asc || false
             };
-            const data = await store.list(Tables.VENDEDORES_CTA_CTE, [ESelectFunct.all], filters, undefined, pages);
-            const cant = await store.list(Tables.VENDEDORES_CTA_CTE, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
-            const suma = await store.list(Tables.VENDEDORES_CTA_CTE, [`SUM(${Columns.ctaCte.importe}) as SUMA`], filters);
+            const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, pages);
+            const cant = await store.list(Tables.FACTURAS, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
+            const suma = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.comision} - ${Columns.facturas.comision_paga}) as SUMA`], filters2);
+
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
             return {
                 data,
@@ -235,13 +301,45 @@ export = (injectedStore: typeof StoreType) => {
                 suma
             };
         } else {
-            const data = await store.list(Tables.VENDEDORES_CTA_CTE, [ESelectFunct.all], filters, undefined, undefined);
-            const suma = await store.list(Tables.VENDEDORES_CTA_CTE, [`SUM(${Columns.ctaCte.importe}) as SUMA`], filters);
+            const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined);
+            const suma = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.comision} - ${Columns.facturas.comision_paga}) as SUMA`], filters);
             return {
                 data,
                 suma
             };
         }
+    }
+
+    const getDetailsFact = async (idFact: number) => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+
+        filter = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.or,
+            items: [
+                { column: Columns.facturas.id_fact_asoc, object: String(idFact) },
+                { column: Columns.facturas.id, object: String(idFact) }
+            ]
+        };
+        filters.push(filter);
+
+        filter = {
+            mode: EModeWhere.higherEqual,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.comision, object: String(0) },
+            ]
+        };
+        filters.push(filter);
+
+        const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined);
+        const suma = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.comision}) as SUMA`], filters);
+
+        return {
+            data,
+            suma
+        };
     }
 
     return {
@@ -252,6 +350,7 @@ export = (injectedStore: typeof StoreType) => {
         sellerList,
         listCtaCteSeller,
         registerPayment,
-        getDataPayment
+        getDataPayment,
+        getDetailsFact
     }
 }
