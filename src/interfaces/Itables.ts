@@ -110,7 +110,8 @@ export interface IFactura {
     monto_cta_cte: number,
     comision_imputar: number,
     comision_total: number,
-    id_seller_comision: number
+    id_seller_comision: number,
+    SUMA?: number
 }
 
 export interface IDetFactura {
@@ -171,4 +172,27 @@ export interface IProdVar {
 export interface IPrices {
     type_price_name: string,
     sell_price: number
+}
+
+export interface CtaCte {
+    id: number,
+    fecha: Date,
+    id_cliente: number,
+    id_factura: number,
+    id_recibo: number,
+    forma_pago: number
+    importe: number,
+    detalle: string,
+    comision: number
+}
+export interface CtaCteVende {
+    id: number,
+    fecha: Date,
+    id_cliente: number,
+    id_factura: number,
+    id_recibo: number,
+    forma_pago: number
+    importe: number,
+    detalle: string,
+    comision: number
 }

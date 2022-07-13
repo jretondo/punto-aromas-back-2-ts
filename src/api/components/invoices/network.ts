@@ -205,6 +205,40 @@ const correctorNC = (
     }).catch(next)
 }
 
+const correctorFacturas = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.correctorFacturas().then(data => {
+        success({ req, res, message: data });
+    }).catch(next)
+}
+
+const asignarIdSeller = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.asignarIdSeller().then(data => {
+        success({ req, res, message: data });
+    }).catch(next)
+}
+
+const cobrarRecibos = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.cobrarRecibos().then(data => {
+        success({ req, res, message: data });
+    }).catch(next)
+}
+
+//.get("/correctFact", correctorFacturas)
+//.get("/asignarIdSeller", asignarIdSeller)
+//.get("/cobararRecibos", cobrarRecibos)
+
 router.get("/details/:id", secure([EPermissions.ventas]), get)
     .get("/cajaList/:page", secure([EPermissions.ventas]), cajaList)
     .get("/cajaListPDF", secure([EPermissions.ventas]), cajaListPDF)

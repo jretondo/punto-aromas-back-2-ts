@@ -1,7 +1,7 @@
 import { ETypesJoin } from '../../../enums/EfunctMysql';
 import { MetodosPago } from './../../../enums/EtablesDB';
 import { sendAvisoFact } from './../../../utils/sendEmails/sendAvisoFact';
-import { IFormasPago } from './../../../interfaces/Itables';
+import { IFormasPago, IProdPrinc } from './../../../interfaces/Itables';
 import { createListSellsPDF } from './../../../utils/facturacion/lists/createListSellsPDF';
 import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
@@ -12,15 +12,16 @@ import {
     CbteTipos
 } from '../../../utils/facturacion/AfipClass'
 import ptosVtaController from '../ptosVta';
-import { Ipages, IWhereParams, IJoin } from 'interfaces/Ifunctions';
+import { Ipages, IWhereParams, IJoin, Iorder } from 'interfaces/Ifunctions';
 import { IClientes, IDetFactura, IFactura, IUser, IModPriceProd } from 'interfaces/Itables';
-import { INewPV } from 'interfaces/Irequests';
+import { ImodifyCtaCte, INewPV } from 'interfaces/Irequests';
 import ControllerStock from '../stock';
 import ControllerClientes from '../clientes';
 import fs from 'fs';
 import { NextFunction } from 'express';
 import controller from '../clientes';
 import { zfill } from '../../../utils/cerosIzq';
+import { formatMoney } from '../../../utils/formatMoney';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
@@ -511,6 +512,376 @@ export = (injectedStore: typeof StoreType) => {
         }
     }
 
+
+    const correctorFacturas = async () => {
+        const filters1: Array<IWhereParams> = []
+        const filters2: Array<IWhereParams> = []
+
+        const filter0: IWhereParams = {
+            mode: EModeWhere.dif,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.id_seller_comision, object: String(0) }
+            ]
+        };
+        const filter1: IWhereParams = {
+            mode: EModeWhere.dif,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.forma_pago, object: String(4) }
+            ]
+        };
+        const filter2: IWhereParams = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.nota_cred, object: String(0) },
+                { column: Columns.facturas.id_fact_asoc, object: String(0) },
+            ]
+        };
+        const filter3: IWhereParams = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.forma_pago, object: String(4) }
+            ]
+        };
+
+        filters1.push(filter1, filter2, filter0)
+        filters2.push(filter3, filter2, filter0)
+
+        const FacturasPagas: Array<IFactura> = await store.list(Tables.FACTURAS, ["*"], filters1)
+        const FacturasCtaCte: Array<IFactura> = await store.list(Tables.FACTURAS, ["*"], filters2)
+
+
+        /*
+        
+          FacturasPagas.map(async (item1, key) => {
+  
+              const totalCosto = item1.costo_imputar
+              const totalFact = item1.total_fact
+              const detFacturas: Array<IDetFactura> = await store.get(Tables.DET_FACTURAS, item1.id || 0, Columns.detallesFact.fact_id)
+              let totalComision = 0
+              detFacturas.map(async (item2, key) => {
+                  const cant = item2.cant_prod
+                  const totalProd = item2.total_prod
+                  const prodData: Array<IProdPrinc> = await store.get(Tables.PRODUCTS_PRINCIPAL, item2.id_prod, Columns.prodPrincipal.id_prod)
+  
+                  try {
+                      const revendedor = cant * (prodData[0].revendedor)
+  
+                      console.log('revendedor :>> ', revendedor);
+                      console.log('totalProd :>> ', totalProd);
+  
+                      totalComision = Number(totalComision) + (Number(totalProd) - Number(revendedor))
+  
+                      if (key === detFacturas.length - 1) {
+                          totalComision = (Math.round(totalComision * 100) / 100)
+  
+                          const data: ImodifyCtaCte = {
+                              costo_imputar: 0,
+                              monto_cta_cte: 0,
+                              comision_imputar: 0,
+                              comision_total: totalComision,
+                              total_compra: totalCosto,
+                              comision: totalComision
+                          }
+  
+                          await store.update(Tables.FACTURAS, { comision: totalComision, comision_total: totalComision }, item1.id || 0)
+                          console.log('total_fact :>> ', item1.total_fact);
+                          console.log('total_compra :>> ', item1.total_compra);
+                          console.log('totalComision :>> ', (Math.round(totalComision * 100)) / 100);
+                          console.log('ganancia :>> ', (item1.total_fact - item1.total_compra - totalComision));
+                          console.log('__________________________________________________');
+                      }
+                  } catch (error) {
+                      console.log('prod_id :>> ', item2.id_prod);
+                      console.log('factura_id :>> ', item1.id);
+                      console.log('id_seller_comision :>> ', item1.id_seller_comision);
+                      console.log('Factura :>> ', `${item1.letra} ${item1.pv} - ${item1.cbte}`);
+                      console.log('total factura :>> ', formatMoney(item1.total_fact));
+                      console.log('__________________________________________________');
+                  }
+              })
+          })
+        */
+
+
+
+        FacturasCtaCte.map(async (item1, key) => {
+            const totalCosto = item1.total_compra
+            const totalFact = item1.total_fact
+            const detFacturas: Array<IDetFactura> = await store.get(Tables.DET_FACTURAS, item1.id || 0, Columns.detallesFact.fact_id)
+            let totalComision = 0
+            detFacturas.map(async (item2, key) => {
+                const cant = item2.cant_prod
+                const totalProd = item2.total_prod
+
+                const prodData: Array<IProdPrinc> = await store.get(Tables.PRODUCTS_PRINCIPAL, item2.id_prod, Columns.prodPrincipal.id_prod)
+
+                try {
+                    const revendedor = cant * (prodData[0].revendedor)
+
+                    totalComision = Number(totalComision) + (Number(totalProd) - Number(revendedor))
+
+                    if (key === detFacturas.length - 1) {
+
+                        totalComision = (Math.round(totalComision * 100) / 100)
+
+                        const data: ImodifyCtaCte = {
+                            costo_imputar: totalCosto,
+                            monto_cta_cte: totalFact,
+                            comision_imputar: totalComision,
+                            comision_total: totalComision,
+                            total_compra: 0,
+                            comision: 0
+                        }
+
+                        await store.update(Tables.FACTURAS, data, item1.id || 0)
+
+                    }
+                } catch (error) {
+                    //console.log('error :>> ', error);
+                    console.log('prod_id :>> ', item2.id_prod);
+                    console.log('factura_id :>> ', item1.id);
+                    console.log('id_seller_comision :>> ', item1.id_seller_comision);
+                    console.log('Factura :>> ', `${item1.letra} ${item1.pv} - ${item1.cbte}`);
+                    console.log('total factura :>> ', formatMoney(item1.total_fact));
+                    console.log('__________________________________________________');
+
+                }
+            })
+        })
+
+        return {
+            FacturasPagas,
+            FacturasCtaCte
+        }
+    }
+
+    const asignarIdSeller = async () => {
+        const filters1: Array<IWhereParams> = []
+        const filter2: IWhereParams = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.nota_cred, object: String(0) },
+                { column: Columns.facturas.id_fact_asoc, object: String(0) },
+            ]
+        };
+        const filter1: IWhereParams = {
+            mode: EModeWhere.dif,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.n_doc_cliente, object: String(0) }
+            ]
+        };
+        filters1.push(filter2, filter1)
+
+        const Facturas: Array<IFactura> = await store.list(Tables.FACTURAS, ["*"], filters1)
+
+        Facturas.map(async (item, key) => {
+            const ndoc = item.n_doc_cliente
+            console.log('ndoc :>> ', ndoc);
+            const dataClient: Array<IClientes> = await store.get(Tables.CLIENTES, ndoc, Columns.clientes.ndoc)
+            if (dataClient.length > 0) {
+                const sellerID = dataClient[0].vendedor_id
+                const result = await store.update(Tables.FACTURAS, { id_seller_comision: sellerID }, item.id || 0)
+                console.log('result :>> ', result);
+                console.log('key :>> ', key);
+            }
+            if (key === Facturas.length - 1) {
+                return Facturas
+            }
+        })
+    }
+
+    const cobrarRecibos = async () => {
+        const filter2: Array<IWhereParams> = [{
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.facturas.t_fact, object: String(-1) },
+                { column: Columns.facturas.nota_cred, object: String(0) },
+            ]
+        }];
+
+        const orden: Iorder = {
+            columns: [`${Columns.facturas.n_doc_cliente}`],
+            asc: true
+        }
+
+        const dataRecibos: Array<IFactura> = await store.list(Tables.FACTURAS, [`${Columns.facturas.n_doc_cliente}`, `SUM(${Columns.facturas.total_fact}) as SUMA`], filter2, [`${Columns.facturas.n_doc_cliente}`], undefined, undefined, orden)
+
+        dataRecibos.map(async (item, key) => {
+            const nDoc = item.n_doc_cliente
+            const totalRecibos = (Math.round((item.SUMA || 0) * 100)) / 100
+
+            const filter1: Array<IWhereParams> = [{
+                mode: EModeWhere.higherEqual,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.t_fact, object: String(0) }
+                ]
+            }, {
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.n_doc_cliente, object: String(nDoc) },
+                    { column: Columns.facturas.nota_cred, object: String(0) },
+                    { column: Columns.facturas.id_fact_asoc, object: String(0) },
+                ]
+            }, {
+                mode: EModeWhere.higher,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.monto_cta_cte, object: String(0) },
+                ]
+            }
+
+            ];
+
+
+            const dataFacturas: Array<IFactura> = await store.list(Tables.FACTURAS, [`${Columns.facturas.n_doc_cliente}`, `SUM(${Columns.facturas.total_fact}) as SUMA`], filter1, [`${Columns.facturas.n_doc_cliente}`])
+
+            let totalFact = 0
+            if (dataFacturas.length > 0) {
+                totalFact = (Math.round((dataFacturas[0].SUMA || 0) * 100)) / 100
+            }
+            const diferencia = (Math.round((totalFact * 100 || 0) - (totalRecibos * 100 || 0))) / 100
+            if (diferencia > 0) {
+
+                const filter3: Array<IWhereParams> = [{
+                    mode: EModeWhere.higherEqual,
+                    concat: EConcatWhere.and,
+                    items: [
+                        { column: Columns.facturas.t_fact, object: String(0) }
+                    ]
+                }, {
+                    mode: EModeWhere.strict,
+                    concat: EConcatWhere.and,
+                    items: [
+                        { column: Columns.facturas.n_doc_cliente, object: String(nDoc) },
+                        { column: Columns.facturas.nota_cred, object: String(0) },
+                        { column: Columns.facturas.id_fact_asoc, object: String(0) },
+                    ]
+                }, {
+                    mode: EModeWhere.higher,
+                    concat: EConcatWhere.and,
+                    items: [
+                        { column: Columns.facturas.monto_cta_cte, object: String(0) },
+                    ]
+                }];
+
+                const dataFacturas: Array<IFactura> = await store.list(Tables.FACTURAS, ["*"], filter3)
+
+                let totalRecibo = totalRecibos
+
+                dataFacturas.map(async (item, key) => {
+                    const comision = item.comision_imputar
+                    const costo = item.costo_imputar
+                    const ctaCte = item.monto_cta_cte
+                    if (totalRecibo > 0) {
+                        if (totalRecibo > ctaCte) {
+                            const data: ImodifyCtaCte = {
+                                costo_imputar: 0,
+                                monto_cta_cte: ctaCte,
+                                comision_imputar: 0,
+                                comision_total: comision,
+                                total_compra: costo,
+                                comision: comision,
+                                monto_pago_cta_cte: ctaCte
+                            }
+
+                            totalRecibo = totalRecibo - ctaCte
+
+                            // await store.update(Tables.FACTURAS, data, item.id || 0)
+                        } else {
+                            const nvaCteCte = ctaCte - totalRecibo
+                            const porcentaje = (ctaCte - nvaCteCte) / ctaCte
+                            const nvaComision = (Math.round(comision * porcentaje * 100)) / 100
+                            const nvoCosto = (Math.round(costo * porcentaje * 100)) / 100
+                            const comisionImputar = comision - nvaComision
+                            const costoImputar = costo - nvoCosto
+
+                            const data: ImodifyCtaCte = {
+                                costo_imputar: costoImputar,
+                                monto_cta_cte: ctaCte,
+                                comision_imputar: comisionImputar,
+                                comision_total: comision,
+                                total_compra: nvoCosto,
+                                comision: nvaComision,
+                                monto_pago_cta_cte: totalRecibo
+                            }
+
+                            totalRecibo = totalRecibo - ctaCte
+
+                            //await store.update(Tables.FACTURAS, data, item.id || 0)
+                        }
+                    }
+
+                })
+
+
+
+                console.log('totalRecibos :>> ', totalRecibos);
+                console.log('totalFact :>> ', totalFact);
+                console.log('diferencia :>> ', diferencia);
+                console.log('nDoc :>> ', nDoc);
+                console.log('___________________________________________ ');
+
+
+            } else {
+                const filter3: Array<IWhereParams> = [{
+                    mode: EModeWhere.higherEqual,
+                    concat: EConcatWhere.and,
+                    items: [
+                        { column: Columns.facturas.t_fact, object: String(0) }
+                    ]
+                }, {
+                    mode: EModeWhere.strict,
+                    concat: EConcatWhere.and,
+                    items: [
+                        { column: Columns.facturas.n_doc_cliente, object: String(nDoc) },
+                        { column: Columns.facturas.nota_cred, object: String(0) },
+                        { column: Columns.facturas.id_fact_asoc, object: String(0) },
+                    ]
+                }, {
+                    mode: EModeWhere.higher,
+                    concat: EConcatWhere.and,
+                    items: [
+                        { column: Columns.facturas.monto_cta_cte, object: String(0) },
+                    ]
+                }
+
+                ];
+
+
+                const dataFacturas: Array<IFactura> = await store.list(Tables.FACTURAS, ["*"], filter3)
+                dataFacturas.map(async (item, key) => {
+                    const comision = item.comision_imputar
+                    const costo = item.costo_imputar
+                    const ctaCte = item.monto_cta_cte
+                    const data: ImodifyCtaCte = {
+                        costo_imputar: 0,
+                        monto_cta_cte: ctaCte,
+                        comision_imputar: 0,
+                        comision_total: comision,
+                        total_compra: costo,
+                        comision: comision,
+                        monto_pago_cta_cte: ctaCte
+                    }
+
+                    // await store.update(Tables.FACTURAS, data, item.id || 0)
+                })
+
+
+            }
+        })
+
+        return dataRecibos
+    }
+
     return {
         lastInvoice,
         list,
@@ -525,6 +896,9 @@ export = (injectedStore: typeof StoreType) => {
         dummyServers,
         correctorNC,
         getFormasPago,
-        get2
+        get2,
+        correctorFacturas,
+        asignarIdSeller,
+        cobrarRecibos
     }
 }

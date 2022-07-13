@@ -111,4 +111,14 @@ export interface ImodifyFactPay {
     monto_pago_cta_cte: number,
     cancelada: boolean,
     comision_imputar: number
-} 
+}
+
+export interface ImodifyCtaCte {
+    costo_imputar: number,
+    monto_cta_cte: number,
+    comision_imputar: number,
+    comision_total: number,
+    total_compra: number,
+    comision: number,
+    monto_pago_cta_cte?: number
+}
