@@ -235,6 +235,16 @@ const cobrarRecibos = (
     }).catch(next)
 }
 
+const verConDeuda = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.verConDeuda().then(data => {
+        success({ req, res, message: data });
+    }).catch(next)
+}
+
 //.get("/correctFact", correctorFacturas)
 //.get("/asignarIdSeller", asignarIdSeller)
 //.get("/cobararRecibos", cobrarRecibos)
@@ -243,6 +253,8 @@ router.get("/details/:id", secure([EPermissions.ventas]), get)
     .get("/cajaList/:page", secure([EPermissions.ventas]), cajaList)
     .get("/cajaListPDF", secure([EPermissions.ventas]), cajaListPDF)
     .get("/factDataPDF/:id", secure([EPermissions.ventas]), dataFactMiddle(), invoicePDFMiddle(), sendFactMiddle(), getDataFactPDF)
+    .get("/cobararRecibos", cobrarRecibos)
+    .get("/verConDeuda", verConDeuda)
     .get("/last", secure([EPermissions.ventas]), getLast)
     .get("/dummy", secure([EPermissions.ventas]), getDummy)
     .get("/timeout", secure([EPermissions.ventas]), timeoutProuf)
