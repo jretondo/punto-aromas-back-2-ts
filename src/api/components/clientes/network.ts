@@ -8,6 +8,7 @@ import secure from '../../../auth/secure';
 import { EPermissions } from '../../../enums/EfunctMysql';
 import paymentMiddle from '../../../utils/facturacion/middleRecibo';
 import dataPaymentMiddle from '../../../utils/facturacion/middleDataPayment';
+import paymentMiddleGral from '../../../utils/facturacion/middleReciboGeneral';
 
 const list = (
     req: Request,
@@ -178,16 +179,42 @@ const functSellers = (
     }
 }
 
+const newPaymentGral = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.paymentGral(req.body.newFact, req.body.fileName, req.body.filePath, req.body.total, req.body.nDocCliente).then(dataFact => {
+        file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);
+    }).catch(next)
+}
+
+const clientesDeudas = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.clientesDeudas(
+        Number(req.params.page),
+        String(req.query.search),
+        Number(req.query.cantPerPage)
+    ).then(data => {
+        success({ req, res, message: data });
+    }).catch(next)
+}
+
 router
     .get("/dataFiscal", secure([EPermissions.clientes]), dataFiscalPadron)
     .get("/ctaCte/:page", secure([EPermissions.clientes]), listCtaCteClient)
     .get("/details/:id", secure([EPermissions.clientes]), get)
+    .get("/clientesDeudas/:page", secure([EPermissions.ventas]), clientesDeudas)
     .get("/factDet", secure([EPermissions.clientes]), listaDetCtaCte)
     .get("/payments/:id", secure([EPermissions.ventas]), dataPaymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), getDataPaymentPDF)
     .get("/:page", secure([EPermissions.clientes, EPermissions.ventas]), listPagination)
     .delete("/:id", secure([EPermissions.clientes]), remove)
     .get("/", secure([EPermissions.clientes]), list)
     .post("/payments", secure([EPermissions.clientes, EPermissions.ventas]), paymentMiddle(), paymentPDFMiddle(), sendFactMiddle(), newPayment)
+    .post("/paymentsGral", secure([EPermissions.clientes, EPermissions.ventas]), paymentMiddleGral(), paymentPDFMiddle(), sendFactMiddle(), newPaymentGral)
     .post("/", secure([EPermissions.clientes]), upsert)
     .put("/sellers", secure([EPermissions.userAdmin]), functSellers)
     .put("/", secure([EPermissions.clientes]), upsert)

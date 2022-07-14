@@ -198,46 +198,33 @@ export = (injectedStore: typeof StoreType) => {
 
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
-        let filters2: Array<IWhereParams> = [];
 
         if (pendiente) {
-
             filter = {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.and,
                 items: [
                     { column: Columns.facturas.id_seller_comision, object: String(idVendedor) },
-                    { column: Columns.facturas.nota_cred, object: String(0) }
-                ]
-            };
-            filters.push(filter);
-            filters2.push(filter)
-            filter = {
-                mode: EModeWhere.dif,
-                concat: EConcatWhere.and,
-                items: [
-                    { column: Columns.facturas.t_fact, object: String(-1) },
-                    { column: `(${Columns.facturas.comision_total} - ${Columns.facturas.comision_paga})`, object: String(0) },
+                    { column: Columns.facturas.id_fact_asoc, object: String(0) }
                 ]
             };
             filters.push(filter);
 
-            if (sinRec) {
-                filter = {
-                    mode: EModeWhere.dif,
-                    concat: EConcatWhere.and,
-                    items: [
-                        { column: Columns.facturas.t_fact, object: String(-2) },
-                    ]
-                };
-                filters.push(filter);
-            }
+            filter = {
+                mode: EModeWhere.dif,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.t_fact, object: String(-2) },
+                    { column: `${Columns.facturas.comision} - ${Columns.facturas.comision_paga}`, object: String(0) },
+                ]
+            };
+            filters.push(filter);
 
             filter = {
                 mode: EModeWhere.higher,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: Columns.facturas.comision_total, object: String(0) },
+                    { column: Columns.facturas.comision, object: String(0) },
                 ]
             };
             filters.push(filter);
@@ -247,36 +234,25 @@ export = (injectedStore: typeof StoreType) => {
                 concat: EConcatWhere.and,
                 items: [
                     { column: Columns.facturas.id_seller_comision, object: String(idVendedor) },
-                    { column: Columns.facturas.nota_cred, object: String(0) }
-                ]
-            };
-            filters.push(filter);
-            filters2.push(filter)
-            filter = {
-                mode: EModeWhere.dif,
-                concat: EConcatWhere.and,
-                items: [
-                    { column: Columns.facturas.t_fact, object: String(-1) },
+                    { column: Columns.facturas.id_fact_asoc, object: String(0) }
                 ]
             };
             filters.push(filter);
 
-            if (sinRec) {
-                filter = {
-                    mode: EModeWhere.dif,
-                    concat: EConcatWhere.and,
-                    items: [
-                        { column: Columns.facturas.t_fact, object: String(-2) },
-                    ]
-                };
-                filters.push(filter);
-            }
+            filter = {
+                mode: EModeWhere.dif,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.t_fact, object: String(-2) },
+                ]
+            };
+            filters.push(filter);
 
             filter = {
                 mode: EModeWhere.higher,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: Columns.facturas.comision_total, object: String(0) },
+                    { column: Columns.facturas.comision, object: String(0) },
                 ]
             };
             filters.push(filter);
@@ -292,7 +268,7 @@ export = (injectedStore: typeof StoreType) => {
             };
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, pages);
             const cant = await store.list(Tables.FACTURAS, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters);
-            const suma = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.comision} - ${Columns.facturas.comision_paga}) as SUMA`], filters2);
+            const suma = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.comision} - ${Columns.facturas.comision_paga}) as SUMA`], filters);
 
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
             return {

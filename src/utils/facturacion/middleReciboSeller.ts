@@ -86,7 +86,8 @@ const paymentMiddleSeller = () => {
                 monto_pago_cta_cte: 0,
                 cancelada: false,
                 comision_total: (Math.round((importe) * 100)) / 100,
-                id_seller_comision: clienteData[0].id || 0
+                id_seller_comision: clienteData[0].id || 0,
+                costo_total: 0
             }
 
             req.body.newFact = newFact

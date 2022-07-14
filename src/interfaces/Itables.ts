@@ -111,6 +111,7 @@ export interface IFactura {
     comision_imputar: number,
     comision_total: number,
     id_seller_comision: number,
+    costo_total: number,
     SUMA?: number
 }
 

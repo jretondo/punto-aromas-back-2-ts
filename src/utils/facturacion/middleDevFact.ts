@@ -86,7 +86,8 @@ const devFactMiddle = () => {
             cancelada: dataFact[0].cancelada,
             comision_imputar: - dataFact[0].comision_imputar,
             comision_total: - dataFact[0].comision_total,
-            id_seller_comision: dataFact[0].id_seller_comision
+            id_seller_comision: dataFact[0].id_seller_comision,
+            costo_total: -dataFact[0].costo_total
         }
 
         let newDet: Array<IDetFactura> = []

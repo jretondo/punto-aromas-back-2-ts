@@ -159,7 +159,8 @@ const factuMiddel = () => {
                 monto_cta_cte: ((Math.round((montoCtaCte) * 100)) / 100),
                 comision_imputar: ((Math.round((comisionImputar) * 100)) / 100),
                 comision_total: ((Math.round((comisionImputar + comision) * 100)) / 100),
-                id_seller_comision: clienteData[0].vendedor_id || 0
+                id_seller_comision: clienteData[0].vendedor_id || 0,
+                costo_total: ((Math.round((productsList.totalCosto) * 100)) / 100),
             }
 
             let ivaList: Array<IIvaItem> = [];

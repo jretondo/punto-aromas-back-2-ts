@@ -1,9 +1,10 @@
+import { ETypesJoin } from './../../../enums/EfunctMysql';
 import { ImodifyFactPay } from './../../../interfaces/Irequests';
 import { sendAvisoClienteSeller } from './../../../utils/sendEmails/sendAvisoClientsSellers';
 import { INewInsert } from './../../../interfaces/Ifunctions';
 import { IFactura } from './../../../interfaces/Itables';
 import { AfipClass } from './../../../utils/facturacion/AfipClass';
-import { Ipages, IWhereParams } from 'interfaces/Ifunctions';
+import { Ipages, IWhereParams, IJoin, Iorder } from 'interfaces/Ifunctions';
 import { IClientes, IUser } from 'interfaces/Itables';
 import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
@@ -118,7 +119,6 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const getCuit2 = async (ndocClient: number) => {
-        console.log('ndocClient :>> ', ndocClient);
         let filters: Array<IWhereParams> = [{
             mode: EModeWhere.strict,
             concat: EConcatWhere.none,
@@ -174,7 +174,7 @@ export = (injectedStore: typeof StoreType) => {
                 items: [
                     { column: Columns.facturas.n_doc_cliente, object: String(cuit) },
                     { column: Columns.facturas.cancelada, object: String(0) },
-                    { column: Columns.facturas.nota_cred, object: String(0) }
+                    { column: Columns.facturas.id_fact_asoc, object: String(0) }
                 ]
             };
             filters.push(filter);
@@ -203,7 +203,7 @@ export = (injectedStore: typeof StoreType) => {
                 concat: EConcatWhere.and,
                 items: [
                     { column: Columns.facturas.n_doc_cliente, object: String(cuit) },
-                    { column: Columns.facturas.nota_cred, object: String(0) }
+                    { column: Columns.facturas.id_fact_asoc, object: String(0) }
                 ]
             };
             filters.push(filter);
@@ -310,6 +310,152 @@ export = (injectedStore: typeof StoreType) => {
         };
     }
 
+    const clientesDeudas = async (page?: number, item?: string, cantPerPage?: number) => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+        if (item) {
+            filter = {
+                mode: EModeWhere.like,
+                concat: EConcatWhere.or,
+                items: [
+                    { column: Columns.clientes.telefono, object: String(item) },
+                    { column: Columns.clientes.email, object: String(item) },
+                    { column: Columns.clientes.ndoc, object: String(item) },
+                    { column: Columns.clientes.razsoc, object: String(item) }
+                ]
+            };
+            filters.push(filter);
+        }
+        const filter1: IWhereParams = {
+            mode: EModeWhere.dif,
+            concat: EConcatWhere.none,
+            items: [
+                { column: `${Tables.FACTURAS}.${Columns.facturas.monto_cta_cte} - ${Tables.FACTURAS}.${Columns.facturas.monto_pago_cta_cte}`, object: String(0) },
+            ]
+        };
+        filters.push(filter1);
+
+        const joinQuery: IJoin = {
+            table: Tables.CLIENTES,
+            colOrigin: Columns.facturas.n_doc_cliente,
+            colJoin: Columns.clientes.ndoc,
+            type: ETypesJoin.none
+        }
+
+        const orden: Iorder = {
+            columns: [Columns.facturas.n_doc_cliente],
+            asc: true
+        }
+
+        let pages: Ipages;
+        if (page) {
+            pages = {
+                currentPage: page,
+                cantPerPage: cantPerPage || 10,
+                order: `DEUDA`,
+                asc: false
+            };
+            const data: Array<IFactura> = await await store.list(Tables.FACTURAS, ["*", `SUM(${Tables.FACTURAS}.${Columns.facturas.monto_cta_cte} - ${Tables.FACTURAS}.${Columns.facturas.monto_pago_cta_cte}) AS DEUDA`], filters, [`${Tables.FACTURAS}.${Columns.facturas.n_doc_cliente}`], pages, [joinQuery])
+            const data2: Array<IFactura> = await await store.list(Tables.FACTURAS, ["*"], filters, [`${Tables.FACTURAS}.${Columns.facturas.n_doc_cliente}`], undefined, [joinQuery])
+
+            const cant = data2.length
+            const pagesObj = await getPages(cant, 10, Number(page));
+            return {
+                data,
+                pagesObj
+            };
+        } else {
+            const data = await store.list(Tables.FACTURAS, ["*", `SUM(${Tables.FACTURAS}.${Columns.facturas.monto_cta_cte} - ${Tables.FACTURAS}.${Columns.facturas.monto_pago_cta_cte}) AS SUMA`], filters, [`${Tables.FACTURAS}.${Columns.facturas.n_doc_cliente}`], undefined, [joinQuery], orden)
+            return {
+                data
+            };
+        }
+    }
+
+    const paymentGral = async (
+        newFact: IFactura,
+        fileName: string,
+        filePath: string,
+        total: number,
+        cuit: number
+    ) => {
+
+        const resultInsert: INewInsert = await store.insert(Tables.FACTURAS, newFact);
+        setTimeout(() => {
+            fs.unlinkSync(filePath)
+        }, 6000);
+
+        if (resultInsert.affectedRows > 0) {
+
+            const totalRecibos = total
+
+            const filter3: Array<IWhereParams> = [{
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.id_fact_asoc, object: String(0) },
+                    { column: Columns.facturas.n_doc_cliente, object: String(cuit) },
+                    { column: Columns.facturas.forma_pago, object: String(4) }
+                ]
+            }, {
+                mode: EModeWhere.higherEqual,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: Columns.facturas.t_fact, object: String(0) }
+                ]
+            }];
+
+            const orden: Iorder = {
+                columns: [Columns.facturas.id],
+                asc: true
+            }
+
+            const dataFact: Array<IFactura> = await store.list(Tables.FACTURAS, ["*"], filter3, undefined, undefined, undefined, orden)
+
+            let reciboPendiente: number = totalRecibos
+
+            dataFact.map(async (factura, key2) => {
+                const ctactePend = factura.monto_cta_cte - factura.monto_pago_cta_cte
+                const comisionImputar: number = factura.comision_imputar
+                const costoImputar = factura.costo_imputar
+
+                if (reciboPendiente > 0) {
+                    if (Number(ctactePend) <= Number(reciboPendiente)) {
+                        const data = {
+                            costo_imputar: 0,
+                            monto_pago_cta_cte: (Math.round((Number(factura.monto_pago_cta_cte) + Number(ctactePend)) * 100)) / 100,
+                            cancelada: true,
+                            comision_imputar: 0
+                        }
+                        reciboPendiente = reciboPendiente - ctactePend
+                        await store.update(Tables.FACTURAS, data, factura.id || 0)
+                    } else {
+                        const porcentaje = ((reciboPendiente) / ctactePend)
+                        const newCosto = (Math.round(costoImputar * porcentaje * 100)) / 100
+                        const newCostoImputar = costoImputar - newCosto
+                        const newComision = (Math.round(comisionImputar * porcentaje * 100)) / 100
+                        const newComisionImp = comisionImputar - newComision
+
+                        const data = {
+                            costo_imputar: (Math.round(newCostoImputar * 100)) / 100,
+                            monto_pago_cta_cte: (Math.round((Number(factura.monto_pago_cta_cte) + Number(reciboPendiente)) * 100)) / 100,
+                            cancelada: false,
+                            comision_imputar: (Math.round(newComisionImp * 100)) / 100,
+                        }
+                        reciboPendiente = 0
+                        await store.update(Tables.FACTURAS, data, factura.id || 0)
+                    }
+                }
+            })
+
+        }
+        return {
+            fileName: fileName,
+            filePath: filePath,
+            resultInsert: ""
+        }
+    }
+
     return {
         list,
         upsert,
@@ -323,6 +469,8 @@ export = (injectedStore: typeof StoreType) => {
         desAsignarVendedor,
         getCuit,
         getDetailsFact,
-        getCuit2
+        getCuit2,
+        clientesDeudas,
+        paymentGral
     }
 }

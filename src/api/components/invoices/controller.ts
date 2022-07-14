@@ -743,7 +743,7 @@ export = (injectedStore: typeof StoreType) => {
                     }];
 
                     const orden: Iorder = {
-                        columns: [Columns.facturas.fecha],
+                        columns: [Columns.facturas.id],
                         asc: true
                     }
 
@@ -763,7 +763,7 @@ export = (injectedStore: typeof StoreType) => {
                             if (Number(totalFactura) <= Number(reciboPendiente)) {
                                 const data = {
                                     total_compra: totalCosto,
-                                    costo_imputado: totalCosto,
+                                    costo_total: totalCosto,
                                     monto_pago_cta_cte: totalFactura,
                                     monto_cta_cte: totalFactura,
                                     cancelada: true
@@ -780,7 +780,7 @@ export = (injectedStore: typeof StoreType) => {
 
                                 const data = {
                                     total_compra: (Math.round(costo * 100)) / 100,
-                                    costo_imputado: (Math.round(costo * 100)) / 100,
+                                    costo_total: (Math.round(totalCosto * 100)) / 100,
                                     monto_pago_cta_cte: (Math.round(reciboPendiente * 100)) / 100,
                                     monto_cta_cte: (Math.round(totalFactura * 100)) / 100,
                                     costo_imputar: (Math.round(costoImputar * 100)) / 100,
@@ -792,7 +792,7 @@ export = (injectedStore: typeof StoreType) => {
                         } else {
                             const data = {
                                 total_compra: 0,
-                                costo_imputado: 0,
+                                costo_total: totalCosto,
                                 monto_pago_cta_cte: 0,
                                 monto_cta_cte: totalFactura,
                                 costo_imputar: totalCosto,
@@ -816,11 +816,18 @@ export = (injectedStore: typeof StoreType) => {
             mode: EModeWhere.dif,
             concat: EConcatWhere.none,
             items: [
-                { column: `${Columns.facturas.monto_cta_cte} - ${Columns.facturas.monto_pago_cta_cte}`, object: String(0) },
+                { column: `${Tables.FACTURAS}.${Columns.facturas.monto_cta_cte} - ${Tables.FACTURAS}.${Columns.facturas.monto_pago_cta_cte}`, object: String(0) },
             ]
         }];
 
-        const clientesDeuda = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.monto_cta_cte} - ${Columns.facturas.monto_pago_cta_cte}) AS SUMA`, `${Columns.facturas.n_doc_cliente}`, `${Columns.facturas.raz_soc_cliente}`], filter1, [Columns.facturas.n_doc_cliente])
+        const joinQuery: IJoin = {
+            table: Tables.CLIENTES,
+            colOrigin: Columns.facturas.n_doc_cliente,
+            colJoin: Columns.clientes.ndoc,
+            type: ETypesJoin.none
+        }
+
+        const clientesDeuda = await store.list(Tables.FACTURAS, ["*", `SUM(${Tables.FACTURAS}.${Columns.facturas.monto_cta_cte} - ${Tables.FACTURAS}.${Columns.facturas.monto_pago_cta_cte}) AS SUMA`], filter1, [`${Tables.FACTURAS}.${Columns.facturas.n_doc_cliente}`], undefined, [joinQuery])
 
         return clientesDeuda
     }
