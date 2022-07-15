@@ -128,6 +128,7 @@ const cajaList = (
         Number(req.query.ptoVta),
         String(req.query.desde),
         String(req.query.hasta),
+        req.body.user,
         Number(req.params.page),
         Number(req.query.cantPerPage)
     )
@@ -152,7 +153,8 @@ const cajaListPDF = (
         Number(req.query.userId),
         Number(req.query.ptoVta),
         String(req.query.desde),
-        String(req.query.hasta)
+        String(req.query.hasta),
+        req.body.user
     )
         .then((dataFact) => {
             file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);

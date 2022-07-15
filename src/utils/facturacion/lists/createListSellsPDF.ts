@@ -4,7 +4,7 @@ import { Error } from 'tinify/lib/tinify/Error';
 import ejs from 'ejs';
 import JsReport from 'jsreport-core';
 import { promisify } from 'util';
-import { IFactura } from 'interfaces/Itables';
+import { IFactura, IUser } from 'interfaces/Itables';
 import ControllerPtoVta from '../../../api/components/ptosVta';
 import ControllerUsers from '../../../api/components/user';
 import moment from 'moment';
@@ -25,7 +25,8 @@ export const createListSellsPDF = async (
         tipo: number
     }>,
     totalCosto: number,
-    data: Array<IFactura>
+    data: Array<IFactura>,
+    user: IUser
 ) => {
     return new Promise(async (resolve, reject) => {
         function base64_encode(file: any) {
@@ -142,10 +143,13 @@ export const createListSellsPDF = async (
             })
 
         }
-        totaleslista.push({
-            tipoStr: "Costo Total",
-            totalStr: String(formatMoney(totalCosto))
-        })
+        if (Number(user.admin) === 1) {
+            totaleslista.push({
+                tipoStr: "Costo Total",
+                totalStr: String(formatMoney(totalCosto))
+            })
+        }
+
         const datos = {
             logo: 'data:image/png;base64,' + logo,
             style: "<style>" + estilo + "</style>",

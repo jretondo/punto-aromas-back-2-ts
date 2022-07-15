@@ -11,7 +11,8 @@ export interface IUser {
     apellido: string
     email: string,
     usuario: string,
-    pv: number
+    pv: number,
+    admin: number
 }
 export interface IUserPermission {
     id?: number,

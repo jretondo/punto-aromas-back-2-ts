@@ -90,7 +90,7 @@ export = (injectedStore: typeof StoreType) => {
         }
     }
 
-    const cajaList = async (pdf: boolean, userId: number, ptoVtaId: number, desde: string, hasta: string, page?: number, cantPerPage?: number): Promise<any> => {
+    const cajaList = async (pdf: boolean, userId: number, ptoVtaId: number, desde: string, hasta: string, user: IUser, page?: number, cantPerPage?: number): Promise<any> => {
 
         const filters: Array<IWhereParams> = [{
             mode: EModeWhere.strict,
@@ -167,7 +167,7 @@ export = (injectedStore: typeof StoreType) => {
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined, undefined, { columns: [Columns.facturas.fecha], asc: false });
 
             if (pdf) {
-                const cajaList = await createListSellsPDF(userId, ptoVtaId, desde, hasta, totales, totales2, totalCosto[0].COMPRA, data)
+                const cajaList = await createListSellsPDF(userId, ptoVtaId, desde, hasta, totales, totales2, totalCosto[0].COMPRA, data, user)
                 return cajaList
             } else {
                 return {

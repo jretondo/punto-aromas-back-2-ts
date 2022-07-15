@@ -70,6 +70,7 @@ const paymentMiddleGral = () => {
             }
 
             const dataFact: Array<IFactura> = await store.list(Tables.FACTURAS, ["*"], filter3, undefined, undefined, undefined, orden)
+            console.log('dataFact :>> ', dataFact);
             console.log('importe :>> ', importe);
             console.log('dataFact :>> ', dataFact);
             let totalRecibo = importe
@@ -77,6 +78,11 @@ const paymentMiddleGral = () => {
             let newCosto = 0
             await new Promise((resolve, reject) => {
                 dataFact.map((factura, key) => {
+                    console.log('total_fact :>> ', factura.total_fact);
+                    console.log('factura.cbte :>> ', factura.cbte);
+                    console.log('totalRecibo :>> ', totalRecibo);
+                    console.log('newCosto :>> ', newCosto);
+                    console.log('______________________________________________');
                     const ctacteTot = factura.monto_cta_cte
                     const ctactePaga = factura.monto_pago_cta_cte
                     const ctactePend = (Math.round((ctacteTot - ctactePaga) * 100)) / 100
