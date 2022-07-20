@@ -54,7 +54,8 @@ const paymentMiddleGral = () => {
                 items: [
                     { column: Columns.facturas.id_fact_asoc, object: String(0) },
                     { column: Columns.facturas.n_doc_cliente, object: String(nDocCliente) },
-                    { column: Columns.facturas.forma_pago, object: String(4) }
+                    { column: Columns.facturas.forma_pago, object: String(4) },
+                    { column: Columns.facturas.cancelada, object: String(0) }
                 ]
             }, {
                 mode: EModeWhere.higherEqual,
@@ -62,7 +63,14 @@ const paymentMiddleGral = () => {
                 items: [
                     { column: Columns.facturas.t_fact, object: String(0) }
                 ]
-            }];
+            }, {
+                mode: EModeWhere.higher,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: `${Columns.facturas.monto_cta_cte} - ${Columns.facturas.monto_pago_cta_cte}`, object: String(0) }
+                ]
+            }
+            ];
 
             const orden: Iorder = {
                 columns: [Columns.facturas.id],
@@ -86,14 +94,18 @@ const paymentMiddleGral = () => {
                     const ctacteTot = factura.monto_cta_cte
                     const ctactePaga = factura.monto_pago_cta_cte
                     const ctactePend = (Math.round((ctacteTot - ctactePaga) * 100)) / 100
-                    if (ctactePend > totalRecibo) {
-                        const porcentaje = totalRecibo / ctactePend
+                    if (totalRecibo > 0) {
+                        if (ctactePend > totalRecibo) {
+                            const porcentaje = totalRecibo / ctactePend
 
-                        newComision = newComision + (factura.comision_imputar * porcentaje)
-                        newCosto = newCosto + (factura.costo_imputar * porcentaje)
-                    } else {
-                        newComision = newComision + factura.comision_imputar
-                        newCosto = newCosto + factura.costo_imputar
+                            newComision = newComision + (factura.comision_imputar * porcentaje)
+                            newCosto = newCosto + (factura.costo_imputar * porcentaje)
+                            totalRecibo = 0
+                        } else {
+                            newComision = newComision + factura.comision_imputar
+                            newCosto = newCosto + factura.costo_imputar
+                            totalRecibo = totalRecibo - ctactePend
+                        }
                     }
                     if (key === dataFact.length - 1) {
                         resolve("")
