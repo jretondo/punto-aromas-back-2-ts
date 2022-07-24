@@ -53,7 +53,11 @@ enum ProductosPrincipal {
     mayorista_2 = "mayorista_2",
     mayorista_3 = "mayorista_3",
     revendedor = "revendedor",
-    supermercado = "supermercado"
+    supermercado = "supermercado",
+    cant_mayor1 = "cant_mayor1",
+    cant_mayor2 = "cant_mayor2",
+    cant_mayor3 = "cant_mayor3",
+    cod_prod = "cod_prod"
 }
 
 enum ProductosVariedad {

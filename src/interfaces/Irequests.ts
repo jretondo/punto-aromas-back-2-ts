@@ -50,6 +50,10 @@ export interface INewProduct {
     mayorista_3: number,
     revendedor: number,
     supermercado: number,
+    cant_mayor1: number,
+    cant_mayor2: number,
+    cant_mayor3: number,
+    cod_prod: string,
     variedades: Array<INewVariedad>,
     filesName?: Array<IObjectFiles>
 }

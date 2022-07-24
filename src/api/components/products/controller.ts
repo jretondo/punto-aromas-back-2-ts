@@ -123,13 +123,16 @@ export = (injectedStore: typeof StoreType) => {
                 mayorista_3: body.mayorista_3,
                 revendedor: body.revendedor,
                 supermercado: body.supermercado,
+                cant_mayor1: body.cant_mayor1,
+                cant_mayor2: body.cant_mayor2,
+                cant_mayor3: body.cant_mayor3,
+                cod_prod: body.cod_prod,
                 enabled: true,
                 iva: body.iva
             }
             await upsertVariedades(JSON.parse(String(body.variedades)), true, body.id_prod)
             const result = await store.update(Tables.PRODUCTS_PRINCIPAL, product, body.id_prod || 0, "id_prod");
             if (result.affectedRows > 0) {
-                console.log('listImgDelete :>> ', listImgDelete);
                 if (listImgDelete) {
                     try {
                         listImgDelete.map(async img => {
@@ -182,6 +185,10 @@ export = (injectedStore: typeof StoreType) => {
                 mayorista_3: body.mayorista_3,
                 revendedor: body.revendedor,
                 supermercado: body.supermercado,
+                cant_mayor1: body.cant_mayor1,
+                cant_mayor2: body.cant_mayor2,
+                cant_mayor3: body.cant_mayor3,
+                cod_prod: body.cod_prod,
                 enabled: true,
                 iva: body.iva
             }
