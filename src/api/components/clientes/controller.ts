@@ -395,13 +395,26 @@ export = (injectedStore: typeof StoreType) => {
                 items: [
                     { column: Columns.facturas.id_fact_asoc, object: String(0) },
                     { column: Columns.facturas.n_doc_cliente, object: String(cuit) },
-                    { column: Columns.facturas.forma_pago, object: String(4) }
+                    { column: Columns.facturas.cancelada, object: String(0) }
                 ]
             }, {
                 mode: EModeWhere.higherEqual,
                 concat: EConcatWhere.and,
                 items: [
                     { column: Columns.facturas.t_fact, object: String(0) }
+                ]
+            }, {
+                mode: EModeWhere.higher,
+                concat: EConcatWhere.and,
+                items: [
+                    { column: `${Columns.facturas.monto_cta_cte} - ${Columns.facturas.monto_pago_cta_cte}`, object: String(0) }
+                ]
+            }, {
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.or,
+                items: [
+                    { column: Columns.facturas.forma_pago, object: String(4) },
+                    { column: Columns.facturas.forma_pago, object: String(5) },
                 ]
             }];
 

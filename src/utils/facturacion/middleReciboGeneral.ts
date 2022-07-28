@@ -54,7 +54,6 @@ const paymentMiddleGral = () => {
                 items: [
                     { column: Columns.facturas.id_fact_asoc, object: String(0) },
                     { column: Columns.facturas.n_doc_cliente, object: String(nDocCliente) },
-                    { column: Columns.facturas.forma_pago, object: String(4) },
                     { column: Columns.facturas.cancelada, object: String(0) }
                 ]
             }, {
@@ -69,8 +68,14 @@ const paymentMiddleGral = () => {
                 items: [
                     { column: `${Columns.facturas.monto_cta_cte} - ${Columns.facturas.monto_pago_cta_cte}`, object: String(0) }
                 ]
-            }
-            ];
+            }, {
+                mode: EModeWhere.strict,
+                concat: EConcatWhere.or,
+                items: [
+                    { column: Columns.facturas.forma_pago, object: String(4) },
+                    { column: Columns.facturas.forma_pago, object: String(5) },
+                ]
+            }];
 
             const orden: Iorder = {
                 columns: [Columns.facturas.id],
