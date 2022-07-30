@@ -468,30 +468,34 @@ export = (injectedStore: typeof StoreType) => {
                 const prices: Array<IPrices> = [
                     {
                         type_price_name: "MINORISTA",
-                        sell_price: item.minorista
+                        sell_price: item.minorista,
+                        min: 0
                     },
                     {
                         type_price_name: "MAYORISTA 1",
-                        sell_price: item.mayorista_1
+                        sell_price: item.mayorista_1,
+                        min: item.cant_mayor1
                     },
                     {
                         type_price_name: "MAYORISTA 2",
-                        sell_price: item.mayorista_2
+                        sell_price: item.mayorista_2,
+                        min: item.cant_mayor2
                     },
                     {
                         type_price_name: "MAYORISTA 3",
-                        sell_price: item.mayorista_3
+                        sell_price: item.mayorista_3,
+                        min: item.cant_mayor3
                     },
                     {
                         type_price_name: "SUPERMERCADO",
-                        sell_price: item.supermercado
+                        sell_price: item.supermercado,
+                        min: 0
                     },
                     {
                         type_price_name: "REVENDEDOR",
-                        sell_price: item.revendedor
+                        sell_price: item.revendedor,
+                        min: 0
                     }
-
-
                 ]
                 const groupBy2: Array<string> = [Columns.prodImg.url_img];
                 const shortDescription = item.short_descr

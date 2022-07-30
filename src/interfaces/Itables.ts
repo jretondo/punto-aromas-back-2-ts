@@ -177,7 +177,8 @@ export interface IProdVar {
 
 export interface IPrices {
     type_price_name: string,
-    sell_price: number
+    sell_price: number,
+    min: number
 }
 
 export interface CtaCte {
