@@ -78,9 +78,15 @@ const factuMiddel = () => {
                 body.t_fact = 0
                 letra = "X"
             }
+            if (!body.costoEnvio) {
+                body.costoEnvio = 0
+            }
             const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.costoEnvio, pvData[0].cond_iva);
             const clienteData: Array<IClientes> = await clientesController.getCuit2(body.cliente_ndoc || 0)
-
+            req.body.clienteDirection = ""
+            if (clienteData.length > 0) {
+                req.body.clienteDirection = clienteData[0].direccion
+            }
             if (body.t_fact === 6 && productsList.totalFact < 10000 && body.cliente_tdoc === 99) {
                 body.cliente_ndoc = 0
             }
