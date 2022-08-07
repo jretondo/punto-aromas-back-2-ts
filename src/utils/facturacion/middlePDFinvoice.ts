@@ -172,7 +172,8 @@ export const invoicePDFMiddle = () => {
                 totalEnvio: formatMoney(newFact.costo_envio),
             }
             let formapagoStr = ""
-            switch (newFact.forma_pago) {
+            console.log('newFact.forma_pago :>> ', newFact.forma_pago);
+            switch (Number(newFact.forma_pago)) {
                 case 0:
                     formapagoStr = "EFECTIVO"
                     break;
@@ -189,7 +190,10 @@ export const invoicePDFMiddle = () => {
                     formapagoStr = "CUENTA CORRIENTE"
                     break;
                 case 6:
-                    formapagoStr = "CUENTA CORRIENTE"
+                    formapagoStr = "CHEQUE"
+                    break;
+                case 7:
+                    formapagoStr = "TRANSFERENCIA"
                     break;
                 default:
                     formapagoStr = "OTROS"
@@ -200,6 +204,7 @@ export const invoicePDFMiddle = () => {
                 string: formapagoStr,
                 code: newFact.forma_pago
             }
+
             const listaItems = productsList
 
             const datos2 = {

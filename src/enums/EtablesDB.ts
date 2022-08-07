@@ -186,7 +186,8 @@ enum DetalleFact {
     total_costo = "total_costo",
     total_neto = "total_neto",
     alicuota_id = "alicuota_id",
-    precio_ind = "precio_ind"
+    precio_ind = "precio_ind",
+    anulada = "anulada"
 }
 
 enum FormasPago {
@@ -213,7 +214,8 @@ export enum MetodosPago {
     credito = 3,
     ctaCte = 4,
     varios = 5,
-    cheque = 6
+    cheque = 6,
+    transferencia = 7
 
 }
 

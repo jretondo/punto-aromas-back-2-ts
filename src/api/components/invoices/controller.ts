@@ -229,7 +229,7 @@ export = (injectedStore: typeof StoreType) => {
             ]
             const rows: Promise<Array<Array<any>>> = new Promise((resolve, reject) => {
                 const rowsvalues: Array<Array<any>> = []
-                newDetFact.map((item, key) => {
+                newDetFact.map(async (item, key) => {
                     const values = []
                     values.push(factId)
                     values.push(item.id_prod)
@@ -243,6 +243,9 @@ export = (injectedStore: typeof StoreType) => {
                     values.push(item.alicuota_id)
                     values.push(item.precio_ind)
                     rowsvalues.push(values)
+                    if (item.total_prod < 0) {
+                        await store.update(Tables.DET_FACTURAS, { anulada: true }, item.id || 0)
+                    }
                     if (key === newDetFact.length - 1) {
                         resolve(rowsvalues)
                     }
@@ -453,7 +456,38 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const changePayType = async (idPay: number, idType: number) => {
-        return await store.update(Tables.FACTURAS, { forma_pago: idType }, idPay)
+
+        const factData: Array<IFactura> = await store.get(Tables.FACTURAS, idPay)
+        if (Number(idType) === 4) {
+            const data = {
+                forma_pago: idType,
+                costo_imputar: factData[0].costo_total,
+                comision_imputar: factData[0].comision_total,
+                monto_cta_cte: factData[0].total_fact,
+                cancelada: false,
+                monto_pago_cta_cte: 0,
+                comision: 0,
+                total_compra: 0
+            }
+            return await store.update(Tables.FACTURAS, data, idPay)
+        } else {
+            let data = {}
+            if (Number(factData[0].forma_pago) === 4) {
+                data = {
+                    forma_pago: idType,
+                    costo_imputar: 0,
+                    comision_imputar: 0,
+                    monto_cta_cte: 0,
+                    cancelada: false,
+                    monto_pago_cta_cte: 0,
+                    comision: factData[0].comision_total,
+                    total_compra: factData[0].costo_total
+                }
+            } else {
+                data = { forma_pago: idType }
+            }
+            return await store.update(Tables.FACTURAS, data, idPay)
+        }
     }
 
     const getFormasPago = async (idFact: number) => {
@@ -466,6 +500,16 @@ export = (injectedStore: typeof StoreType) => {
         }];
 
         return await store.list(Tables.FORMAS_PAGO, ["*"], filter)
+    }
+
+    const getDetFact = async (idFact: number) => {
+        const filterList: Array<IWhereParams> = [{
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [{ column: Columns.detallesFact.fact_id, object: String(idFact) },
+            { column: Columns.detallesFact.anulada, object: String(0) }]
+        }]
+        return await store.list(Tables.DET_FACTURAS, ["*"], filterList)
     }
 
     const dummyServers = async (certFile: string, keyFile: string, cuit: number) => {
@@ -850,6 +894,7 @@ export = (injectedStore: typeof StoreType) => {
         correctorFacturas,
         asignarIdSeller,
         cobrarRecibos,
-        verConDeuda
+        verConDeuda,
+        getDetFact
     }
 }
