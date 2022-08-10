@@ -82,6 +82,14 @@ export const createListSellsPDF = async (
             {
                 typeNumber: 4,
                 typeStr: "Cuenta Corriente"
+            },
+            {
+                typeNumber: 6,
+                typeStr: "Cheque"
+            },
+            {
+                typeNumber: 7,
+                typeStr: "Transferencia"
             }
         ]
 
@@ -124,6 +132,12 @@ export const createListSellsPDF = async (
                     break;
                 case 4:
                     formaPagoStr = "Cuenta Corriente"
+                    break;
+                case 6:
+                    formaPagoStr = "Cheque"
+                    break;
+                case 7:
+                    formaPagoStr = "Transferencia"
                     break;
                 case 5:
                     formaPagoStr = "Varios Metodos"
