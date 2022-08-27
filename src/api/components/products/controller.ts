@@ -1,3 +1,4 @@
+import { createProdListPDF } from './../../../utils/facturacion/lists/createListProducts';
 import { INewInsert, IWhere } from './../../../interfaces/Ifunctions';
 import { IProdVar, IProdPrinc, IImgProd, IPrices } from './../../../interfaces/Itables';
 import { INewVariedad } from './../../../interfaces/Irequests';
@@ -6,7 +7,7 @@ import { Tables, Columns } from '../../../enums/EtablesDB';
 import StoreType from '../../../store/mysql';
 import getPages from '../../../utils/getPages';
 import OptimizeImg from '../../../utils/optimeImg';
-import { IJoin, Ipages, IWhereParams } from 'interfaces/Ifunctions';
+import { IJoin, Ipages, IWhereParams, Iorder } from 'interfaces/Ifunctions';
 import { INewProduct } from 'interfaces/Irequests';
 
 export = (injectedStore: typeof StoreType) => {
@@ -79,6 +80,47 @@ export = (injectedStore: typeof StoreType) => {
                 };
             }
         }
+    }
+
+    const prodListPDF = async (item?: string): Promise<any> => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+
+        if (item) {
+            const arrayStr = item.split(" ")
+            arrayStr.map(subItem => {
+                filter = {
+                    mode: EModeWhere.like,
+                    concat: EConcatWhere.or,
+                    items: [
+                        { column: Columns.prodPrincipal.name, object: String(subItem) },
+                        { column: Columns.prodPrincipal.subcategory, object: String(subItem) },
+                        { column: Columns.prodPrincipal.category, object: String(subItem) },
+                        { column: Columns.prodPrincipal.short_decr, object: String(subItem) }
+                    ]
+                };
+                filters.push(filter);
+            })
+        }
+
+        //const groupBy: Array<string> = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`];
+
+        const joinQuery1: IJoin = {
+            table: Tables.PRODUCTS_VAR,
+            colJoin: Columns.prodVar.id_prod,
+            colOrigin: Columns.prodPrincipal.id_prod,
+            type: ETypesJoin.right
+        };
+
+        const order: Iorder = {
+            columns: [Columns.prodPrincipal.name, Columns.prodPrincipal.subcategory, Columns.prodVar.name_var],
+            asc: true
+        }
+
+        const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, undefined, undefined, [joinQuery1], order);
+
+        const prodList = await createProdListPDF(data)
+        return prodList
     }
 
     const upsertVariedades = async (variedades: Array<INewVariedad>, update: boolean, id_prod: number) => {
@@ -654,6 +696,7 @@ export = (injectedStore: typeof StoreType) => {
         newImg,
         correctImages,
         correctName,
-        correctVariedades
+        correctVariedades,
+        prodListPDF
     }
 }

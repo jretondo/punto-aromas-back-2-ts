@@ -1,3 +1,4 @@
+import { file } from './../../../network/response';
 import { Router, NextFunction, Response, Request } from 'express';
 import { success } from '../../../network/response';
 const router = Router();
@@ -184,9 +185,21 @@ const correct = (
         }).catch(next)
 }
 
+const prodListPDF = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.prodListPDF(String(req.query.query)).then((dataFact) => {
+        file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);
+    })
+        .catch(next)
+}
+
 router.get("/details/:id", secure([EPermissions.productos]), get);
 //router.get("/correct", correct)
 router.get("/getCat", secure([EPermissions.productos]), getCategorys);
+router.get("/prodListPDF", secure([EPermissions.productos]), prodListPDF)
 router.get("/getGetSubCat", secure([EPermissions.productos]), getSubCategorys);
 router.get("/public", getPublicList);
 router.get("/images/:id", secure([EPermissions.productos]), getImages)
