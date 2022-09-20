@@ -125,7 +125,8 @@
         <tbody>
           <% listaItems.forEach(function(item){ %>
             <%- include('./ItemFact.ejs', {itemIva: item.alicuota_id, itemName: item.nombre_prod, itemPrice:
-              item.precio_ind, itemCant: item.cant_prod, itemTotal: item.total_prod, tipoUn: item.unidad_tipo_prod}); %>
+              item.precio_ind, itemCant: item.cant_prod, itemTotal: item.precio_ind * item.cant_prod, tipoUn:
+              item.unidad_tipo_prod}); %>
               <% }); %>
         </tbody>
         <tfoot>

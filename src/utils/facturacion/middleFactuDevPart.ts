@@ -40,7 +40,7 @@ const factuMiddelDevPart = () => {
                 listProd.push({
                     id_prod: item.id_prod,
                     cant_prod: item.cant_prod,
-                    price: item.total_prod
+                    price: item.precio_ind
                 })
             })
 

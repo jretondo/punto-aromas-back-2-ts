@@ -244,7 +244,7 @@ export = (injectedStore: typeof StoreType) => {
                     values.push(item.precio_ind)
                     rowsvalues.push(values)
                     if (item.total_prod < 0) {
-                        await store.update(Tables.DET_FACTURAS, { anulada: true }, item.id || 0)
+                        //await store.update(Tables.DET_FACTURAS, { anulada: true }, item.id || 0)
                     }
                     if (key === newDetFact.length - 1) {
                         resolve(rowsvalues)

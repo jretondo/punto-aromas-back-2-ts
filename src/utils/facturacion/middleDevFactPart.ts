@@ -50,6 +50,34 @@ const devFactMiddle = () => {
             }
         }
 
+        let newCost = 0
+        let newTotal = 0
+        let newIva = 0
+        let newNeto = 0
+        let portion = 0
+        new Promise((resolve, reject) => {
+            detFact.map((item, key) => {
+                portion = ((item.precio_ind * item.cant_prod) / item.total_prod)
+
+                newCost = newCost + item.total_costo * portion
+                newTotal = newTotal + item.total_prod * portion
+                newIva = newIva + item.total_iva * portion
+                newNeto = newNeto + item.total_neto * portion
+
+                const precio_ind = - item.precio_ind
+                const total_costo = - item.total_costo * portion
+                const total_iva = - item.total_iva * portion
+                const total_neto = - item.total_neto * portion
+                const total_prod = - item.total_prod * portion
+                newDet.push({ ...item, precio_ind, total_costo, total_iva, total_neto, total_prod })
+                if (detFact.length - 1 === key) {
+                    resolve(detFact)
+                }
+            })
+        })
+
+        console.log('dataFact :>> ', dataFact);
+
         const newFact: IFactura = {
             fecha: fecha,
             pv: dataFact[0].pv,
@@ -71,14 +99,14 @@ const devFactMiddle = () => {
             raz_soc_cliente: dataFact[0].raz_soc_cliente || "",
             user_id: user.id || 0,
             seller_name: `${user.nombre} ${user.apellido}`,
-            total_fact: - dataFact[0].total_fact,
-            total_iva: - dataFact[0].total_iva,
-            total_neto: - dataFact[0].total_neto,
-            total_compra: - dataFact[0].total_compra,
+            total_fact: - newTotal,
+            total_iva: - newIva,
+            total_neto: - newNeto,
+            total_compra: - newCost,
             forma_pago: dataFact[0].forma_pago,
             pv_id: dataFact[0].pv_id,
             id_fact_asoc: dataFact[0].id || 0,
-            descuento: - dataFact[0].descuento,
+            descuento: - dataFact[0].descuento * portion,
             costo_envio: - dataFact[0].costo_envio,
             costo_imputar: - dataFact[0].costo_imputar,
             comision: - dataFact[0].comision,
@@ -94,19 +122,7 @@ const devFactMiddle = () => {
 
         let newDet: Array<IDetFactura> = []
 
-        new Promise((resolve, reject) => {
-            detFact.map((item, key) => {
-                const precio_ind = - item.precio_ind
-                const total_costo = - item.total_costo
-                const total_iva = - item.total_iva
-                const total_neto = - item.total_neto
-                const total_prod = - item.total_prod
-                newDet.push({ ...item, precio_ind, total_costo, total_iva, total_neto, total_prod })
-                if (detFact.length - 1 === key) {
-                    resolve(detFact)
-                }
-            })
-        })
+
 
         let ivaList: Array<IIvaItem> = [];
         let dataFiscal:
