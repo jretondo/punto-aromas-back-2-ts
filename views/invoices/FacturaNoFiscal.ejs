@@ -57,57 +57,48 @@
     <main>
 
       <div id="details" class="clearfix">
-        <% if(clienteNro===99999999){ %>
-          <div id="client">
-            <div class="to">Consumidor Final</div>
-            <div class="email"><a href="mailto:<%- clienteEmail %> ">
-                <%- clienteEmail %>
-              </a></div>
+        <div id="client">
+          <div class="to">CLIENTE:</div>
+          <h2 class="name">
+            <%- clienteName %>
+          </h2>
+          <h2 class="name">
+            <%- condIvaCliente %>
+          </h2>
+          <h2 class="name">
+            <%- tipoDoc %> : <%- clienteNro %>
+          </h2>
+          <div class="email"><a href="mailto:<%- clienteEmail %> ">
+              <%- clienteEmail %>
+            </a></div>
+          <div class="name">
+            <%- clienteDirection %>
           </div>
-          <% }else { %>
-            <div id="client">
-              <div class="to">CLIENTE:</div>
-              <h2 class="name">
-                <%- clienteName %>
-              </h2>
-              <h2 class="name">
-                <%- condIvaCliente %>
-              </h2>
-              <h2 class="name">
-                <%- tipoDoc %> : <%- clienteNro %>
-              </h2>
-              <div class="email"><a href="mailto:<%- clienteEmail %> ">
-                  <%- clienteEmail %>
-                </a></div>
-              <div class="name">
-                <%- clienteDirection %>
-              </div>
-            </div>
-            <% } %>
-              <div id="invoice">
-                <% if(cbteAsoc){ %>
-                  <br />
-                  <div class="to">COMPROBANTE ASOCIADO:</div>
-                  <h2 class="name">FACTURA Nº: </h2>
+        </div>
+        <div id="invoice">
+          <% if(cbteAsoc){ %>
+            <br />
+            <div class="to">COMPROBANTE ASOCIADO:</div>
+            <h2 class="name">FACTURA Nº: </h2>
+            <h2 class="name">
+              <%- cbteAsoc %>
+            </h2>
+            <% }else{ %>
+              <% if(parseInt(formaPago.code)===5){ %>
+                <div class="to">Forma de Pago:</div>
+                <% variosPagos.forEach(function(item){ %>
                   <h2 class="name">
-                    <%- cbteAsoc %>
+                    <%- item.tipo_txt %>: $ <%- item.importe %>
                   </h2>
-                  <% }else{ %>
-                    <% if(parseInt(formaPago.code)===5){ %>
+                  <% }); %>
+                    <% }else{ %>
                       <div class="to">Forma de Pago:</div>
-                      <% variosPagos.forEach(function(item){ %>
-                        <h2 class="name">
-                          <%- item.tipo_txt %>: $ <%- item.importe %>
-                        </h2>
-                        <% }); %>
-                          <% }else{ %>
-                            <div class="to">Forma de Pago:</div>
-                            <h2 class="name">
-                              <%- formaPago.string %>
-                            </h2>
-                            <% } %>
-                              <% } %>
-              </div>
+                      <h2 class="name">
+                        <%- formaPago.string %>
+                      </h2>
+                      <% } %>
+                        <% } %>
+        </div>
       </div>
 
       <table border="0" cellspacing="0" cellpadding="0">
