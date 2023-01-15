@@ -1,4 +1,4 @@
-import { config } from 'config'
+import { config } from '../config'
 import path from 'path'
 import tinify from 'tinify'
 tinify.key = config.tinify.key
