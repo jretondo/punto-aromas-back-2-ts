@@ -319,6 +319,40 @@ export = (injectedStore: typeof StoreType) => {
         };
     }
 
+    const clientsList = async (userId: number, page: number) => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+        const pages: Ipages = {
+            currentPage: page,
+            cantPerPage: 10,
+            order: Columns.clientes.razsoc,
+            asc: true
+        };
+        filter = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.and,
+            items: [
+                { column: Columns.clientes.vendedor_id, object: String(userId) }
+            ]
+        };
+        filters.push(filter);
+        const data = await store.list(Tables.CLIENTES, [ESelectFunct.all], filters, undefined, pages);
+        const cant = await store.list(Tables.CLIENTES, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, undefined, undefined);
+        const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
+        return {
+            data,
+            pagesObj
+        };
+    }
+
+    const deleteClient = async (clientId: number) => {
+        const result: INewInsert = await store.update(Tables.CLIENTES, { vendedor_id: null }, clientId)
+        if (result.affectedRows > 0) {
+            return ""
+        }
+        throw Error("Hubo un error!")
+    }
+
     return {
         list,
         upsert,
@@ -328,6 +362,8 @@ export = (injectedStore: typeof StoreType) => {
         listCtaCteSeller,
         registerPayment,
         getDataPayment,
-        getDetailsFact
+        getDetailsFact,
+        clientsList,
+        deleteClient
     }
 }

@@ -173,16 +173,47 @@ const listaDetCtaCte = (
     }).catch(next)
 };
 
+const clientsList = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.clientsList(Number(req.params.id), Number(req.query.page)).then((lista) => {
+        success({
+            req,
+            res,
+            status: 200,
+            message: lista
+        });
+    }).catch(next)
+}
+
+const deleteClient = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.deleteClient(Number(req.params.id)).then(() => {
+        success({
+            req,
+            res,
+            status: 200,
+        });
+    }).catch(next)
+}
+
 router.get("/details/:id", secure([EPermissions.userAdmin]), get);
 router.get("/mydata", secure(), myDataUser)
 router.get("/sellers", secure([EPermissions.userAdmin, EPermissions.ventas]), sellersList)
 router.get("/payments/:id", secure([EPermissions.ventas]), dataPaymentMiddleSeller(), paymentPDFMiddleSeller(), sendFactMiddle(), getDataPaymentPDF)
 router.get("/ctaCte/:page", secure([EPermissions.userAdmin]), listCtaCteSeller)
 router.get("/factDet", secure([EPermissions.clientes]), listaDetCtaCte)
+router.get("/clients/:id", secure([EPermissions.clientes]), clientsList)
 router.get("/:page", secure([EPermissions.userAdmin]), listPagination);
 router.get("/", secure([EPermissions.userAdmin]), list);
 router.post("/payments", secure([EPermissions.clientes, EPermissions.ventas]), paymentMiddleSeller(), paymentPDFMiddleSeller(), sendFactMiddle(), newPayment)
 router.post("/", secure([EPermissions.userAdmin]), upsert);
+router.put("/clients/:id", secure([EPermissions.userAdmin]), deleteClient)
 router.put("/", secure([EPermissions.userAdmin]), upsert);
 router.delete("/:id", secure([EPermissions.userAdmin]), remove);
 
