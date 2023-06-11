@@ -1,10 +1,11 @@
-import { IFormasPago } from './../../interfaces/Itables';
+import { IClientes, IFormasPago } from './../../interfaces/Itables';
 import { NextFunction, Request, Response } from 'express';
 import { INewPV } from 'interfaces/Irequests';
 import { IDetFactura, IFactura } from 'interfaces/Itables';
 import errorSend from '../error';
 import ControllerInvoices from '../../api/components/invoices';
 import ControllerPtoVta from '../../api/components/ptosVta';
+import ControllerClients from '../../api/components/clientes';
 import moment from 'moment';
 
 const dataFactMiddle = () => {
@@ -19,6 +20,9 @@ const dataFactMiddle = () => {
             const detFact: Array<IDetFactura> = await ControllerInvoices.getDetails(idFact)
             const pvData: Array<INewPV> = await ControllerPtoVta.get(dataFact[0].pv_id)
             const variosPagos: Array<IFormasPago> = await ControllerInvoices.getFormasPago(idFact)
+            const clientData = await ControllerClients.list(undefined, String(dataFact[0].n_doc_cliente))
+
+            console.log('clientData :>> ', clientData);
 
             if (dataFact[0].fiscal) {
                 const dataFiscal: FactInscriptoProd |
@@ -33,6 +37,7 @@ const dataFactMiddle = () => {
             req.body.newFact = dataFact[0]
             req.body.productsList = detFact
             req.body.variosPagos = variosPagos
+            req.body.clientData = clientData.data[0]
 
             next()
         } catch (error) {

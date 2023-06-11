@@ -154,13 +154,15 @@ export const invoicePDFMiddle = () => {
                 iibbOrigen: pvData.iibb,
                 iniAct: moment(pvData.ini_act, "YYYY-MM-DD").format("DD/MM/YYYY"),
             }
+
             const cliente = {
                 clienteEmail: newFact.email_cliente || "",
                 clienteName: newFact.raz_soc_cliente || "Consumidor Final",
                 clienteNro: newFact.n_doc_cliente || "",
                 tipoDoc: newFact.tipo_doc_cliente === 80 ? "CUIT" : "DNI",
                 condIvaCliente: condIvaStrCliente,
-                clienteDirection: req.body.clienteDirection
+                clienteDirection: req.body.clientData.direccion,
+                clienteTelefono: req.body.clientData.telefono
             }
 
             const totales = {
