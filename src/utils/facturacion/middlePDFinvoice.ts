@@ -155,6 +155,8 @@ export const invoicePDFMiddle = () => {
                 iniAct: moment(pvData.ini_act, "YYYY-MM-DD").format("DD/MM/YYYY"),
             }
 
+            console.log('req.body.clientData :>> ', req.body.clientData);
+
             const cliente = {
                 clienteEmail: newFact.email_cliente || "",
                 clienteName: newFact.raz_soc_cliente || "Consumidor Final",
