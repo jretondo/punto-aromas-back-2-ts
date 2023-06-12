@@ -157,14 +157,21 @@ export const invoicePDFMiddle = () => {
 
             console.log('req.body.clientData :>> ', req.body.clientData);
 
-            const cliente = {
+            let cliente = {
                 clienteEmail: newFact.email_cliente || "",
                 clienteName: newFact.raz_soc_cliente || "Consumidor Final",
                 clienteNro: newFact.n_doc_cliente || "",
                 tipoDoc: newFact.tipo_doc_cliente === 80 ? "CUIT" : "DNI",
                 condIvaCliente: condIvaStrCliente,
-                clienteDirection: req.body.clientData.direccion,
-                clienteTelefono: req.body.clientData.telefono
+                clienteDirection: "",
+                clienteTelefono: ""
+            }
+
+            try {
+                cliente.clienteDirection = req.body.clientData.direccion,
+                    cliente.clienteTelefono = req.body.clientData.telefono
+            } catch (error) {
+
             }
 
             const totales = {
