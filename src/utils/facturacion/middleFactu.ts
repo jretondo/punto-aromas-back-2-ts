@@ -84,6 +84,9 @@ const factuMiddel = () => {
             const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.costoEnvio, pvData[0].cond_iva);
             const clienteData: Array<IClientes> = await clientesController.getCuit2(body.cliente_ndoc || 0)
             req.body.clienteDirection = ""
+
+            req.body.clientData = clienteData[0]
+
             if (clienteData.length > 0) {
                 req.body.clienteDirection = clienteData[0].direccion
             }
