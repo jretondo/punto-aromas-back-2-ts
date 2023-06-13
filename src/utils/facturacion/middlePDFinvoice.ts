@@ -217,7 +217,7 @@ export const invoicePDFMiddle = () => {
             }
 
             const listaItems = productsList
-
+            console.log('variosPagos :>> ', variosPagos);
             const datos2 = {
                 myCss: `<style>${myCss}</style>`,
                 listaItems,
