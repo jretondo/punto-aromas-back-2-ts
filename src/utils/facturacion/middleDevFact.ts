@@ -1,3 +1,4 @@
+import { IFormasPago } from './../../interfaces/Itables';
 import { NextFunction, Request, Response } from "express"
 import { INewPV } from "interfaces/Irequests";
 import { IDetFactura, IFactura, IUser } from "interfaces/Itables";
@@ -19,6 +20,7 @@ const devFactMiddle = () => {
         const detFact: Array<IDetFactura> = await ControllerInvoices.getDetails(idFact)
         const user: IUser = req.body.user
         const pvData: Array<INewPV> = await ControllerPtoVta.get(dataFact[0].pv_id);
+        const variosPagos: Array<IFormasPago> = await ControllerInvoices.getFormasPago(idFact)
         const esFiscal = dataFact[0].fiscal
         const tipoFact = dataFact[0].t_fact
         let tipoNC: number = 0
@@ -148,6 +150,7 @@ const devFactMiddle = () => {
         req.body.dataFiscal = dataFiscal
         req.body.pvData = pvData[0]
         req.body.productsList = newDet
+        req.body.variosPagos = variosPagos
 
         next();
     }
