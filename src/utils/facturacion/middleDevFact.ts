@@ -1,10 +1,11 @@
-import { IFormasPago } from './../../interfaces/Itables';
+import { IFormasPago, IUser } from './../../interfaces/Itables';
 import { NextFunction, Request, Response } from "express"
 import { INewPV } from "interfaces/Irequests";
-import { IDetFactura, IFactura, IUser } from "interfaces/Itables";
+import { IDetFactura, IFactura } from "interfaces/Itables";
 import moment from "moment";
 import ControllerInvoices from '../../api/components/invoices';
 import ControllerPtoVta from '../../api/components/ptosVta';
+import ControllerUser from '../../api/components/user';
 import { Conceptos, perIvaAlicuotas } from "./AfipClass";
 
 const devFactMiddle = () => {
@@ -18,7 +19,8 @@ const devFactMiddle = () => {
         const fecha = req.body.fecha
         const dataFact: Array<IFactura> = await ControllerInvoices.get(idFact)
         const detFact: Array<IDetFactura> = await ControllerInvoices.getDetails(idFact)
-        const user: IUser = req.body.user
+        const userData: Array<IUser> = await ControllerUser.getUser(dataFact[0].user_id)
+        const user: IUser = userData[0]
         const pvData: Array<INewPV> = await ControllerPtoVta.get(dataFact[0].pv_id);
         const variosPagos: Array<IFormasPago> = await ControllerInvoices.getFormasPago(idFact)
         const esFiscal = dataFact[0].fiscal
