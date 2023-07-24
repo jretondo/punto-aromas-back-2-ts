@@ -183,7 +183,7 @@ export const invoicePDFMiddle = () => {
                 totalEnvio: formatMoney(newFact.costo_envio),
             }
             let formapagoStr = ""
-            console.log('newFact.forma_pago :>> ', newFact.forma_pago);
+
             switch (Number(newFact.forma_pago)) {
                 case 0:
                     formapagoStr = "EFECTIVO"

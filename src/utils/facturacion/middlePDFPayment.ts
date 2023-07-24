@@ -97,23 +97,30 @@ export const paymentPDFMiddle = () => {
                 totalDesc: formatMoney(newFact.descuento),
             }
             let formapagoStr = ""
-            switch (newFact.forma_pago) {
+            switch (Number(newFact.forma_pago)) {
                 case 0:
                     formapagoStr = "EFECTIVO"
                     break;
-                case 0:
+                case 1:
                     formapagoStr = "MERCADO PAGO"
                     break;
-                case 0:
+                case 2:
                     formapagoStr = "DEBITO"
                     break;
-                case 0:
+                case 3:
                     formapagoStr = "CREDITO"
                     break;
-                case 0:
+                case 4:
                     formapagoStr = "CUENTA CORRIENTE"
                     break;
+                case 6:
+                    formapagoStr = "CHEQUE"
+                    break;
+                case 7:
+                    formapagoStr = "TRANSFERENCIA"
+                    break;
                 default:
+                    formapagoStr = "OTROS"
                     break;
             }
 
