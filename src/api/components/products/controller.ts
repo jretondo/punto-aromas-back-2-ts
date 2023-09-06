@@ -9,11 +9,12 @@ import getPages from '../../../utils/getPages';
 import OptimizeImg from '../../../utils/optimeImg';
 import { IJoin, Ipages, IWhereParams, Iorder } from 'interfaces/Ifunctions';
 import { INewProduct } from 'interfaces/Irequests';
+import StockController from '../stock'
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
 
-    const list = async (page?: number, item?: string, cantPerPage?: number) => {
+    const list = async (page?: number, item?: string, cantPerPage?: number, type?: number) => {
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
         let conID = false
@@ -31,7 +32,6 @@ export = (injectedStore: typeof StoreType) => {
                         items: [
                             { column: Columns.prodPrincipal.name, object: String(subItem) },
                             { column: Columns.prodPrincipal.subcategory, object: String(subItem) },
-                            { column: Columns.prodPrincipal.category, object: String(subItem) },
                             { column: Columns.prodPrincipal.short_decr, object: String(subItem) }
                         ]
                     };
@@ -69,12 +69,24 @@ export = (injectedStore: typeof StoreType) => {
 
                 const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
 
+
+                if (cantPerPage === 1 && data.length > 0) {
+                    const stock = await StockController.totalStock(data[0].id_prod || 0)
+                    return {
+                        data,
+                        pagesObj,
+                        stock
+                    };
+                }
                 return {
                     data,
                     pagesObj
                 };
+
             } else {
-                const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, undefined, undefined, [joinQuery1]);
+
+                const data: Array<IProdPrinc> = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, undefined, undefined, [joinQuery1]);
+
                 return {
                     data
                 };

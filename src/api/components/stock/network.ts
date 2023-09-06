@@ -156,11 +156,25 @@ const getStockProd = (
         .catch(next)
 }
 
-router.get("/", secure([EPermissions.ventas]), list);
+const getTotalStock = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.totalStock(Number(req.query.id_prod))
+        .then(data => {
+            success({ req, res, message: data });
+        })
+        .catch(next)
+}
+
+
 router.get("/ultMov/", secure([EPermissions.ventas]), ultMov);
 router.get("/stockProd", secure([EPermissions.stock]), getStockProd)
 router.get("/ultStockList/:page", secure([EPermissions.stock]), ultStockList)
 router.get("/listaStock/:page", secure([EPermissions.stock]), listaStock)
+router.get("/totalStock", secure([EPermissions.ventas]), getTotalStock)
+router.get("/", secure([EPermissions.ventas]), list);
 router.post("/", secure([EPermissions.ventas]), upsert);
 router.post("/moverStock", secure([EPermissions.ventas]), moverStock);
 router.delete("/:id", secure([EPermissions.ventas]), remove);
