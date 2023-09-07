@@ -41,9 +41,10 @@ export = (injectedStore: typeof StoreType) => {
         }
         if (conID) {
             let data = await store.get(Tables.PRODUCTS_PRINCIPAL, idProd, Columns.prodPrincipal.id_prod)
-
+            const stock = await StockController.totalStock(idProd || 0)
             return {
-                data
+                data,
+                stock
             }
         } else {
             const groupBy: Array<string> = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`];
