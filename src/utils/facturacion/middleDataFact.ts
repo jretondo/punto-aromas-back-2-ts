@@ -22,13 +22,11 @@ const dataFactMiddle = () => {
             const variosPagos: Array<IFormasPago> = await ControllerInvoices.getFormasPago(idFact)
             const clientData = await ControllerClients.list(undefined, String(dataFact[0].n_doc_cliente))
 
-            console.log('clientData :>> ', clientData);
-
             if (dataFact[0].fiscal) {
                 const dataFiscal: FactInscriptoProd |
                     FactInscriptoServ |
                     FactMonotribProd |
-                    FactMonotribServ = await ControllerInvoices.getFiscalDataInvoice(dataFact[0].cbte, dataFact[0].pv_id, true, dataFact[0].t_fact, false)
+                    FactMonotribServ | any = await ControllerInvoices.getFiscalDataInvoice(dataFact[0].cbte, dataFact[0].pv_id, true, dataFact[0].t_fact, false)
                 req.body.dataFiscal = dataFiscal
                 req.body.dataFiscal.CAEFchVto = moment(req.body.dataFiscal.FchVto, "YYYYMMDD")
             }

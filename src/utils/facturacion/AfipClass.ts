@@ -145,7 +145,7 @@ export class AfipClass {
             return response;
         }
     }
-    async getInvoiceInfo(ncbte: number, pv: number, tipo: CbteTipos): Promise<{
+    async getInvoiceInfo(ncbte: number, pv: number, tipo: CbteTipos | any): Promise<{
         status: resStatus,
         data: FactMonotribProd
         | FactMonotribServ
