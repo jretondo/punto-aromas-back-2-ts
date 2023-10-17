@@ -191,6 +191,7 @@ export enum CbteTipos {
     "Nota de Débito M" = 52,
     "Nota de Crédito M" = 53,
     "Recibo M" = 54,
+    "otro" = 0
 }
 export enum TiposTributo {
     "Impuestos nacionales" = 1,

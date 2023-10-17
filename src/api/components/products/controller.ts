@@ -14,7 +14,7 @@ import StockController from '../stock'
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
 
-    const list = async (page?: number, item?: string, cantPerPage?: number, type?: number) => {
+    const list = async (page?: number, item?: string, cantPerPage?: number, provider?: boolean) => {
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
         let conID = false
@@ -29,11 +29,11 @@ export = (injectedStore: typeof StoreType) => {
                     filter = {
                         mode: EModeWhere.like,
                         concat: EConcatWhere.or,
-                        items: [
+                        items: provider ? [{ column: Columns.prodPrincipal.category, object: String(subItem) }] : ([
                             { column: Columns.prodPrincipal.name, object: String(subItem) },
                             { column: Columns.prodPrincipal.subcategory, object: String(subItem) },
                             { column: Columns.prodPrincipal.short_decr, object: String(subItem) }
-                        ]
+                        ])
                     };
                     filters.push(filter);
                 })
@@ -95,7 +95,7 @@ export = (injectedStore: typeof StoreType) => {
         }
     }
 
-    const prodListPDF = async (item?: string): Promise<any> => {
+    const prodListPDF = async (item?: string, provider?: boolean): Promise<any> => {
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
 
@@ -105,12 +105,11 @@ export = (injectedStore: typeof StoreType) => {
                 filter = {
                     mode: EModeWhere.like,
                     concat: EConcatWhere.or,
-                    items: [
+                    items: provider ? [{ column: Columns.prodPrincipal.name, object: String(subItem) }] : ([
                         { column: Columns.prodPrincipal.name, object: String(subItem) },
                         { column: Columns.prodPrincipal.subcategory, object: String(subItem) },
-                        { column: Columns.prodPrincipal.category, object: String(subItem) },
                         { column: Columns.prodPrincipal.short_decr, object: String(subItem) }
-                    ]
+                    ])
                 };
                 filters.push(filter);
             })

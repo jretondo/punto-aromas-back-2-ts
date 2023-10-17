@@ -17,7 +17,7 @@ const list = (
         Number(req.params.page),
         String(req.query.query),
         Number(req.query.cantPerPage),
-        Number(req.query.type)
+        Boolean(req.query.provider)
     )
         .then((lista: any) => {
             success({

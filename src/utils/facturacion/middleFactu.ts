@@ -131,7 +131,7 @@ const factuMiddel = () => {
             comisionImputar = (productsList.totalFact - productsList.totalReventa) - comision
 
             let vendeId = 0
-            console.log('clienteData[0] :>> ', clienteData[0]);
+
             if (clienteData[0]) {
                 vendeId = clienteData[0].vendedor_id || 0
             }
