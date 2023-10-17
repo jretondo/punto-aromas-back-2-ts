@@ -117,13 +117,13 @@ export class AfipClass {
         | FactInscriptoProd
         | FactInscriptoServ
         | FactInscriptoProdNC
-        | FactInscriptoServNC): Promise<{
+        | FactInscriptoServNC | any): Promise<{
             status: resStatus,
             data: FactMonotribProd
             | FactMonotribServ
             | FactInscriptoProd
             | FactInscriptoServ
-            | string
+            | string | any
         }> {
         const nfact = await this.lastFact(data.PtoVta, data.CbteTipo);
         if (nfact.status === 200) {
