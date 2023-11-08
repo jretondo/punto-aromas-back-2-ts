@@ -191,7 +191,7 @@ const prodListPDF = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.prodListPDF(String(req.query.query)).then((dataFact) => {
+    Controller.prodListPDF(String(req.query.query), Boolean(req.query.provider)).then((dataFact) => {
         file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);
     })
         .catch(next)

@@ -98,14 +98,15 @@ export = (injectedStore: typeof StoreType) => {
     const prodListPDF = async (item?: string, provider?: boolean): Promise<any> => {
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
-
+        console.log('provider :>> ', provider);
+        console.log('item :>> ', item);
         if (item) {
             const arrayStr = item.split(" ")
             arrayStr.map(subItem => {
                 filter = {
                     mode: EModeWhere.like,
                     concat: EConcatWhere.or,
-                    items: provider ? [{ column: Columns.prodPrincipal.name, object: String(subItem) }] : ([
+                    items: provider ? [{ column: Columns.prodPrincipal.category, object: String(subItem) }] : ([
                         { column: Columns.prodPrincipal.name, object: String(subItem) },
                         { column: Columns.prodPrincipal.subcategory, object: String(subItem) },
                         { column: Columns.prodPrincipal.short_decr, object: String(subItem) }
