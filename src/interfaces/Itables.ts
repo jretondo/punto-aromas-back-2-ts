@@ -1,3 +1,5 @@
+import { file } from './../network/response';
+import { Multer } from 'multer';
 import { MetodosPago } from './../enums/EtablesDB';
 export interface Iauth {
     id?: number,
@@ -203,4 +205,15 @@ export interface CtaCteVende {
     importe: number,
     detalle: string,
     comision: number
+}
+
+export interface IHeroSlider {
+    id?: number,
+    title: string,
+    subtitle: string,
+    image: string,
+    url: string,
+    active: boolean,
+    type: boolean,
+    filesName?: Express.Multer.File[]
 }

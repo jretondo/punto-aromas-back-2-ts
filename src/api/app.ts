@@ -21,6 +21,7 @@ import proveedores from './components/proveedores/network';
 import clientes from './components/clientes/network';
 import stock from './components/stock/network';
 import invoices from './components/invoices/network';
+import heroSlider from './components/heroSlider/network';
 export class App {
     app: Application;
     constructor(
@@ -59,6 +60,7 @@ export class App {
         this.app.use("/api/clientes", clientes);
         this.app.use("/api/stock", stock);
         this.app.use("/api/invoices", invoices);
+        this.app.use("/api/heroSlider", heroSlider);
         this.app.use(errorTrhow);
     }
 

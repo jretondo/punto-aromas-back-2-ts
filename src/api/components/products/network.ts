@@ -114,6 +114,18 @@ const getSubCategorys = (
         .catch(next);
 }
 
+const getTags = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.getTags()
+        .then(data => {
+            success({ req, res, message: data });
+        })
+        .catch(next);
+}
+
 const updateCodBarras = (
     req: Request,
     res: Response,
@@ -197,11 +209,14 @@ const prodListPDF = (
         .catch(next)
 }
 
+
+
 router.get("/details/:id", secure([EPermissions.productos]), get);
 //router.get("/correct", correct)
 router.get("/getCat", secure([EPermissions.productos]), getCategorys);
 router.get("/prodListPDF", secure([EPermissions.productos]), prodListPDF)
 router.get("/getGetSubCat", secure([EPermissions.productos]), getSubCategorys);
+router.get("/getTags", secure([EPermissions.productos]), getTags);
 router.get("/public", getPublicList);
 router.get("/images/:id", secure([EPermissions.productos]), getImages)
 router.get("/:page", secure([EPermissions.productos, EPermissions.ventas]), list);

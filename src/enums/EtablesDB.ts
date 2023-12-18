@@ -197,6 +197,15 @@ enum FormasPago {
     importe = "importe"
 }
 
+enum HeroSlider {
+    id = "id",
+    tittle = "tittle",
+    subtitle = "subtitle",
+    image = "image",
+    url = "url",
+    active = "active"
+}
+
 export enum Tipos_Precios {
     costo = "costo",
     minorista = "minorista",
@@ -235,6 +244,7 @@ export enum Tables {
     FACTURAS = "facturas",
     DET_FACTURAS = "detalle_fact",
     FORMAS_PAGO = "formas_pago",
+    HERO_SLIDER = "hero_slider",
 }
 
 export const Columns = {
@@ -252,5 +262,6 @@ export const Columns = {
     stock: Stock,
     facturas: Facturas,
     detallesFact: DetalleFact,
-    formasPago: FormasPago
+    formasPago: FormasPago,
+    heroSlider: HeroSlider
 }

@@ -98,8 +98,6 @@ export = (injectedStore: typeof StoreType) => {
     const prodListPDF = async (item?: string, provider?: boolean): Promise<any> => {
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
-        console.log('provider :>> ', provider);
-        console.log('item :>> ', item);
         if (item) {
             const arrayStr = item.split(" ")
             arrayStr.map(subItem => {
@@ -355,6 +353,11 @@ export = (injectedStore: typeof StoreType) => {
     const getSubCategory = async () => {
         const groupBy: Array<string> = [Columns.prodPrincipal.subcategory];
         return await store.list(Tables.PRODUCTS_PRINCIPAL, [Columns.prodPrincipal.subcategory], undefined, groupBy, undefined, undefined);
+    }
+
+    const getTags = async () => {
+        const groupBy: Array<string> = [Columns.prodTags.tag];
+        return await store.list(Tables.PRODUCTS_TAGS, [Columns.prodTags.tag], undefined, groupBy, undefined, undefined);
     }
 
     const asignarCodBarra = async (id: number, codBarras: string) => {
@@ -710,6 +713,7 @@ export = (injectedStore: typeof StoreType) => {
         correctImages,
         correctName,
         correctVariedades,
-        prodListPDF
+        prodListPDF,
+        getTags
     }
 }
