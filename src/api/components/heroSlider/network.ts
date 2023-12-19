@@ -24,6 +24,23 @@ const list = (
         .catch(next)
 };
 
+const publicList = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.publicList()
+        .then((lista: any) => {
+            success({
+                req,
+                res,
+                status: 200,
+                message: lista
+            });
+        })
+        .catch(next)
+}
+
 const upsert = (
     req: Request,
     res: Response,
@@ -85,7 +102,7 @@ const get = (
         })
         .catch(next)
 }
-
+router.get("/public", publicList);
 router.get("/:page", secure([EPermissions.userAdmin]), list);
 router.get("/details/:id", secure([EPermissions.userAdmin]), get);
 router.post("/", secure([EPermissions.userAdmin]), uploadFile(staticFolders.heroSlider, ["hero"]), upsert);

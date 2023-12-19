@@ -1,17 +1,35 @@
 import { IHeroSlider } from 'interfaces/Itables';
-import { ESelectFunct } from '../../../enums/EfunctMysql';
-import { Tables } from '../../../enums/EtablesDB';
+import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
+import { Columns, Tables } from '../../../enums/EtablesDB';
 import StoreType from '../../../store/mysql';
 import OptimizeImg from '../../../utils/optimeImg';
 import fs from 'fs';
 import path from 'path';
 import { staticFolders } from '../../../enums/EStaticFiles';
+import { IWhereParams } from '../../../interfaces/Ifunctions';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
 
     const list = async (page: number) => {
         const data = await store.list(Tables.HERO_SLIDER, [ESelectFunct.all]);
+        return {
+            data
+        };
+    }
+
+    const publicList = async () => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+        filter = {
+            mode: EModeWhere.strict,
+            concat: EConcatWhere.none,
+            items: ([
+                { column: Columns.heroSlider.active, object: String(1) }
+            ])
+        };
+        filters.push(filter);
+        const data = await store.list(Tables.HERO_SLIDER, [ESelectFunct.all], filters);
         return {
             data
         };
@@ -54,6 +72,7 @@ export = (injectedStore: typeof StoreType) => {
         upsert,
         remove,
         get,
-        toggleEnabled
+        toggleEnabled,
+        publicList
     }
 }
