@@ -46,8 +46,11 @@ export = (injectedStore: typeof StoreType) => {
             type: body.type
         }
         body.filesName && OptimizeImg(body.filesName[0]?.path, "heroSlider")
+
         if (body.id) {
-            return await store.update(Tables.HERO_SLIDER, heroSlider, body.id);
+            body.filesName && (body.image = body.filesName[0]?.path);
+            delete body.filesName;
+            return await store.update(Tables.HERO_SLIDER, body, body.id);
         } else {
             return await store.insert(Tables.HERO_SLIDER, heroSlider);
         }
@@ -58,8 +61,12 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const remove = async (idHero: number) => {
-        const heroSlider = await store.get(Tables.HERO_SLIDER, idHero);
-        fs.unlinkSync(path.join(staticFolders.heroSlider, heroSlider[0].image));
+        try {
+            const heroSlider = await store.get(Tables.HERO_SLIDER, idHero);
+            fs.unlinkSync(path.join(staticFolders.heroSlider, heroSlider[0].image));
+        } catch (error) {
+
+        }
         return await store.remove(Tables.HERO_SLIDER, { id: idHero });
     }
 
