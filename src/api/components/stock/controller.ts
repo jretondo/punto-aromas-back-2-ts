@@ -1,9 +1,9 @@
-import { IChangeStock, Iorder, Ipages, IWhereParams } from 'interfaces/Ifunctions';
+import { IChangeStock, IJoin, Iorder, Ipages, IWhereParams } from 'interfaces/Ifunctions';
 import { INewProduct, INewPV, INewStock } from 'interfaces/Irequests';
 import { IDetFactura, IMovStock, IUser } from 'interfaces/Itables';
 import moment from 'moment';
 import getPages from '../../../utils/getPages';
-import { EConcatWhere, EModeWhere, ESelectFunct } from '../../../enums/EfunctMysql';
+import { EConcatWhere, EModeWhere, ESelectFunct, ETypesJoin } from '../../../enums/EfunctMysql';
 import { Tables, Columns } from '../../../enums/EtablesDB';
 import StoreType from '../../../store/mysql';
 
@@ -300,7 +300,7 @@ export = (injectedStore: typeof StoreType) => {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: Columns.stock.id_prod, object: String(prodId) }
+                    { column: `${Tables.STOCK}.${Columns.stock.id_prod}`, object: String(prodId) }
                 ]
             };
             filters.push(filter)
@@ -311,7 +311,7 @@ export = (injectedStore: typeof StoreType) => {
                     mode: EModeWhere.strict,
                     concat: EConcatWhere.and,
                     items: [
-                        { column: Columns.stock.pv_id, object: String(0) }
+                        { column: `${Tables.STOCK}.${Columns.stock.pv_id}`, object: String(0) }
                     ]
                 };
                 filters.push(filter)
@@ -320,7 +320,7 @@ export = (injectedStore: typeof StoreType) => {
                     mode: EModeWhere.strict,
                     concat: EConcatWhere.and,
                     items: [
-                        { column: Columns.stock.pv_id, object: String(pvId) }
+                        { column: `${Tables.STOCK}.${Columns.stock.pv_id}`, object: String(pvId) }
                     ]
                 };
                 filters.push(filter)
@@ -331,7 +331,7 @@ export = (injectedStore: typeof StoreType) => {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: Columns.stock.category, object: String(cat) }
+                    { column: `${Tables.STOCK}.${Columns.stock.category}`, object: String(cat) }
                 ]
             };
             filters.push(filter)
@@ -341,18 +341,18 @@ export = (injectedStore: typeof StoreType) => {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: Columns.stock.sub_category, object: String(subCat) }
+                    { column: `${Tables.STOCK}.${Columns.stock.sub_category}`, object: String(subCat) }
                 ]
             };
             filters.push(filter)
         }
 
-        let groupBy: Array<string> = [Columns.stock.id_prod];
+        let groupBy: Array<string> = [`${Tables.STOCK}.${Columns.stock.id_prod}`];
 
         if (group === 1) {
-            groupBy = [Columns.stock.sub_category];
+            groupBy = [`${Tables.STOCK}.${Columns.stock.sub_category}`];
         } else if (group === 2) {
-            groupBy = [Columns.stock.category];
+            groupBy = [`${Tables.STOCK}.${Columns.stock.category}`];
         }
         let arrayOrden: Array<{
             orden: number,
@@ -366,13 +366,13 @@ export = (injectedStore: typeof StoreType) => {
         }
         arrayOrden.map((item, key) => {
             if (item.title === "Nombre de Productos") {
-                ordenArray.push(Columns.stock.prod_name)
+                ordenArray.push(`${Tables.STOCK}.${Columns.stock.prod_name}`)
             } else if (item.title === "Importe") {
                 ordenArray.push('costoTotal')
             } else if (item.title === "Marca") {
-                ordenArray.push(Columns.stock.sub_category)
+                ordenArray.push(`${Tables.STOCK}.${Columns.stock.sub_category}`)
             } else if (item.title === "Proveedor") {
-                ordenArray.push(Columns.stock.category)
+                ordenArray.push(`${Tables.STOCK}.${Columns.stock.category}`)
             }
             if (key === arrayOrden.length - 1) {
                 orden = {
@@ -385,10 +385,16 @@ export = (injectedStore: typeof StoreType) => {
             pages = {
                 currentPage: page,
                 cantPerPage: cantPerPage || 10,
-                order: Columns.prodImg.id_prod,
+                order: `${Tables.STOCK}.${Columns.stock.id_prod}`,
                 asc: true
             };
-            data = await store.list(Tables.STOCK, [ESelectFunct.all, `SUM(${Columns.stock.cant}) as total`, `SUM(${Columns.stock.costo}) as costoTotal`], filters, groupBy, pages, undefined, orden);
+            const joinQuery: IJoin = {
+                table: Tables.PRODUCTS_PRINCIPAL,
+                colJoin: Columns.prodPrincipal.id_prod,
+                colOrigin: Columns.stock.id_prod,
+                type: ETypesJoin.left
+            };
+            data = await store.list(Tables.STOCK, [ESelectFunct.all, `SUM(${Columns.stock.cant}) as total`, `SUM(${Columns.stock.cant} * ${Tables.PRODUCTS_PRINCIPAL}.${Columns.stock.costo}) as costoTotal`], filters, groupBy, pages, [joinQuery], orden);
             const cant = await store.list(Tables.STOCK, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, groupBy);
             const pagesObj = await getPages(cant.length, 10, Number(page));
             return {
