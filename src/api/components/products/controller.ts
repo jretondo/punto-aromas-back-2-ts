@@ -475,7 +475,7 @@ export = (injectedStore: typeof StoreType) => {
     const publicList = async () => {
         const order: Iorder = {
             columns: [Columns.prodPrincipal.subcategory],
-            asc: true
+            asc: false
         }
         const groupBy: Array<string> = [Columns.prodPrincipal.id_prod, Columns.prodPrincipal.subcategory];
         const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], undefined, groupBy, undefined, undefined, order)
