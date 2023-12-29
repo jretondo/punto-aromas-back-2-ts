@@ -477,8 +477,14 @@ export = (injectedStore: typeof StoreType) => {
             columns: [Columns.prodPrincipal.subcategory, Columns.prodPrincipal.name],
             asc: true
         }
-        const groupBy: Array<string> = [Columns.prodPrincipal.id_prod, Columns.prodPrincipal.subcategory];
-        const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], undefined, groupBy, undefined, undefined, order)
+        const joinQuery: IJoin = {
+            table: Tables.STOCK,
+            colJoin: Columns.stock.id_prod,
+            colOrigin: Columns.prodPrincipal.id_prod,
+            type: ETypesJoin.left
+        };
+        const groupBy: Array<string> = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`, Columns.prodPrincipal.subcategory];
+        const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*", `SUM(${Columns.stock.cant}) as stock`], undefined, groupBy, undefined, [joinQuery], order)
         return new Promise((resolve, reject) => {
             let products: Array<any> = []
             lista.map(async (item, key) => {
@@ -486,7 +492,10 @@ export = (injectedStore: typeof StoreType) => {
                 const name = item.name
                 let filter2: IWhereParams | undefined = undefined;
                 let filters2: Array<IWhereParams> = [];
-
+                let stock = item.stock
+                if (!item.stock || item.stock < 0) {
+                    stock = 0
+                }
                 filter2 = {
                     mode: EModeWhere.strict,
                     concat: EConcatWhere.none,
@@ -573,7 +582,8 @@ export = (injectedStore: typeof StoreType) => {
                     variation,
                     shortDescription,
                     image,
-                    prices
+                    prices,
+                    stock
                 })
                 if (key === lista.length - 1) {
                     resolve({

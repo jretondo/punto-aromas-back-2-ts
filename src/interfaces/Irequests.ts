@@ -55,7 +55,8 @@ export interface INewProduct {
     cant_mayor3: number,
     cod_prod: string,
     variedades: Array<INewVariedad>,
-    filesName?: Array<IObjectFiles>
+    filesName?: Array<IObjectFiles>,
+    stock?: number
 }
 export interface INewVariedad {
     variedad: string,
