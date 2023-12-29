@@ -512,9 +512,21 @@ export = (injectedStore: typeof StoreType) => {
                 const saleCount = 100
                 const nuevo = false
                 const discount = 0
+                const orderVar: Iorder = {
+                    columns: [Columns.prodVar.name_var],
+                    asc: true
+                }
                 const variation: any = await new Promise(async (resolve, reject) => {
-                    const varList: Array<IProdVar> = await store.get(Tables.PRODUCTS_VAR, item.id_prod || 0, "id_prod")
-
+                    let varList: Array<IProdVar> = await store.get(Tables.PRODUCTS_VAR, item.id_prod || 0, "id_prod")
+                    varList.sort((a, b) => {
+                        if (a.name_var > b.name_var) {
+                            return 1;
+                        }
+                        if (a.name_var < b.name_var) {
+                            return -1;
+                        }
+                        return 0;
+                    })
                     let listadoVar: any = []
                     if (varList.length > 0) {
                         varList.map(async (item, key2) => {
