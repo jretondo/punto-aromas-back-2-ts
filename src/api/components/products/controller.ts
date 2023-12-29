@@ -473,8 +473,12 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const publicList = async () => {
+        const order: Iorder = {
+            columns: [Columns.prodPrincipal.subcategory],
+            asc: true
+        }
         const groupBy: Array<string> = [Columns.prodPrincipal.id_prod, Columns.prodPrincipal.subcategory];
-        const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], undefined, groupBy)
+        const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*"], undefined, groupBy, undefined, undefined, order)
         return new Promise((resolve, reject) => {
             let products: Array<any> = []
             lista.map(async (item, key) => {
