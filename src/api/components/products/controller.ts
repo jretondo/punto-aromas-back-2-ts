@@ -481,7 +481,7 @@ export = (injectedStore: typeof StoreType) => {
             table: Tables.STOCK,
             colJoin: Columns.stock.id_prod,
             colOrigin: Columns.prodPrincipal.id_prod,
-            type: ETypesJoin.left
+            type: ETypesJoin.none
         };
         const groupBy: Array<string> = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`, Columns.prodPrincipal.subcategory];
         const lista: Array<INewProduct> = await store.list(Tables.PRODUCTS_PRINCIPAL, ["*", `SUM(${Columns.stock.cant}) as stock`], undefined, groupBy, undefined, [joinQuery], order)
@@ -580,9 +580,10 @@ export = (injectedStore: typeof StoreType) => {
                         min: 0
                     }
                 ]
+
                 const groupBy2: Array<string> = [Columns.prodImg.url_img];
                 const shortDescription = item.short_descr
-                const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2, undefined)
+                const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2, groupBy2)
                 products.push({
                     id: key,
                     sku,
@@ -595,7 +596,8 @@ export = (injectedStore: typeof StoreType) => {
                     shortDescription,
                     image,
                     prices,
-                    stock
+                    stock,
+                    idProd: item.id_prod
                 })
                 if (key === lista.length - 1) {
                     resolve({
