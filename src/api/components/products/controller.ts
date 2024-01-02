@@ -582,7 +582,7 @@ export = (injectedStore: typeof StoreType) => {
                 ]
                 const groupBy2: Array<string> = [Columns.prodImg.url_img];
                 const shortDescription = item.short_descr
-                const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2, groupBy2)
+                const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2, undefined)
                 products.push({
                     id: key,
                     sku,
