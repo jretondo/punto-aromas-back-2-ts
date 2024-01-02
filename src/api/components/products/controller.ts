@@ -596,8 +596,7 @@ export = (injectedStore: typeof StoreType) => {
                     shortDescription,
                     image,
                     prices,
-                    stock,
-                    idProd: item.id_prod
+                    stock
                 })
                 if (key === lista.length - 1) {
                     resolve({
