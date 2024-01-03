@@ -300,7 +300,7 @@ export = (injectedStore: typeof StoreType) => {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: `${Tables.STOCK}.${Columns.stock.id_prod}`, object: String(prodId) }
+                    { column: `${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`, object: String(prodId) }
                 ]
             };
             filters.push(filter)
@@ -331,7 +331,7 @@ export = (injectedStore: typeof StoreType) => {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: `${Tables.STOCK}.${Columns.stock.category}`, object: String(cat) }
+                    { column: `${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.category}`, object: String(cat) }
                 ]
             };
             filters.push(filter)
@@ -341,18 +341,18 @@ export = (injectedStore: typeof StoreType) => {
                 mode: EModeWhere.strict,
                 concat: EConcatWhere.and,
                 items: [
-                    { column: `${Tables.STOCK}.${Columns.stock.sub_category}`, object: String(subCat) }
+                    { column: `${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.subcategory}`, object: String(subCat) }
                 ]
             };
             filters.push(filter)
         }
 
-        let groupBy: Array<string> = [`${Tables.STOCK}.${Columns.stock.id_prod}`];
+        let groupBy: Array<string> = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`];
 
         if (group === 1) {
-            groupBy = [`${Tables.STOCK}.${Columns.stock.sub_category}`];
+            groupBy = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.subcategory}`];
         } else if (group === 2) {
-            groupBy = [`${Tables.STOCK}.${Columns.stock.category}`];
+            groupBy = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.category}`];
         }
         let arrayOrden: Array<{
             orden: number,
@@ -366,13 +366,13 @@ export = (injectedStore: typeof StoreType) => {
         }
         arrayOrden.map((item, key) => {
             if (item.title === "Nombre de Productos") {
-                ordenArray.push(`${Tables.STOCK}.${Columns.stock.prod_name}`)
+                ordenArray.push(`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.name}`)
             } else if (item.title === "Importe") {
                 ordenArray.push('costoTotal')
             } else if (item.title === "Marca") {
-                ordenArray.push(`${Tables.STOCK}.${Columns.stock.sub_category}`)
+                ordenArray.push(`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.subcategory}`)
             } else if (item.title === "Proveedor") {
-                ordenArray.push(`${Tables.STOCK}.${Columns.stock.category}`)
+                ordenArray.push(`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.category}`)
             }
             if (key === arrayOrden.length - 1) {
                 orden = {
@@ -394,8 +394,23 @@ export = (injectedStore: typeof StoreType) => {
                 colOrigin: Columns.stock.id_prod,
                 type: ETypesJoin.left
             };
-            data = await store.list(Tables.STOCK, [ESelectFunct.all, `SUM(${Columns.stock.cant}) as total`, `SUM(${Columns.stock.cant} * ${Tables.PRODUCTS_PRINCIPAL}.${Columns.stock.costo}) as costoTotal`], filters, groupBy, pages, [joinQuery], orden);
-            const cant = await store.list(Tables.STOCK, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, groupBy);
+
+            const joinQuery2: IJoin = {
+                table: Tables.STOCK,
+                colJoin: Columns.stock.id_prod,
+                colOrigin: Columns.prodPrincipal.id_prod,
+                type: ETypesJoin.left
+            };
+
+
+            /*
+              data = await store.list(Tables.STOCK, [ESelectFunct.all, `SUM(${Columns.stock.cant}) as total`, `SUM(${Columns.stock.cant} * ${Tables.PRODUCTS_PRINCIPAL}.${Columns.stock.costo}) as costoTotal`], filters, groupBy, pages, [joinQuery], orden);
+              const cant = await store.list(Tables.STOCK, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, groupBy);
+              const pagesObj = await getPages(cant.length, 10, Number(page));
+  
+            */
+            data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all, `SUM(${Tables.STOCK}.${Columns.stock.cant}) as total`, `SUM(${Tables.STOCK}.${Columns.stock.cant} * ${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.costo}) as costoTotal`], filters, groupBy, pages, [joinQuery2], orden);
+            const cant = await store.list(Tables.PRODUCTS_PRINCIPAL, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, groupBy);
             const pagesObj = await getPages(cant.length, 10, Number(page));
             return {
                 data,
