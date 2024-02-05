@@ -30,6 +30,23 @@ const list = (
         .catch(next)
 };
 
+const completeList = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    Controller.completeList()
+        .then((lista: any) => {
+            success({
+                req,
+                res,
+                status: 200,
+                message: lista
+            });
+        })
+        .catch(next)
+};
+
 const varCost = (
     req: Request,
     res: Response,
@@ -220,6 +237,7 @@ router.get("/getTags", secure([EPermissions.productos]), getTags);
 router.get("/public", getPublicList);
 router.get("/images/:id", secure([EPermissions.productos]), getImages)
 router.get("/:page", secure([EPermissions.productos, EPermissions.ventas]), list);
+router.get("/", secure([EPermissions.productos, EPermissions.ventas]), completeList);
 router.post("/varCost", secure([EPermissions.productos]), varCost);
 router.post("/", secure([EPermissions.productos]), uploadFile(staticFolders.products, ["product"]), upsert);
 router.put("/codBarra/:id", secure([EPermissions.productos]), updateCodBarras)

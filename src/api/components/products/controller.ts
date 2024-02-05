@@ -95,6 +95,10 @@ export = (injectedStore: typeof StoreType) => {
         }
     }
 
+    const completeList = async () => {
+        return await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all]);
+    }
+
     const prodListPDF = async (item?: string, provider?: boolean): Promise<any> => {
         let filter: IWhereParams | undefined = undefined;
         let filters: Array<IWhereParams> = [];
@@ -585,7 +589,7 @@ export = (injectedStore: typeof StoreType) => {
                 const shortDescription = item.short_descr
                 const image = await store.list(Tables.PRODUCTS_IMG, ["*"], filters2, groupBy2)
                 products.push({
-                    id: key,
+                    id: item.id_prod,
                     sku,
                     name,
                     category,
@@ -741,6 +745,7 @@ export = (injectedStore: typeof StoreType) => {
         correctName,
         correctVariedades,
         prodListPDF,
-        getTags
+        getTags,
+        completeList
     }
 }
