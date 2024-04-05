@@ -147,12 +147,26 @@ export = (injectedStore: typeof StoreType) => {
             const totales2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.formasPago.importe}) AS SUMA`, Columns.formasPago.tipo], filters, [Columns.formasPago.tipo], undefined, [joinQuery]);
             const totalCosto = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], [...filters, filter3])
             const totalCosto2 = await store.list(Tables.FACTURAS, [`SUM(${Columns.facturas.total_compra}) AS COMPRA`], filters)
-            const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, pages, undefined, { columns: [Columns.facturas.fecha], asc: false });
+            let data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, pages, undefined, { columns: [Columns.facturas.fecha], asc: false });
+            let data2: Array<any> = []
+            new Promise((resolve, reject) => {
+                data.map(async (item: IFactura, key: number) => {
+                    const metodos = await getFormasPago(item.id || 0)
+                    data2.push(
+                        {
+                            ...item,
+                            metodos
+                        })
+                    if (key === data.length - 1) {
+                        resolve(data2)
+                    }
+                })
+            })
             const cant = await store.list(Tables.FACTURAS, [`COUNT(${ESelectFunct.all}) AS COUNT`], filters, undefined, undefined);
             const pagesObj = await getPages(cant[0].COUNT, 10, Number(page));
 
             return {
-                data,
+                data: data2,
                 pagesObj,
                 totales,
                 totales2,
