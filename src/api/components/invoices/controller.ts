@@ -181,7 +181,14 @@ export = (injectedStore: typeof StoreType) => {
             const data = await store.list(Tables.FACTURAS, [ESelectFunct.all], filters, undefined, undefined, undefined, { columns: [Columns.facturas.fecha], asc: false });
 
             if (pdf) {
-                const cajaList = await createListSellsPDF(userId, ptoVtaId, desde, hasta, totales, totales2, totalCosto[0].COMPRA, data, user)
+                const cajaList: any = await createListSellsPDF(userId, ptoVtaId, desde, hasta, totales, totales2, totalCosto[0].COMPRA, data, user)
+                try {
+                    setTimeout(() => {
+                        fs.unlinkSync(cajaList.filePath)
+                    }, 2500);
+                } catch (error) {
+
+                }
                 return cajaList
             } else {
                 return {
