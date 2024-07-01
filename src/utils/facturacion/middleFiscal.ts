@@ -52,6 +52,7 @@ export const fiscalMiddle = () => {
                     entornoAlt = true
                 }
                 const afip = new AfipClass(newFact.cuit_origen, certDir, keyDir, entornoAlt);
+                console.log('dataFiscal :>> ', dataFiscal);
                 const newDataFiscal = await afip.newFact(dataFiscal);
                 req.body.dataFiscal = newDataFiscal.data
                 req.body.dataFiscal.CbteTipo = String(newFact.t_fact)
