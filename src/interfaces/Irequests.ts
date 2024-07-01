@@ -86,7 +86,7 @@ export interface INewStock {
 export interface INewFactura {
     fecha: Date,
     pv_id: number,
-    t_fact: CbteTipos,
+    t_fact: number,
     fiscal: boolean,
     cond_iva: number,
     forma_pago: number,

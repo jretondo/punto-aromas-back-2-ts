@@ -81,7 +81,8 @@ const factuMiddel = () => {
             if (!body.costoEnvio) {
                 body.costoEnvio = 0
             }
-            const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.costoEnvio, pvData[0].cond_iva);
+            const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.costoEnvio, pvData[0].cond_iva, body.t_fact);
+            console.log('productsList :>> ', productsList);
             const clienteData: Array<IClientes> = await clientesController.getCuit2(body.cliente_ndoc || 0)
             req.body.clienteDirection = ""
 
@@ -243,7 +244,7 @@ const factuMiddel = () => {
     return middleware
 }
 
-const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: number, condIva: number): Promise<IfactCalc> => {
+const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: number, condIva: number, tfact: number): Promise<IfactCalc> => {
     let dataAnt: Array<INewProduct> = [];
     let idAnt: number = 0;
     productsList.sort((a, b) => { return a.id_prod - b.id_prod })
@@ -257,6 +258,7 @@ const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: numb
             totalReventa: 0
         }
         productsList.map(async (prod, key) => {
+         
             let dataProd: Array<INewProduct> = [];
             if (prod.id_prod === idAnt) {
                 dataProd = dataAnt
@@ -265,7 +267,11 @@ const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: numb
             }
             idAnt = prod.id_prod
             dataAnt = dataProd
-
+            if (tfact === 6 ||tfact === 1) {
+                dataProd[0].iva = 21
+            }
+            console.log('tfact :>> ', tfact);
+            console.log('dataProd :>> ', dataProd);
             const totalCosto: number = (Math.round(((dataProd[0].costo * prod.cant_prod)) * 100)) / 100;
             const totalProd: number = (Math.round(((prod.price * prod.cant_prod)) * 100)) / 100;
             const totalNeto: number = (Math.round((totalProd / (1 + (dataProd[0].iva / 100))) * 100)) / 100;
