@@ -188,8 +188,8 @@ const factuMiddel = () => {
                 any = {}
 
             if (body.fiscal) {
-                if (body.t_fact === 1) {
-                    ivaList = await listaIva(productsList.listaProd, descuentoPer);
+                if (body.t_fact === 1 ) {
+                    ivaList = await listaIva(productsList.listaProd, descuentoPer, body.t_fact);
                     dataFiscal = {
                         CantReg: 1,
                         PtoVta: pvData[0].pv,
@@ -209,7 +209,7 @@ const factuMiddel = () => {
                         Iva: ivaList
                     }
                 } else {
-                    ivaList = await listaIva(productsList.listaProd, descuentoPer);
+                    ivaList = await listaIva(productsList.listaProd, descuentoPer, body.t_fact);
                     dataFiscal = {
                         CantReg: 1,
                         PtoVta: pvData[0].pv,
@@ -224,12 +224,13 @@ const factuMiddel = () => {
                         ImpTotConc: 0,
                         ImpNeto: (Math.round((productsList.totalNeto) * 100)) / 100,
                         ImpOpEx: 0,
-                        ImpIVA: 0,
+                        ImpIVA: (Math.round((productsList.totalIva) * 100)) / 100,
                         ImpTrib: 0
                     }
                 }
 
             }
+            console.log('ivaList :>> ', ivaList);
             req.body.newFact = newFact
             req.body.dataFiscal = dataFiscal
             req.body.pvData = pvData[0]
@@ -316,15 +317,21 @@ const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: numb
     })
 }
 
-const listaIva = async (listaProd: Array<IDetFactura>, descuento: number): Promise<Array<IIvaItem>> => {
+const listaIva = async (listaProd: Array<IDetFactura>, descuento: number, t_fact: number): Promise<Array<IIvaItem>> => {
     listaProd.sort((a, b) => { return a.alicuota_id - b.alicuota_id })
     let ivaAnt = 0;
+    let ivaAlic = 0
+    let ivaAlicId = 3
     let listaIva: Array<IIvaItem> = []
+    if (t_fact === 6 ||t_fact === 1) {
+        ivaAlic = 21
+        ivaAlicId = 5
+    }
     if (listaProd.length > 0) {
         return new Promise((resolve, reject) => {
             listaProd.map((item, key) => {
                 let ivaAux = perIvaAlicuotas.find(e => e.per === item.alicuota_id) || { per: 0, id: 3 };
-                const iva = ivaAux.id
+                const iva = ivaAlicId
                 if (iva !== ivaAnt) {
                     if (descuento > 0) {
                         listaIva.push({
