@@ -53,9 +53,11 @@ const factuMiddel = () => {
                 }
             }
             let letra = "";
+            console.log('Number(pvData[0].cond_iva)  :>> ', Number(pvData[0].cond_iva));
+            console.log('Number(body.cond_iva) :>> ', Number(body.cond_iva));
             if (body.fiscal) {
-                if (pvData[0].cond_iva === 1) {
-                    if (body.cond_iva === 1) {
+                if (Number(pvData[0].cond_iva) === 1) {
+                    if (Number(body.cond_iva) === 1) {
                         if (pvData[0].fact_m === true) {
                             body.t_fact = 51
                             letra = "M"
@@ -67,7 +69,7 @@ const factuMiddel = () => {
                         body.t_fact = 6
                         letra = "B"
                     }
-                } else if (pvData[0].cond_iva === 4) {
+                } else if (Number(pvData[0].cond_iva) === 4) {
                     body.t_fact = 6
                     letra = "6"
                 } else {
@@ -81,8 +83,8 @@ const factuMiddel = () => {
             if (!body.costoEnvio) {
                 body.costoEnvio = 0
             }
+
             const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.costoEnvio, pvData[0].cond_iva, body.t_fact);
-            console.log('productsList :>> ', productsList);
             const clienteData: Array<IClientes> = await clientesController.getCuit2(body.cliente_ndoc || 0)
             req.body.clienteDirection = ""
 
