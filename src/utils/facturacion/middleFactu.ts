@@ -52,29 +52,18 @@ const factuMiddel = () => {
                     cliente_ndoc: body.cliente_ndoc || 0
                 }
             }
-            let letra = "";
-            console.log('Number(pvData[0].cond_iva)  :>> ', Number(pvData[0].cond_iva));
-            console.log('Number(body.cond_iva) :>> ', Number(body.cond_iva));
+            let letra = "";           
             if (body.fiscal) {
-                if (Number(pvData[0].cond_iva) === 1) {
-                    if (Number(body.cond_iva) === 1) {
-                        if (pvData[0].fact_m === true) {
-                            body.t_fact = 51
-                            letra = "M"
-                        } else {
-                            body.t_fact = 1
-                            letra = "A"
-                        }
-                    } else {
-                        body.t_fact = 6
-                        letra = "B"
-                    }
-                } else if (Number(pvData[0].cond_iva) === 4) {
-                    body.t_fact = 6
-                    letra = "6"
-                } else {
-                    body.t_fact = 11
+                if (body.t_fact === 51) {
+                    letra = "M"
+                }else if (body.t_fact=== 1) {
+                    letra = "A"
+                }else if (body.t_fact === 6) {
+                    letra = "B"
+                } else if (body.t_fact === 11) {
                     letra = "C"
+                } else {
+                    letra = "X"
                 }
             } else {
                 body.t_fact = 0
@@ -83,7 +72,7 @@ const factuMiddel = () => {
             if (!body.costoEnvio) {
                 body.costoEnvio = 0
             }
-
+            
             const productsList: IfactCalc = await calcProdLista(body.lista_prod, body.costoEnvio, pvData[0].cond_iva, body.t_fact);
             const clienteData: Array<IClientes> = await clientesController.getCuit2(body.cliente_ndoc || 0)
             req.body.clienteDirection = ""
