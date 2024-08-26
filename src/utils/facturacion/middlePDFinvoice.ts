@@ -69,14 +69,14 @@ export const invoicePDFMiddle = () => {
                     "cuit": pvData.cuit,
                     "ptoVta": pvData.pv,
                     "tipoCmp": newFact.t_fact,
-                    "nroCmp": dataFiscal.CbteDesde,
+                    "nroCmp": newFact.cbte,
                     "importe": newFact.total_fact,
                     "moneda": "PES",
                     "ctz": 0,
                     "tipoDocRec": newFact.tipo_doc_cliente,
                     "nroDocRec": newFact.n_doc_cliente,
                     "tipoCodAut": "E",
-                    "codAut": dataFiscal.CAE
+                    "codAut": newFact.cae
                 }
 
 

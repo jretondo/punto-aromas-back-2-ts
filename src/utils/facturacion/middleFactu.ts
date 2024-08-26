@@ -52,7 +52,8 @@ const factuMiddel = () => {
                     cliente_ndoc: body.cliente_ndoc || 0
                 }
             }
-            let letra = "";           
+            let letra = ""; 
+            console.log('body.t_fact :>> ', body.t_fact);
             if (body.fiscal) {
                 if (body.t_fact === 51) {
                     letra = "M"
@@ -279,7 +280,7 @@ const calcProdLista = (productsList: INewFactura["lista_prod"], costoEnvio: numb
             }
             idAnt = prod.id_prod
             dataAnt = dataProd
-            if (tfact === 6 ||tfact === 1) {
+            if (Number(tfact) === 6 ||Number(tfact) === 1) {
                 dataProd[0].iva = 21
             }
             console.log('tfact :>> ', tfact);

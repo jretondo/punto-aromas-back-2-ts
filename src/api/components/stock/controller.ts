@@ -28,8 +28,7 @@ export = (injectedStore: typeof StoreType) => {
             mode: EModeWhere.strict,
             concat: EConcatWhere.and,
             items: [
-                { column: Columns.stock.id_prod, object: String(idProd) },
-                { column: Columns.stock.pv_id, object: String(idPv) }
+                { column: Columns.stock.id_prod, object: String(idProd) }
             ]
         };
         filters.push(filter);
@@ -49,8 +48,7 @@ export = (injectedStore: typeof StoreType) => {
             mode: EModeWhere.strict,
             concat: EConcatWhere.and,
             items: [
-                { column: Columns.stock.id_prod, object: String(idProd) },
-                { column: Columns.stock.pv_id, object: String(idPv) }
+                { column: Columns.stock.id_prod, object: String(idProd) }
             ]
         };
 
@@ -219,28 +217,7 @@ export = (injectedStore: typeof StoreType) => {
                 };
                 filters.push(filter)
             }
-        }
-        if (pvId) {
-            if (pvId === -1) {
-                const filter: IWhereParams = {
-                    mode: EModeWhere.strict,
-                    concat: EConcatWhere.and,
-                    items: [
-                        { column: Columns.stock.pv_id, object: String(0) }
-                    ]
-                };
-                filters.push(filter)
-            } else {
-                const filter: IWhereParams = {
-                    mode: EModeWhere.strict,
-                    concat: EConcatWhere.and,
-                    items: [
-                        { column: Columns.stock.pv_id, object: String(pvId) }
-                    ]
-                };
-                filters.push(filter)
-            }
-        }
+        }    
 
         if (userId) {
             const filter: IWhereParams = {
@@ -305,27 +282,7 @@ export = (injectedStore: typeof StoreType) => {
             };
             filters.push(filter)
         }
-        if (pvId) {
-            if (pvId === -1) {
-                const filter: IWhereParams = {
-                    mode: EModeWhere.strict,
-                    concat: EConcatWhere.and,
-                    items: [
-                        { column: `${Tables.STOCK}.${Columns.stock.pv_id}`, object: String(0) }
-                    ]
-                };
-                filters.push(filter)
-            } else {
-                const filter: IWhereParams = {
-                    mode: EModeWhere.strict,
-                    concat: EConcatWhere.and,
-                    items: [
-                        { column: `${Tables.STOCK}.${Columns.stock.pv_id}`, object: String(pvId) }
-                    ]
-                };
-                filters.push(filter)
-            }
-        }
+       
         if (cat) {
             const filter: IWhereParams = {
                 mode: EModeWhere.strict,
@@ -447,7 +404,7 @@ export = (injectedStore: typeof StoreType) => {
             mode: EModeWhere.strict,
             concat: EConcatWhere.and,
             items: [
-                { column: Columns.stock.pv_id, object: String(pvId < 0 ? 0 : pvId) }, { column: Columns.stock.id_prod, object: String(idProd) }
+                { column: Columns.stock.id_prod, object: String(idProd) }
             ]
         };
         filters.push(filter)
