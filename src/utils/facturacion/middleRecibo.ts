@@ -110,7 +110,7 @@ const paymentMiddle = () => {
                 total_compra: (Math.round(costo * 100)) / 100,
                 forma_pago: formaPago,
                 pv_id: pvId,
-                id_fact_asoc: factData[0].id || 0,
+                id_fact_asoc:  0,
                 descuento: 0,
                 det_rbo: detalle,
                 costo_envio: 0,
