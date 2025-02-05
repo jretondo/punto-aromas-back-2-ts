@@ -263,7 +263,7 @@ export = (injectedStore: typeof StoreType) => {
     ) => {
         const resultInsert: INewInsert = await store.insert(Tables.FACTURAS, newFact);
         setTimeout(() => {
-            fs.unlinkSync(filePath)
+           // fs.unlinkSync(filePath)
         }, 6000);
 
         if (resultInsert.affectedRows > 0) {
@@ -271,8 +271,8 @@ export = (injectedStore: typeof StoreType) => {
         }
 
         const dataFact = {
-            fileName,
-            filePath,
+            fileName:"",
+            filePath:"",
             resultInsert
         }
         return dataFact

@@ -49,7 +49,7 @@ const paymentMiddle = () => {
             }
             let cancelada = false
             const factData: Array<IFactura> = await invoicesController.get(factId)
-
+            console.log('factData :>> ', factData);
             const totalCtaCte = factData[0].monto_cta_cte
 
             const cobrado = factData[0].monto_pago_cta_cte
@@ -69,6 +69,11 @@ const paymentMiddle = () => {
             const cuit = factData[0].n_doc_cliente
 
             const clienteData: Array<IClientes> = await clientesController.getCuit2(cuit)
+            console.log('cobrado :>> ', cobrado);
+            console.log('totalCtaCte :>> ', totalCtaCte);
+            console.log('pendiente :>> ', pendiente);
+            console.log('porcentaje :>> ', porcentaje);
+            console.log('nvoPend :>> ', nvoPend);
 
             if (nvoPend === 0) {
                 cancelada = true
