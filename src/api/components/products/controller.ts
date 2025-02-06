@@ -188,6 +188,7 @@ export = (injectedStore: typeof StoreType) => {
                 iva: body.iva
             }
             await upsertVariedades(JSON.parse(String(body.variedades)), true, body.id_prod)
+            console.log('product :>> ', product);
             const result = await store.update(Tables.PRODUCTS_PRINCIPAL, product, body.id_prod || 0, "id_prod");
             if (result.affectedRows > 0) {
                 if (listImgDelete) {
