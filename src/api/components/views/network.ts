@@ -135,7 +135,7 @@ const newFact = (
             formaPago: "CUENTA CORRIENTE",
             tipoDoc: "CUIT",
             condIvaCliente: "IVA RES. INSCRIPTO",
-            saldoCtaCte: "$ 52.652,69" || false,
+            saldoCtaCte: "$ 52.652,69" ,
         }
         const listaItems = [
             {
@@ -271,7 +271,7 @@ const newNotaCred = (
             formaPago: "CUENTA CORRIENTE",
             tipoDoc: "CUIT",
             condIvaCliente: "IVA RES. INSCRIPTO",
-            saldoCtaCte: "$ 52.652,69" || false,
+            saldoCtaCte: "$ 52.652,69",
         }
         const listaItems = [
             {
