@@ -7,7 +7,12 @@ import { promisify } from 'util';
 import { IProdPrinc } from 'interfaces/Itables';
 
 export const createProdListPDF = async (
-    prodList: Array<IProdPrinc>
+    productos: Array<{
+        imagen: string,
+        nombre: string,
+        marca: string, 
+        proveedor: string
+    }>
 ) => {
     return new Promise(async (resolve, reject) => {
         function base64_encode(file: any) {
@@ -28,7 +33,7 @@ export const createProdListPDF = async (
         const datos = {
             logo: 'data:image/png;base64,' + logo,
             style: "<style>" + estilo + "</style>",
-            prodList: prodList
+            prodList: productos
         }
 
         const jsreport = JsReport({
@@ -45,7 +50,7 @@ export const createProdListPDF = async (
 
         const writeFileAsync = promisify(fs.writeFile)
 
-        await ejs.renderFile(path.join("views", "reports", "prodList", "index.ejs"), datos, async (err, data) => {
+        await ejs.renderFile(path.join("views", "reports", "prodList", "index.ejs"), {productos}, async (err, data) => {
             if (err) {
                 console.log('err', err);
                 throw new Error("Algo salio mal")

@@ -160,20 +160,37 @@ export = (injectedStore: typeof StoreType) => {
         //const groupBy: Array<string> = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`];
 
         const joinQuery1: IJoin = {
-            table: Tables.PRODUCTS_VAR,
-            colJoin: Columns.prodVar.id_prod,
+            table: Tables.PRODUCTS_IMG,
+            colJoin: Columns.prodImg.id_prod,
             colOrigin: Columns.prodPrincipal.id_prod,
-            type: ETypesJoin.right
+            type: ETypesJoin.none
         };
 
         const order: Iorder = {
-            columns: [Columns.prodPrincipal.name, Columns.prodPrincipal.subcategory, Columns.prodVar.name_var],
+            columns: [Columns.prodPrincipal.name, Columns.prodPrincipal.subcategory],
             asc: true
         }
 
         const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, undefined, undefined, [joinQuery1], order);
-
-        const prodList = await createProdListPDF(data)
+        const dataProd: {
+            imagen: string,
+            nombre: string,
+            marca: string, 
+            proveedor: string
+        }[] = data.map((item: any) => { 
+            return {
+                imagen: 'https://api-prod.nekoadmin.com.ar/punto-aroma/static//images/products/' + item.url_img,
+                nombre: item.name,
+                marca: item.subcategory,
+                proveedor: item.category
+            }
+        })
+        const uniqueData = dataProd.filter((item, index, self) =>
+            index === self.findIndex((t) => (
+                t.nombre === item.nombre && t.marca === item.marca && t.proveedor === item.proveedor
+            ))
+        )
+        const prodList = await createProdListPDF(uniqueData)
         return prodList
     }
 
