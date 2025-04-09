@@ -138,6 +138,45 @@ export = (injectedStore: typeof StoreType) => {
         return prodList
     }
 
+    const prodListPDF2 = async (item?: string, provider?: boolean): Promise<any> => {
+        let filter: IWhereParams | undefined = undefined;
+        let filters: Array<IWhereParams> = [];
+        if (item) {
+            const arrayStr = item.split(" ")
+            arrayStr.map(subItem => {
+                filter = {
+                    mode: EModeWhere.like,
+                    concat: EConcatWhere.or,
+                    items: provider ? [{ column: Columns.prodPrincipal.category, object: String(subItem) }] : ([
+                        { column: Columns.prodPrincipal.name, object: String(subItem) },
+                        { column: Columns.prodPrincipal.subcategory, object: String(subItem) },
+                        { column: Columns.prodPrincipal.short_decr, object: String(subItem) }
+                    ])
+                };
+                filters.push(filter);
+            })
+        }
+
+        //const groupBy: Array<string> = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`];
+
+        const joinQuery1: IJoin = {
+            table: Tables.PRODUCTS_VAR,
+            colJoin: Columns.prodVar.id_prod,
+            colOrigin: Columns.prodPrincipal.id_prod,
+            type: ETypesJoin.right
+        };
+
+        const order: Iorder = {
+            columns: [Columns.prodPrincipal.name, Columns.prodPrincipal.subcategory, Columns.prodVar.name_var],
+            asc: true
+        }
+
+        const data = await store.list(Tables.PRODUCTS_PRINCIPAL, [ESelectFunct.all], filters, undefined, undefined, [joinQuery1], order);
+
+        const prodList = await createProdListPDF(data)
+        return prodList
+    }
+
     const upsertVariedades = async (variedades: Array<INewVariedad>, update: boolean, id_prod: number) => {
 
         if (variedades.length > 0) {
@@ -747,6 +786,7 @@ export = (injectedStore: typeof StoreType) => {
         correctVariedades,
         prodListPDF,
         getTags,
-        completeList
+        completeList,
+        prodListPDF2
     }
 }
