@@ -61,7 +61,7 @@ export const createProdListPDF2 = async (
                     chrome: {
                         "landscape": false,
                         "format": "A4",
-                        "scale": 0.8,
+                        "scale": 1,
                         displayHeaderFooter: true,
                         marginBottom: "2cm",
                         footerTemplate: "<div style='font-size: 14px;text-align: center;widht: 100%;'>Página&nbsp;<span class='pageNumber'></span>&nbsp;de&nbsp;<span class='totalPages'></span></div>",
