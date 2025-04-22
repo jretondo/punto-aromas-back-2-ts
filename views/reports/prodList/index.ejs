@@ -45,6 +45,13 @@
       color: #333;
     }
 
+    .grupo-productos {
+      page-break-after: always;
+    }
+    .grupo-productos:last-child {
+      page-break-after: auto;
+    }
+
     @media print {
       .producto {
         break-inside: avoid;
@@ -54,15 +61,18 @@
 </head>
 <body>
   <h2 style="text-align:center; margin-bottom: 20px;">Catálogo de Productos</h2>
-  <div class="container">
-    <% productos.forEach(function(producto) { %>
-      <div class="producto">
-        <img src="<%= producto.imagen %>" alt="Imagen del producto">
-        <div class="nombre"><%= producto.nombre %></div>
-        <div class="info">Marca: <%= producto.marca %></div>
-        <div class="info">Proveedor: <%= producto.proveedor %></div>
-      </div>
-    <% }); %>
-  </div>
+
+  <% for (let i = 0; i < productos.length; i += 24) { %>
+    <div class="container grupo-productos">
+      <% productos.slice(i, i + 24).forEach(function(producto) { %>
+        <div class="producto">
+          <img src="<%= producto.imagen %>" alt="Imagen del producto">
+          <div class="nombre"><%= producto.nombre %></div>
+          <div class="info">Marca: <%= producto.marca %></div>
+          <div class="info">Proveedor: <%= producto.proveedor %></div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
 </body>
 </html>
