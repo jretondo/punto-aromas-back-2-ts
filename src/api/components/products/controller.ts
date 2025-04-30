@@ -10,6 +10,7 @@ import OptimizeImg from '../../../utils/optimeImg';
 import { IJoin, Ipages, IWhereParams, Iorder } from 'interfaces/Ifunctions';
 import { INewProduct } from 'interfaces/Irequests';
 import StockController from '../stock'
+import { createProdListPDF2 } from '../../../utils/facturacion/lists/createListProducts2';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
@@ -190,7 +191,7 @@ export = (injectedStore: typeof StoreType) => {
                 t.nombre === item.nombre && t.marca === item.marca && t.proveedor === item.proveedor
             ))
         )
-        const prodList = await createProdListPDF(uniqueData)
+        const prodList = await createProdListPDF2(uniqueData)
         return prodList
     }
 

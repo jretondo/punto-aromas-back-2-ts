@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  punto-aromas-app-dev:
+    image: node-point-sell-dev:1.0
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - ./public:/app/public
+    ports:
+      - '3001:3001'
+    env_file:
+      - .env

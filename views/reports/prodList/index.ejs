@@ -60,11 +60,9 @@
   </style>
 </head>
 <body>
-  <h2 style="text-align:center; margin-bottom: 20px;">Catálogo de Productos</h2>
-
-  <% for (let i = 0; i < productos.length; i += 24) { %>
+  <% for (let i = 0; i < productos.length; i += 20) { %>
     <div class="container grupo-productos">
-      <% productos.slice(i, i + 24).forEach(function(producto) { %>
+      <% productos.slice(i, i + 20).forEach(function(producto) { %>
         <div class="producto">
           <img src="<%= producto.imagen %>" alt="Imagen del producto">
           <div class="nombre"><%= producto.nombre %></div>
