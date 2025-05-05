@@ -1,5 +1,5 @@
 {
-  "name": "club-limp-back-ts",
+  "name": "punto-aromas-back-ts",
   "version": "1.0.0",
   "description": "Backend App for Club de la Limpieza admin made in TS",
   "main": "api/index.js",
