@@ -52,7 +52,7 @@ export const createProdListPDF2 = async (
   
         await page.pdf({
           path: location,
-          format: 'A4',
+          format: 'a4',
           landscape: false,
           scale: 1,
           displayHeaderFooter: true,

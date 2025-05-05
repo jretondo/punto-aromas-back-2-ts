@@ -138,7 +138,7 @@ export const createListSellsPDF = async (
   
         await page.pdf({
           path: location,
-          format: 'Legal',
+          format: 'legal',
           landscape: true,
           scale: 0.8,
           displayHeaderFooter: true,
