@@ -161,8 +161,9 @@ export const paymentPDFMiddleSeller = () => {
         path: filePath,
         format: 'A4',
         margin: {
-          left: '0.5cm',
-          right: '0.5cm',
+          left: '1.5cm',
+          right: '1.5cm',
+          top: '0.5cm',
         },
         printBackground: true,
       });
