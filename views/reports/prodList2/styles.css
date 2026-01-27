@@ -7,7 +7,8 @@ body {
     margin: 0px;
     padding: 0px;
     font-family: Segoe UI, Helvetica, Arial, sans-serif;
-    font-size: 16px;
+    font-size: 13px;
+    color: #1d1d1d;
 }
 
 .title {
@@ -42,7 +43,7 @@ body {
 
 .summary {
     flex: 1;
-    font-size: 24px;
+    font-size: 26px;
     text-align: center;
     padding: 8px 30px;
     margin: auto;
@@ -50,7 +51,7 @@ body {
 
 .summary-count {
     font-weight: bold;
-    font-size: 24px;
+    font-size: 26px;
 }
 
 .main {
@@ -120,15 +121,15 @@ body {
 
 .tasks-table th {
     border-bottom: 4px solid #00a4e0;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 12px;
+    padding-bottom: 12px;
     background-color: #00a4e0;
     color: white;
 }
 
 .tasks-table td {
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 .tasks-table tr td:not(:last-child),
@@ -142,7 +143,7 @@ body {
 
 .tasks-table tr td:last-child {
     padding-left: 10px;
-    text-align: left
+    text-align: left;
 }
 
 .tasks-table tr td:last-child>i {
@@ -215,6 +216,77 @@ body {
     font-family: FontAwesome;
     content: "\f04d";
     color: red;
+}
+
+.labels-page {
+    padding: 8px 10px 12px;
+    height: 260mm;
+    display: block;
+}
+
+.page-break {
+    page-break-after: always;
+}
+
+.labels-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    height: calc(260mm / 8);
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.label-card {
+    border: 1px dotted #b7b7b7;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+.label-card-empty {
+    border-color: transparent;
+}
+
+.label-title {
+    font-size: 12.5px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.label-price-main {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 2px 0 6px;
+}
+
+.label-prices {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.label-price-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.label-price-label {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.label-price-value {
+    text-align: right;
+    white-space: nowrap;
+    font-weight: 600;
 }
 
 .resumen {
