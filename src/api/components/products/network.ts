@@ -227,11 +227,22 @@ const prodListPDF = (
 }
 
 const prodListPDF2 = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  Controller.prodListPDF2(String(req.query.query), Boolean(req.query.provider)).then((dataFact) => {
+    file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);
+  })
+    .catch(next)
+}
+
+const prodListPDF3 = (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
-    Controller.prodListPDF2(String(req.query.query), Boolean(req.query.provider)).then((dataFact) => {
+    Controller.prodListPDF3(String(req.query.query), Boolean(req.query.provider)).then((dataFact) => {
         file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);
     })
         .catch(next)
@@ -242,6 +253,7 @@ router.get("/details/:id", secure([EPermissions.productos]), get);
 router.get("/getCat", getCategorys);
 router.get("/prodListPDF", secure([EPermissions.productos]), prodListPDF)
 router.get("/prodListPDF2", secure([EPermissions.productos]), prodListPDF2)
+router.get("/prodListPDF3", secure([EPermissions.productos]), prodListPDF3)
 router.get("/getGetSubCat", getSubCategorys);
 router.get("/getTags", secure([EPermissions.productos]), getTags);
 router.get("/public", getPublicList);

@@ -1,0 +1,103 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+
+    <%- style %>
+
+        <%
+            const formatPrice = (value) => {
+                if (value === null || value === undefined || value === '') {
+                    return '-';
+                }
+                const numericValue = Number(value);
+                if (Number.isNaN(numericValue)) {
+                    return String(value);
+                }
+                return new Intl.NumberFormat('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                }).format(numericValue);
+            };
+
+            const shouldShowPrice = (value) => {
+                if (value === null || value === undefined || value === '') {
+                    return false;
+                }
+                const numericValue = Number(value);
+                if (!Number.isFinite(numericValue)) {
+                    return false;
+                }
+                return numericValue > 0;
+            };
+
+            const formatQty = (value) => {
+                if (value === null || value === undefined || value === '') {
+                    return '';
+                }
+                const numericValue = Number(value);
+                if (!Number.isFinite(numericValue) || numericValue <= 0) {
+                    return '';
+                }
+                return `${numericValue} un.`;
+            };
+        %>
+
+        <header class="header">
+            <div class="summary">
+                LISTADO DE PRODUCTOS
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="tasks">
+                <table class="tasks-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precios</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% prodList.forEach(function(item){ %>
+                            <tr>
+                                <td class="product-cell">
+                                    <div class="product-name"><%- item.name %> (<%- item.subcategory %>)</div>
+                                    <% if (item.name_var) { %>
+                                        <div class="product-var"><%- item.name_var %></div>
+                                    <% } %>
+                                </td>
+                                <td class="prices-cell">
+                                    <div class="prices">
+                                        <% if (shouldShowPrice(item.minorista)) { %>
+                                            <div><span class="price-label">Minorista:</span> <span class="price-value"><%- formatPrice(item.minorista) %></span></div>
+                                        <% } %>
+                                        <% if (shouldShowPrice(item.mayorista_1)) { %>
+                                            <% const qty1 = formatQty(item.cant_mayor1); %>
+                                            <div><span class="price-label">Mayorista 1<% if (qty1) { %> (<%- qty1 %>)<% } %>:</span> <span class="price-value"><%- formatPrice(item.mayorista_1) %></span></div>
+                                        <% } %>
+                                        <% if (shouldShowPrice(item.mayorista_2)) { %>
+                                            <% const qty2 = formatQty(item.cant_mayor2); %>
+                                            <div><span class="price-label">Mayorista 2<% if (qty2) { %> (<%- qty2 %>)<% } %>:</span> <span class="price-value"><%- formatPrice(item.mayorista_2) %></span></div>
+                                        <% } %>
+                                        <% if (shouldShowPrice(item.mayorista_3)) { %>
+                                            <% const qty3 = formatQty(item.cant_mayor3); %>
+                                            <div><span class="price-label">Mayorista 3<% if (qty3) { %> (<%- qty3 %>)<% } %>:</span> <span class="price-value"><%- formatPrice(item.mayorista_3) %></span></div>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+</body>
+
+</html>

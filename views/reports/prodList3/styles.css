@@ -1,0 +1,93 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0px;
+    padding: 0px;
+    font-family: Segoe UI, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    color: #1d1d1d;
+}
+
+.header {
+    margin-bottom: 20px;
+    display: flex;
+    color: white;
+    background-color: #3573B0;
+}
+
+.summary {
+    flex: 1;
+    font-size: 22px;
+    text-align: center;
+    padding: 8px 30px;
+    margin: auto;
+}
+
+.main {
+    width: 100%;
+    padding: 0 10px;
+}
+
+.tasks {
+    width: 100%;
+}
+
+.tasks-table {
+    width: 100%;
+    text-align: center;
+    border-collapse: collapse;
+    border: 3px solid #00a4e0;
+}
+
+.tasks-table th {
+    border-bottom: 3px solid #00a4e0;
+    padding: 8px 10px;
+    background-color: #00a4e0;
+    color: white;
+}
+
+.tasks-table td {
+    padding: 6px 8px;
+    vertical-align: top;
+}
+
+.tasks-table tr td:not(:last-child),
+.tasks-table tr th:not(:last-child) {
+    border-right: 2px solid #00a4e0;
+}
+
+.tasks-table tbody tr:not(:last-child) {
+    border-bottom: 2px solid #F5F3F6;
+}
+
+.product-cell {
+    text-align: left;
+    padding-left: 10px;
+}
+
+.product-name {
+    font-weight: 600;
+}
+
+.product-var {
+    margin-top: 2px;
+    font-size: 0.95em;
+}
+
+.prices-cell {
+    text-align: left;
+}
+
+.prices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+    row-gap: 2px;
+}
+
+.price-label {
+    font-weight: 600;
+}
