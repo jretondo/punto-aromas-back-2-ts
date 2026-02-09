@@ -5,19 +5,10 @@ import puppeteer from 'puppeteer';
 
 export const createProdListPDF3 = async (
   productos: Array<{
-    name: string;
-    subcategory: string;
-    name_var?: string;
-    costo?: number | string | null;
-    minorista?: number | string | null;
-    mayorista_1?: number | string | null;
-    mayorista_2?: number | string | null;
-    mayorista_3?: number | string | null;
-    revendedor?: number | string | null;
-    supermercado?: number | string | null;
-    cant_mayor1?: number | string | null;
-    cant_mayor2?: number | string | null;
-    cant_mayor3?: number | string | null;
+    imagen: string;
+    nombre: string;
+    marca: string;
+    proveedor: string;
   }>,
 ) => {
   return new Promise(async (resolve, reject) => {
@@ -36,7 +27,7 @@ export const createProdListPDF3 = async (
       );
 
       const dateNow = new Date();
-      const fileName = `prodList-3-${dateNow.toISOString()}.pdf`;
+      const fileName = `prodList-${dateNow.toISOString()}.pdf`;
       const location = path.join('public', 'prod-list', fileName);
 
       const datos = {
