@@ -1,141 +1,57 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="es">
 <head>
-
     <meta charset="UTF-8">
-
-    <link rel="stylesheet" href="./styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etiquetas de góndola</title>
 </head>
-
 <body>
-
     <%- style %>
 
-        <%
-            const formatPrice = (value) => {
-                if (value === null || value === undefined || value === '') {
-                    return '-';
-                }
-                const numericValue = Number(value);
-                if (Number.isNaN(numericValue)) {
-                    return String(value);
-                }
-                return new Intl.NumberFormat('es-AR', {
-                    style: 'currency',
-                    currency: 'ARS',
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }).format(numericValue);
-            };
+    <% const labelsPerPage = gridConfig.columns * gridConfig.rows; %>
 
-            const shouldShowPrice = (value) => {
-                if (value === null || value === undefined || value === '') {
-                    return false;
-                }
-                const numericValue = Number(value);
-                if (!Number.isFinite(numericValue)) {
-                    return false;
-                }
-                return numericValue > 0;
-            };
+    <% pages.forEach((pageItems, pageIndex) => { %>
+        <section
+            class="page<%= pageIndex < totalPages - 1 ? ' page-break' : '' %>"
+            style="
+                --page-margin-mm: <%= pageConfig.marginMm %>;
+                --grid-columns: <%= gridConfig.columns %>;
+                --grid-rows: <%= gridConfig.rows %>;
+                --grid-gap-mm: <%= gridConfig.gapMm %>;
+            "
+        >
+            <div class="labels-grid">
+                <% for (let i = 0; i < labelsPerPage; i++) { %>
+                    <% const item = pageItems[i]; %>
+                    <% if (!item) { %>
+                        <div class="label label-empty"></div>
+                    <% } else { %>
+                        <article class="label">
+                            <div class="label-name"><%- item.name %></div>
 
-            const formatQty = (value) => {
-                if (value === null || value === undefined || value === '') {
-                    return '';
-                }
-                const numericValue = Number(value);
-                if (!Number.isFinite(numericValue) || numericValue <= 0) {
-                    return '';
-                }
-                return `${numericValue} un.`;
-            };
-        %>
+                            <div class="label-price"><%- item.price %></div>
 
-        <%
-            const cols = 3;
-            const rowsPerPage = 4;
-            const itemsPerPage = cols * rowsPerPage;
-        %>
-        <% for (let pageStart = 0; pageStart < prodList.length; pageStart += itemsPerPage) { %>
-            <% const pageItems = prodList.slice(pageStart, pageStart + itemsPerPage); %>
-            <main class="labels-page<% if (pageStart + itemsPerPage < prodList.length) { %> page-break<% } %>" style="--rows-per-page: <%= rowsPerPage %>;">
-                <% for (let r = 0; r < rowsPerPage; r++) { %>
-                    <% const rowItems = pageItems.slice(r * cols, r * cols + cols); %>
-                    <div class="labels-row">
-                        <% for (let c = 0; c < cols; c++) { %>
-                            <% const item = rowItems[c]; %>
-                            <% if (!item) { %>
-                                <div class="label-card label-card-empty"></div>
-                            <% } else { %>
-                                <div class="label-card">
-                                    <div class="label-title">
-                                        <%- item.name %>                                    
-                                    </div>
+                            <% if (item.tiers.length > 0) { %>
+                                <div class="label-divider"></div>
 
-                                    <% if (shouldShowPrice(item.minorista)) { %>
-                                        <div class="label-price-main"><%- formatPrice(item.minorista) %></div>
-                                    <% } %>
-
-                                    <div class="label-prices">
-                                        <% if (shouldShowPrice(item.mayorista_1)) { %>
-                                            <% const qty1 = formatQty(item.cant_mayor1); %>
-                                            <div class="label-price-line">
-                                                <span class="label-price-label">Mayorista 1<% if (qty1) { %> (<%- qty1 %>)<% } %></span>
-                                                <span class="label-price-value"><%- formatPrice(item.mayorista_1) %></span>
-                                            </div>
-                                        <% } %>
-                                        <% if (shouldShowPrice(item.mayorista_2)) { %>
-                                            <% const qty2 = formatQty(item.cant_mayor2); %>
-                                            <div class="label-price-line">
-                                                <span class="label-price-label">Mayorista 2<% if (qty2) { %> (<%- qty2 %>)<% } %></span>
-                                                <span class="label-price-value"><%- formatPrice(item.mayorista_2) %></span>
-                                            </div>
-                                        <% } %>
-                                        <% if (shouldShowPrice(item.mayorista_3)) { %>
-                                            <% const qty3 = formatQty(item.cant_mayor3); %>
-                                            <div class="label-price-line">
-                                                <span class="label-price-label">Mayorista 3<% if (qty3) { %> (<%- qty3 %>)<% } %></span>
-                                                <span class="label-price-value"><%- formatPrice(item.mayorista_3) %></span>
-                                            </div>
-                                        <% } %>
-                                    </div>
+                                <div class="label-tiers">
+                                    <% item.tiers.forEach((tier) => { %>
+                                        <div class="label-tier-row">
+                                            <span class="label-tier-label"><%- tier.label %>:</span>
+                                            <span class="label-tier-price"><%- tier.price %></span>
+                                        </div>
+                                    <% }) %>
                                 </div>
                             <% } %>
-                        <% } %>
-                    </div>
+                        </article>
+                    <% } %>
                 <% } %>
-            </main>
-        <% } %>
-<script>
-    (() => {
-        const fitTitle = (element) => {
-            const maxFontSize = 20;
-            const minFontSize = 8;
-            const step = 0.25;
+            </div>
 
-            element.style.fontSize = `${maxFontSize}px`;
-
-            while (element.scrollHeight > element.clientHeight + 1 && parseFloat(element.style.fontSize) > minFontSize) {
-                const nextSize = Math.max(minFontSize, parseFloat(element.style.fontSize) - step);
-                element.style.fontSize = `${nextSize}px`;
-                if (nextSize === minFontSize) {
-                    break;
-                }
-            }
-        };
-
-        const fitAllTitles = () => {
-            document.querySelectorAll('.label-title').forEach(fitTitle);
-        };
-
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(fitAllTitles);
-        } else {
-            window.addEventListener('load', fitAllTitles);
-        }
-    })();
-</script>
+            <footer class="page-footer">
+                PÁGINA <%= pageIndex + 1 %> DE <%= totalPages %>
+            </footer>
+        </section>
+    <% }) %>
 </body>
-
 </html>

@@ -255,15 +255,6 @@ export = (injectedStore: typeof StoreType) => {
       });
     }
 
-    //const groupBy: Array<string> = [`${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`];
-
-    const joinQuery1: IJoin = {
-      table: Tables.PRODUCTS_IMG,
-      colJoin: Columns.prodImg.id_prod,
-      colOrigin: Columns.prodPrincipal.id_prod,
-      type: ETypesJoin.none,
-    };
-
     const order: Iorder = {
       columns: [Columns.prodPrincipal.name, Columns.prodPrincipal.subcategory],
       asc: true,
@@ -275,35 +266,49 @@ export = (injectedStore: typeof StoreType) => {
       filters,
       undefined,
       undefined,
-      [joinQuery1],
+      undefined,
       order,
     );
-    const dataProd: {
-      imagen: string;
-      nombre: string;
-      marca: string;
-      proveedor: string;
-    }[] = data.map((item: any) => {
+
+    const formatPrice = (value: unknown): string => {
+      const numericValue = Number(value);
+      const rounded = Number.isFinite(numericValue) ? Math.round(numericValue) : 0;
+      return `$${rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+    };
+
+    const parseTier = (qty: unknown, price: unknown) => {
+      const numericQty = Number(qty);
+      const numericPrice = Number(price);
+
+      if (!Number.isFinite(numericQty) || numericQty <= 0) {
+        return null;
+      }
+
+      if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+        return null;
+      }
+
       return {
-        imagen:
-          'https://api-prod.nekoadmin.com.ar/punto-aroma/static//images/products/' +
-          item.url_img,
-        nombre: item.name,
-        marca: item.subcategory,
-        proveedor: item.category,
+        label: `${Math.round(numericQty)} UN`,
+        price: formatPrice(numericPrice),
+      };
+    };
+
+    const normalizedData = (data as IProdPrinc[]).map((product) => {
+      const tiers = [
+        parseTier(product.cant_mayor1, product.mayorista_1),
+        parseTier(product.cant_mayor2, product.mayorista_2),
+        parseTier(product.cant_mayor3, product.mayorista_3),
+      ].filter(Boolean) as Array<{ label: string; price: string }>;
+
+      return {
+        name: product.name,
+        price: formatPrice(product.minorista),
+        tiers,
       };
     });
-    const uniqueData = dataProd.filter(
-      (item, index, self) =>
-        index ===
-        self.findIndex(
-          (t) =>
-            t.nombre === item.nombre &&
-            t.marca === item.marca &&
-            t.proveedor === item.proveedor,
-        ),
-    );
-    const prodList = await createProdListPDF2(uniqueData);
+
+    const prodList = await createProdListPDF2(normalizedData);
     return prodList;
   };
 
