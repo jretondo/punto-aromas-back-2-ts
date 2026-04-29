@@ -28,7 +28,7 @@ export const createProdListPDF = async (
 
     try {
       const estilo = fs.readFileSync(
-        path.join('views', 'reports', 'prodList2', 'styles.css'),
+        path.join('views', 'reports', 'prodList', 'styles.css'),
         'utf8',
       );
       const logo = base64_encode(
@@ -54,7 +54,7 @@ export const createProdListPDF = async (
       };
 
       const html = await ejs.renderFile(
-        path.join('views', 'reports', 'prodList2', 'index.ejs'),
+        path.join('views', 'reports', 'prodList', 'index.ejs'),
         datos,
       );
 
