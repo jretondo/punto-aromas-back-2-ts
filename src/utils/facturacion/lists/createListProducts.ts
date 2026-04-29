@@ -21,41 +21,85 @@ export const createProdListPDF = async (
   }>,
 ) => {
   return new Promise(async (resolve, reject) => {
-    const base64_encode = (filePath: string): string => {
-      const bitmap: Buffer = fs.readFileSync(filePath);
-      return Buffer.from(bitmap).toString('base64');
-    };
-
     try {
-      const estilo = fs.readFileSync(
-        path.join('views', 'reports', 'prodList', 'styles.css'),
+      const style = fs.readFileSync(
+        path.join('views', 'reports', 'prodList2', 'styles.css'),
         'utf8',
-      );
-      const logo = base64_encode(
-        path.join('public', 'images', 'invoices', 'logo.png'),
       );
 
       const dateNow = new Date();
       const fileName = `prodList-${dateNow.toISOString()}.pdf`;
       const location = path.join('public', 'prod-list', fileName);
-      const prodListUnique = Object.values(
+
+      const pageConfig = {
+        marginMm: 10,
+        columns: 4,
+        rows: 5,
+        gapMm: 6,
+      };
+
+      const formatPrice = (value: unknown): string => {
+        const numericValue = Number(value);
+        const roundedValue = Number.isFinite(numericValue)
+          ? Math.round(numericValue)
+          : 0;
+
+        return `$${roundedValue
+          .toString()
+          .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+      };
+
+      const buildTier = (qty: unknown, price: unknown) => {
+        const numericQty = Number(qty);
+        const numericPrice = Number(price);
+
+        if (!Number.isFinite(numericQty) || numericQty <= 0) {
+          return null;
+        }
+
+        if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+          return null;
+        }
+
+        return {
+          label: `${Math.round(numericQty)} UN`,
+          price: formatPrice(numericPrice),
+        };
+      };
+
+      const normalizedProducts = Object.values(
         productos.reduce((acc: Record<string, any>, item: any) => {
           const key = `${item.name || ''}::${item.subcategory || ''}`;
           if (!acc[key]) {
-            acc[key] = item;
+            acc[key] = {
+              name: item.name,
+              description: item.subcategory || '',
+              price: formatPrice(item.minorista),
+              tiers: [
+                buildTier(item.cant_mayor1, item.mayorista_1),
+                buildTier(item.cant_mayor2, item.mayorista_2),
+                buildTier(item.cant_mayor3, item.mayorista_3),
+              ].filter(Boolean),
+            };
           }
           return acc;
         }, {}),
       );
-      const datos = {
-        logo: 'data:image/png;base64,' + logo,
-        style: '<style>' + estilo + '</style>',
-        prodList: prodListUnique,
-      };
+
+      const labelsPerPage = pageConfig.columns * pageConfig.rows;
+      const pages: Array<any[]> = [];
+
+      for (let i = 0; i < normalizedProducts.length; i += labelsPerPage) {
+        pages.push(normalizedProducts.slice(i, i + labelsPerPage));
+      }
 
       const html = await ejs.renderFile(
-        path.join('views', 'reports', 'prodList', 'index.ejs'),
-        datos,
+        path.join('views', 'reports', 'prodList2', 'index.ejs'),
+        {
+          style: `<style>${style}</style>`,
+          pages,
+          pageConfig,
+        },
       );
 
       const browser = await puppeteer.launch({
@@ -69,17 +113,15 @@ export const createProdListPDF = async (
 
       await page.pdf({
         path: location,
-        format: 'a4',
+        format: 'A4',
         landscape: false,
-        scale: 0.8,
-        displayHeaderFooter: true,
+        printBackground: true,
         margin: {
-          top: '0.5cm',
-          bottom: '2cm',
+          top: '0',
+          right: '0',
+          bottom: '0',
+          left: '0',
         },
-        headerTemplate: '',
-        footerTemplate:
-          "<div style='font-size: 14px; text-align: center; width: 100%;'>Página&nbsp;<span class='pageNumber'></span>&nbsp;de&nbsp;<span class='totalPages'></span></div>",
       });
 
       await browser.close();

@@ -8,16 +8,16 @@
 <body>
     <%- style %>
 
-    <% const labelsPerPage = gridConfig.columns * gridConfig.rows; %>
+    <% const labelsPerPage = pageConfig.columns * pageConfig.rows; %>
 
     <% pages.forEach((pageItems, pageIndex) => { %>
         <section
-            class="page<%= pageIndex < totalPages - 1 ? ' page-break' : '' %>"
+            class="page<%= pageIndex < pages.length - 1 ? ' page-break' : '' %>"
             style="
-                --page-margin-mm: <%= pageConfig.marginMm %>;
-                --grid-columns: <%= gridConfig.columns %>;
-                --grid-rows: <%= gridConfig.rows %>;
-                --grid-gap-mm: <%= gridConfig.gapMm %>;
+                --margin-mm: <%= pageConfig.marginMm %>;
+                --gap-mm: <%= pageConfig.gapMm %>;
+                --columns: <%= pageConfig.columns %>;
+                --rows: <%= pageConfig.rows %>;
             "
         >
             <div class="labels-grid">
@@ -27,13 +27,17 @@
                         <div class="label label-empty"></div>
                     <% } else { %>
                         <article class="label">
-                            <div class="label-name"><%- item.name %></div>
+                            <header class="label-header">
+                                <div class="label-name"><%- item.name %></div>
+                                <% if (item.description) { %>
+                                    <div class="label-description">(<%- item.description %>)</div>
+                                <% } %>
+                            </header>
 
                             <div class="label-price"><%- item.price %></div>
 
                             <% if (item.tiers.length > 0) { %>
                                 <div class="label-divider"></div>
-
                                 <div class="label-tiers">
                                     <% item.tiers.forEach((tier) => { %>
                                         <div class="label-tier-row">
@@ -48,9 +52,7 @@
                 <% } %>
             </div>
 
-            <footer class="page-footer">
-                PÁGINA <%= pageIndex + 1 %> DE <%= totalPages %>
-            </footer>
+            <footer class="page-footer">PÁGINA <%= pageIndex + 1 %> DE <%= pages.length %></footer>
         </section>
     <% }) %>
 </body>

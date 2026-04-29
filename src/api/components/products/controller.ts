@@ -272,11 +272,16 @@ export = (injectedStore: typeof StoreType) => {
 
     const formatPrice = (value: unknown): string => {
       const numericValue = Number(value);
-      const rounded = Number.isFinite(numericValue) ? Math.round(numericValue) : 0;
-      return `$${rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+      const roundedValue = Number.isFinite(numericValue)
+        ? Math.round(numericValue)
+        : 0;
+
+      return `$${roundedValue
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
     };
 
-    const parseTier = (qty: unknown, price: unknown) => {
+    const buildTier = (qty: unknown, price: unknown) => {
       const numericQty = Number(qty);
       const numericPrice = Number(price);
 
@@ -294,21 +299,22 @@ export = (injectedStore: typeof StoreType) => {
       };
     };
 
-    const normalizedData = (data as IProdPrinc[]).map((product) => {
+    const normalizedProducts = (data as IProdPrinc[]).map((product) => {
       const tiers = [
-        parseTier(product.cant_mayor1, product.mayorista_1),
-        parseTier(product.cant_mayor2, product.mayorista_2),
-        parseTier(product.cant_mayor3, product.mayorista_3),
+        buildTier(product.cant_mayor1, product.mayorista_1),
+        buildTier(product.cant_mayor2, product.mayorista_2),
+        buildTier(product.cant_mayor3, product.mayorista_3),
       ].filter(Boolean) as Array<{ label: string; price: string }>;
 
       return {
         name: product.name,
+        description: product.subcategory || '',
         price: formatPrice(product.minorista),
         tiers,
       };
     });
 
-    const prodList = await createProdListPDF2(normalizedData);
+    const prodList = await createProdListPDF2(normalizedProducts);
     return prodList;
   };
 

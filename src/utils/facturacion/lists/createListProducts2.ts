@@ -10,6 +10,7 @@ type IProdListTier = {
 
 type IProdListItem = {
   name: string;
+  description?: string;
   price: string;
   tiers: IProdListTier[];
 };
@@ -23,35 +24,29 @@ export const createProdListPDF2 = async (prodList: IProdListItem[]) => {
       );
 
       const pageConfig = {
-        size: 'A4',
-        orientation: 'portrait',
         marginMm: 10,
-      };
-      const gridConfig = {
         columns: 4,
         rows: 5,
-        gapMm: 5,
+        gapMm: 6,
       };
+
+      const labelsPerPage = pageConfig.columns * pageConfig.rows;
+      const pages: IProdListItem[][] = [];
+
+      for (let i = 0; i < prodList.length; i += labelsPerPage) {
+        pages.push(prodList.slice(i, i + labelsPerPage));
+      }
 
       const dateNow = new Date();
       const fileName = `prodList-${dateNow.toISOString()}.pdf`;
       const location = path.join('public', 'prod-list', fileName);
-
-      const itemsPerPage = gridConfig.columns * gridConfig.rows;
-      const pages: IProdListItem[][] = [];
-
-      for (let i = 0; i < prodList.length; i += itemsPerPage) {
-        pages.push(prodList.slice(i, i + itemsPerPage));
-      }
 
       const html = await ejs.renderFile(
         path.join('views', 'reports', 'prodList2', 'index.ejs'),
         {
           style: `<style>${style}</style>`,
           pages,
-          totalPages: pages.length,
           pageConfig,
-          gridConfig,
         },
       );
 

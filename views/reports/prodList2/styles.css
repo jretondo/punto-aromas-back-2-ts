@@ -18,7 +18,7 @@ body {
 .page {
   width: 210mm;
   min-height: 297mm;
-  padding: calc(var(--page-margin-mm) * 1mm);
+  padding: calc(var(--margin-mm) * 1mm);
   display: flex;
   flex-direction: column;
 }
@@ -30,15 +30,15 @@ body {
 .labels-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(var(--grid-columns), 1fr);
-  grid-template-rows: repeat(var(--grid-rows), 1fr);
-  gap: calc(var(--grid-gap-mm) * 1mm);
+  grid-template-columns: repeat(var(--columns), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  gap: calc(var(--gap-mm) * 1mm);
 }
 
 .label {
   border: 1px solid #000;
   border-radius: 4mm;
-  padding: 3mm;
+  padding: 2.2mm 2.4mm;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -50,54 +50,71 @@ body {
   border-color: transparent;
 }
 
+.label-header {
+  min-height: 25mm;
+}
+
 .label-name {
-  font-size: 9pt;
-  font-weight: 700;
-  line-height: 1.1;
+  font-size: 11.5pt;
+  line-height: 1;
+  font-weight: 900;
   text-transform: uppercase;
-  min-height: 2.2em;
-  max-height: 2.2em;
+  max-height: 2.1em;
+  overflow: hidden;
+}
+
+.label-description {
+  margin-top: 1.2mm;
+  font-size: 7.8pt;
+  line-height: 1.1;
+  font-weight: 900;
+  text-transform: uppercase;
+  max-height: 2.1em;
   overflow: hidden;
 }
 
 .label-price {
-  font-size: 20pt;
-  font-weight: 700;
-  line-height: 1;
-  margin: 2mm 0;
+  font-size: 25pt;
+  line-height: 0.95;
+  font-weight: 900;
+  margin: 1.5mm 0 1mm;
 }
 
 .label-divider {
+  width: 100%;
   height: 1px;
   background: #000;
-  margin: 1mm 0 1.5mm;
+  margin: 0.8mm 0 1.1mm;
 }
 
 .label-tiers {
   display: flex;
   flex-direction: column;
-  gap: 0.6mm;
-  font-size: 8pt;
-  line-height: 1.2;
+  gap: 0.55mm;
+  font-size: 8.8pt;
+  line-height: 1.05;
 }
 
 .label-tier-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 2mm;
-  font-weight: 700;
+  gap: 1.5mm;
 }
 
-.label-tier-label,
+.label-tier-label {
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .label-tier-price {
+  font-weight: 900;
   white-space: nowrap;
 }
 
 .page-footer {
-  margin-top: 3mm;
+  margin-top: 2.5mm;
   text-align: center;
   font-size: 10pt;
   font-weight: 700;
-  letter-spacing: 0.03em;
 }
