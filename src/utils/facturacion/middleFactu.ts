@@ -15,6 +15,10 @@ import {
 import moment from 'moment';
 import errorSend from '../error';
 import clientesController from '../../api/components/clientes';
+import {
+  attachCalculatedInvoiceAudit,
+  buildInvoiceAuditSnapshot,
+} from './invoiceAudit';
 
 const factuMiddel = () => {
   const middleware = async (
@@ -24,6 +28,7 @@ const factuMiddel = () => {
   ) => {
     try {
       req.body.timer = Number(new Date());
+      req.body.invoiceAudit = buildInvoiceAuditSnapshot(req.body);
       const body: INewFactura = req.body.dataFact;
       const user: IUser = req.body.user;
       const pvId = body.pv_id;
@@ -290,6 +295,12 @@ const factuMiddel = () => {
       req.body.pvData = pvData[0];
       req.body.productsList = productsList.listaProd;
       req.body.variosPagos = variosPagos;
+      req.body.invoiceAudit = attachCalculatedInvoiceAudit(
+        req.body.invoiceAudit,
+        newFact,
+        productsList.listaProd,
+        variosPagos,
+      );
       next();
     } catch (error) {
       console.error(error);

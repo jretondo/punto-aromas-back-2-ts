@@ -11,6 +11,7 @@ import { sendFactMiddle } from '../../../utils/facturacion/middleSendFact';
 import dataFactMiddle from '../../../utils/facturacion/middleDataFact';
 import devFactMiddle from '../../../utils/facturacion/middleDevFact';
 import factuMiddelDevPart from '../../../utils/facturacion/middleFactuDevPart';
+import { IInvoiceAuditSnapshot } from '../../../utils/facturacion/invoiceAudit';
 
 const list = (
     req: Request,
@@ -77,7 +78,7 @@ const newInvoice = (
     res: Response,
     next: NextFunction
 ) => {
-    Controller.newInvoice(req.body.pvData, req.body.newFact, req.body.dataFiscal, req.body.productsList, req.body.fileName, req.body.filePath, req.body.timer, req.body.user, req.body.variosPagos, next)
+    Controller.newInvoice(req.body.pvData, req.body.newFact, req.body.dataFiscal, req.body.productsList, req.body.fileName, req.body.filePath, req.body.timer, req.body.user, req.body.variosPagos, next, req.body.invoiceAudit as IInvoiceAuditSnapshot | undefined)
         .then((dataFact) => {
             file(req, res, dataFact.filePath, 'application/pdf', dataFact.fileName, dataFact);
         })

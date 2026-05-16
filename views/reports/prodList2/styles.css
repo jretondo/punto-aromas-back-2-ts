@@ -17,10 +17,11 @@ body {
 
 .page {
   width: 210mm;
-  min-height: 297mm;
+  height: 285mm;
   padding: calc(var(--margin-mm) * 1mm);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .page-break {
@@ -38,7 +39,7 @@ body {
 .label {
   border: 1px solid #000;
   border-radius: 4mm;
-  padding: 2.2mm 2.4mm;
+  padding: 1.8mm 2.4mm;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -51,7 +52,7 @@ body {
 }
 
 .label-header {
-  min-height: 25mm;
+  min-height: 22mm;
 }
 
 .label-name {
@@ -77,21 +78,21 @@ body {
   font-size: 25pt;
   line-height: 0.95;
   font-weight: 900;
-  margin: 1.5mm 0 1mm;
+  margin: 1mm 0 0.7mm;
 }
 
 .label-divider {
   width: 100%;
   height: 1px;
   background: #000;
-  margin: 0.8mm 0 1.1mm;
+  margin: 0.5mm 0 0.8mm;
 }
 
 .label-tiers {
   display: flex;
   flex-direction: column;
-  gap: 0.55mm;
-  font-size: 8.8pt;
+  gap: 0.35mm;
+  font-size: 10.2pt;
   line-height: 1.05;
 }
 
@@ -110,11 +111,4 @@ body {
 .label-tier-price {
   font-weight: 900;
   white-space: nowrap;
-}
-
-.page-footer {
-  margin-top: 2.5mm;
-  text-align: center;
-  font-size: 10pt;
-  font-weight: 700;
 }

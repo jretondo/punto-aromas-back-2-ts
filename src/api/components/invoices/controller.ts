@@ -23,6 +23,10 @@ import { NextFunction } from 'express';
 import controller from '../clientes';
 import { zfill } from '../../../utils/cerosIzq';
 import { formatMoney } from '../../../utils/formatMoney';
+import {
+    IInvoiceAuditSnapshot,
+    writeInvoiceAudit,
+} from '../../../utils/facturacion/invoiceAudit';
 
 export = (injectedStore: typeof StoreType) => {
     let store = injectedStore;
@@ -381,9 +385,22 @@ export = (injectedStore: typeof StoreType) => {
             tipo_txt: string,
             importe: number
         }>,
-        next: NextFunction
+        next: NextFunction,
+        invoiceAudit?: IInvoiceAuditSnapshot
     ) => {
         const resultInsert = await insertFact(pvData.id || 0, newFact, productsList, factFiscal)
+        let invoiceAuditPath: string | undefined = undefined
+        try {
+            const insertedDetails = await getDetails(resultInsert.msg.factId)
+            invoiceAuditPath = writeInvoiceAudit(
+                invoiceAudit,
+                resultInsert.msg.factId,
+                insertedDetails,
+                resultInsert
+            )
+        } catch (error) {
+            console.error('Error guardando auditoría de factura:', error)
+        }
         const clienteArray: { data: Array<IClientes> } = await controller.list(undefined, String(newFact.n_doc_cliente), undefined)
 
         if (clienteArray.data.length === 0) {
@@ -451,7 +468,8 @@ export = (injectedStore: typeof StoreType) => {
         const dataFact = {
             fileName,
             filePath,
-            resultInsert
+            resultInsert,
+            invoiceAuditPath
         }
         return dataFact
     }
