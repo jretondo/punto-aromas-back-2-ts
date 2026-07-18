@@ -19,18 +19,22 @@ type IProdListItem = {
   proveedor: string;
 };
 
+const PUBLIC_STATIC_BASE_URL =
+  'https://api-prod.nekoadmin.com.ar/punto-aroma/static/images/products/';
+
 const buildImageSrc = (image?: string): string => {
   const imagePath = image || 'product.png';
 
-  if (/^(https?:|data:|file:)/.test(imagePath)) {
+  if (/^(https?:|data:)/.test(imagePath)) {
     return imagePath;
   }
 
-  const publicImagePath = imagePath.startsWith('public')
-    ? imagePath
-    : path.join('public', 'images', 'products', imagePath);
+  const normalizedImagePath = imagePath
+    .replace(/^public[\\/]/, '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '');
 
-  return `file://${path.resolve(publicImagePath)}`;
+  return new URL(normalizedImagePath, PUBLIC_STATIC_BASE_URL).toString();
 };
 
 const normalizeProduct = (product: IProdListSourceItem): IProdListItem => {
@@ -46,7 +50,6 @@ export const createProdListPDF2 = async (prodList: IProdListSourceItem[]) => {
   return new Promise(async (resolve, reject) => {
     try {
       const productos = prodList.map(normalizeProduct);
-
       const dateNow = new Date();
       const fileName = `prodList-${dateNow.toISOString()}.pdf`;
       const location = path.join('public', 'prod-list', fileName);
