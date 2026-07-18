@@ -260,61 +260,28 @@ export = (injectedStore: typeof StoreType) => {
       asc: true,
     };
 
+    const groupBy: Array<string> = [
+      `${Tables.PRODUCTS_PRINCIPAL}.${Columns.prodPrincipal.id_prod}`,
+    ];
+
+    const joinQuery1: IJoin = {
+      table: Tables.PRODUCTS_IMG,
+      colJoin: Columns.prodImg.id_prod,
+      colOrigin: Columns.prodPrincipal.id_prod,
+      type: ETypesJoin.left,
+    };
+
     const data = await store.list(
       Tables.PRODUCTS_PRINCIPAL,
       [ESelectFunct.all],
       filters,
+      groupBy,
       undefined,
-      undefined,
-      undefined,
+      [joinQuery1],
       order,
     );
 
-    const formatPrice = (value: unknown): string => {
-      const numericValue = Number(value);
-      const roundedValue = Number.isFinite(numericValue)
-        ? Math.round(numericValue)
-        : 0;
-
-      return `$${roundedValue
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
-    };
-
-    const buildTier = (qty: unknown, price: unknown) => {
-      const numericQty = Number(qty);
-      const numericPrice = Number(price);
-
-      if (!Number.isFinite(numericQty) || numericQty <= 0) {
-        return null;
-      }
-
-      if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-        return null;
-      }
-
-      return {
-        label: `${Math.round(numericQty)} UN`,
-        price: formatPrice(numericPrice),
-      };
-    };
-
-    const normalizedProducts = (data as IProdPrinc[]).map((product) => {
-      const tiers = [
-        buildTier(product.cant_mayor1, product.mayorista_1),
-        buildTier(product.cant_mayor2, product.mayorista_2),
-        buildTier(product.cant_mayor3, product.mayorista_3),
-      ].filter(Boolean) as Array<{ label: string; price: string }>;
-
-      return {
-        name: product.name,
-        description: product.subcategory || '',
-        price: formatPrice(product.minorista),
-        tiers,
-      };
-    });
-
-    const prodList = await createProdListPDF2(normalizedProducts);
+    const prodList = await createProdListPDF2(data);
     return prodList;
   };
 

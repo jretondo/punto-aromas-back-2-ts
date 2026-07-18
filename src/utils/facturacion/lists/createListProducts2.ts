@@ -1,53 +1,59 @@
-import fs from 'fs';
 import path from 'path';
 import ejs from 'ejs';
 import puppeteer from 'puppeteer';
 
-type IProdListTier = {
-  label: string;
-  price: string;
+type IProdListSourceItem = {
+  name?: string;
+  nombre?: string;
+  category?: string;
+  marca?: string;
+  proveedor?: string;
+  imagen?: string;
+  url_img?: string;
 };
 
 type IProdListItem = {
-  name: string;
-  description?: string;
-  price: string;
-  tiers: IProdListTier[];
+  imagen: string;
+  nombre: string;
+  marca: string;
+  proveedor: string;
 };
 
-export const createProdListPDF2 = async (prodList: IProdListItem[]) => {
+const buildImageSrc = (image?: string): string => {
+  const imagePath = image || 'product.png';
+
+  if (/^(https?:|data:|file:)/.test(imagePath)) {
+    return imagePath;
+  }
+
+  const publicImagePath = imagePath.startsWith('public')
+    ? imagePath
+    : path.join('public', 'images', 'products', imagePath);
+
+  return `file://${path.resolve(publicImagePath)}`;
+};
+
+const normalizeProduct = (product: IProdListSourceItem): IProdListItem => {
+  return {
+    imagen: buildImageSrc(product.imagen || product.url_img),
+    nombre: product.nombre || product.name || '',
+    marca: product.marca || product.category || '',
+    proveedor: product.proveedor || product.category || '',
+  };
+};
+
+export const createProdListPDF2 = async (prodList: IProdListSourceItem[]) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const style = fs.readFileSync(
-        path.join('views', 'reports', 'prodList2', 'styles.css'),
-        'utf8',
-      );
-
-      const pageConfig = {
-        marginMm: 10,
-        columns: 4,
-        rows: 5,
-        gapMm: 6,
-      };
-
-      const labelsPerPage = pageConfig.columns * pageConfig.rows;
-      const pages: IProdListItem[][] = [];
-
-      for (let i = 0; i < prodList.length; i += labelsPerPage) {
-        pages.push(prodList.slice(i, i + labelsPerPage));
-      }
+      const productos = prodList.map(normalizeProduct);
 
       const dateNow = new Date();
       const fileName = `prodList-${dateNow.toISOString()}.pdf`;
       const location = path.join('public', 'prod-list', fileName);
 
       const html = await ejs.renderFile(
-        path.join('views', 'reports', 'prodList2', 'index.ejs'),
-        {
-          style: `<style>${style}</style>`,
-          pages,
-          pageConfig,
-        },
+        path.join('views', 'reports', 'prodList', 'index.ejs'),
+        { productos },
       );
 
       const browser = await puppeteer.launch({
