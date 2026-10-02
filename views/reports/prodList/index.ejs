@@ -10,6 +10,13 @@
       font-size: 11px;
     }
 
+    .marca-titulo {
+      margin: 0 0 14px;
+      font-size: 22px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
     .container {
       display: flex;
       flex-wrap: wrap;
@@ -48,6 +55,7 @@
     .grupo-productos {
       page-break-after: always;
     }
+
     .grupo-productos:last-child {
       page-break-after: auto;
     }
@@ -60,16 +68,19 @@
   </style>
 </head>
 <body>
-  <% for (let i = 0; i < productos.length; i += 20) { %>
-    <div class="container grupo-productos">
-      <% productos.slice(i, i + 20).forEach(function(producto) { %>
+  <% pages.forEach(function(page) { %>
+    <section class="grupo-productos">
+      <h1 class="marca-titulo"><%= page.marca %></h1>
+      <div class="container">
+        <% page.productos.forEach(function(producto) { %>
         <div class="producto">
           <img src="<%= producto.imagen %>" alt="Imagen del producto">
           <div class="nombre"><%= producto.nombre %></div>
           <div class="info">Marca: <%= producto.marca %></div>
         </div>
-      <% }); %>
-    </div>
-  <% } %>
+        <% }); %>
+      </div>
+    </section>
+  <% }); %>
 </body>
 </html>

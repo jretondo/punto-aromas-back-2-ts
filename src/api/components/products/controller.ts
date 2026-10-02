@@ -256,7 +256,11 @@ export = (injectedStore: typeof StoreType) => {
     }
 
     const order: Iorder = {
-      columns: [Columns.prodPrincipal.name, Columns.prodPrincipal.subcategory],
+      columns: [
+        Columns.prodPrincipal.category,
+        Columns.prodPrincipal.name,
+        Columns.prodPrincipal.subcategory,
+      ],
       asc: true,
     };
 

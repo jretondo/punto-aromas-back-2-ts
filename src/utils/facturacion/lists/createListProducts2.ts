@@ -19,8 +19,15 @@ type IProdListItem = {
   proveedor: string;
 };
 
+type IProdListPage = {
+  marca: string;
+  productos: IProdListItem[];
+};
+
 const PUBLIC_STATIC_BASE_URL =
   'https://api-prod.nekoadmin.com.ar/punto-aroma/static/images/products/';
+
+const PRODUCTS_PER_PAGE = 20;
 
 const buildImageSrc = (image?: string): string => {
   const imagePath = image || 'product.png';
@@ -41,22 +48,57 @@ const normalizeProduct = (product: IProdListSourceItem): IProdListItem => {
   return {
     imagen: buildImageSrc(product.imagen || product.url_img),
     nombre: product.nombre || product.name || '',
-    marca: product.marca || product.category || '',
+    marca: product.marca || product.category || 'Sin marca',
     proveedor: product.proveedor || product.category || '',
   };
+};
+
+const compareText = (firstValue: string, secondValue: string): number => {
+  return firstValue.localeCompare(secondValue, 'es', { sensitivity: 'base' });
+};
+
+const buildPagesByBrand = (productos: IProdListItem[]): IProdListPage[] => {
+  const sortedProducts = [...productos].sort((firstProduct, secondProduct) => {
+    const brandCompare = compareText(firstProduct.marca, secondProduct.marca);
+
+    if (brandCompare !== 0) {
+      return brandCompare;
+    }
+
+    return compareText(firstProduct.nombre, secondProduct.nombre);
+  });
+
+  return sortedProducts.reduce<IProdListPage[]>((pages, product) => {
+    const currentPage = pages[pages.length - 1];
+    const shouldCreatePage =
+      !currentPage ||
+      currentPage.marca !== product.marca ||
+      currentPage.productos.length >= PRODUCTS_PER_PAGE;
+
+    if (shouldCreatePage) {
+      pages.push({
+        marca: product.marca,
+        productos: [],
+      });
+    }
+
+    pages[pages.length - 1].productos.push(product);
+    return pages;
+  }, []);
 };
 
 export const createProdListPDF2 = async (prodList: IProdListSourceItem[]) => {
   return new Promise(async (resolve, reject) => {
     try {
       const productos = prodList.map(normalizeProduct);
+      const pages = buildPagesByBrand(productos);
       const dateNow = new Date();
       const fileName = `prodList-${dateNow.toISOString()}.pdf`;
       const location = path.join('public', 'prod-list', fileName);
 
       const html = await ejs.renderFile(
         path.join('views', 'reports', 'prodList', 'index.ejs'),
-        { productos },
+        { pages },
       );
 
       const browser = await puppeteer.launch({
