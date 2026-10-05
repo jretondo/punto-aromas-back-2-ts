@@ -6,6 +6,7 @@ type IProdListSourceItem = {
   name?: string;
   nombre?: string;
   category?: string;
+  subcategory?: string;
   marca?: string;
   proveedor?: string;
   imagen?: string;
@@ -48,7 +49,7 @@ const normalizeProduct = (product: IProdListSourceItem): IProdListItem => {
   return {
     imagen: buildImageSrc(product.imagen || product.url_img),
     nombre: product.nombre || product.name || '',
-    marca: product.marca || product.category || 'Sin marca',
+    marca: product.marca || product.subcategory || 'Sin marca',
     proveedor: product.proveedor || product.category || '',
   };
 };
