@@ -33,7 +33,7 @@ export const createProdListPDF = async (
 
       const pageConfig = {
         marginMm: 10,
-        columns: 4,
+        columns: 2,
         rows: 5,
         gapMm: 6,
       };

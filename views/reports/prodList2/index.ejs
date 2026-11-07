@@ -27,22 +27,23 @@
                         <div class="label label-empty"></div>
                     <% } else { %>
                         <article class="label">
-                            <header class="label-header">
-                                <div class="label-name"><%- item.name %></div>
-                                <% if (item.description) { %>
-                                    <div class="label-description">(<%- item.description %>)</div>
-                                <% } %>
-                            </header>
+                            <div class="label-main">
+                                <header class="label-header">
+                                    <div class="label-name"><%= item.name %></div>
+                                    <% if (item.description) { %>
+                                        <div class="label-description">(<%= item.description %>)</div>
+                                    <% } %>
+                                </header>
 
-                            <div class="label-price"><%- item.price %></div>
+                                <div class="label-price"><%= item.price %></div>
+                            </div>
 
                             <% if (item.tiers.length > 0) { %>
-                                <div class="label-divider"></div>
                                 <div class="label-tiers">
                                     <% item.tiers.forEach((tier) => { %>
                                         <div class="label-tier-row">
-                                            <span class="label-tier-label"><%- tier.label %>:</span>
-                                            <span class="label-tier-price"><%- tier.price %></span>
+                                            <span class="label-tier-label"><%= tier.label %>:</span>
+                                            <span class="label-tier-price"><%= tier.price %></span>
                                         </div>
                                     <% }) %>
                                 </div>

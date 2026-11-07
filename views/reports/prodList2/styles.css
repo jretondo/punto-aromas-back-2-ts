@@ -2,6 +2,11 @@
   box-sizing: border-box;
 }
 
+@page {
+  size: A4;
+  margin: 0;
+}
+
 html,
 body {
   margin: 0;
@@ -9,6 +14,8 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   color: #000;
   background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 body {
@@ -30,85 +37,128 @@ body {
 
 .labels-grid {
   flex: 1;
+  min-height: 0;
   display: grid;
-  grid-template-columns: repeat(var(--columns), 1fr);
-  grid-template-rows: repeat(var(--rows), 1fr);
-  gap: calc(var(--gap-mm) * 1mm);
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--rows), 32mm);
+  align-content: start;
+  column-gap: calc(var(--gap-mm) * 1mm);
+  row-gap: 3mm;
 }
 
 .label {
-  border: 1px solid #000;
+  border: 0.7mm solid #000;
   border-radius: 4mm;
-  padding: 1.8mm 2.4mm;
+  padding: 1.5mm;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  align-items: stretch;
+  gap: 1.2mm;
   text-align: center;
   overflow: hidden;
+  break-inside: avoid;
 }
 
 .label-empty {
   border-color: transparent;
 }
 
+.label-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.8mm;
+}
+
 .label-header {
-  min-height: 22mm;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1mm;
 }
 
 .label-name {
-  font-size: 11.5pt;
+  font-size: 15pt;
   line-height: 1;
   font-weight: 900;
   text-transform: uppercase;
-  max-height: 2.1em;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .label-description {
-  margin-top: 1.2mm;
-  font-size: 7.8pt;
-  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  gap: 1mm;
+  font-size: 9pt;
+  line-height: 1.05;
   font-weight: 900;
   text-transform: uppercase;
-  max-height: 2.1em;
-  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.label-description::before,
+.label-description::after {
+  content: '';
+  flex: 1 0 2mm;
+  height: 0.3mm;
+  background: #000;
 }
 
 .label-price {
-  font-size: 25pt;
-  line-height: 0.95;
-  font-weight: 900;
-  margin: 1mm 0 0.7mm;
-}
-
-.label-divider {
-  width: 100%;
-  height: 1px;
+  border-radius: 3mm;
+  padding: 0.8mm 0.5mm;
+  color: #fff;
   background: #000;
-  margin: 0.5mm 0 0.8mm;
+  font-size: 25pt;
+  line-height: 1.05;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .label-tiers {
+  flex: 1;
+  min-width: 0;
+  border-left: 0.35mm solid #000;
+  padding-left: 1.2mm;
   display: flex;
   flex-direction: column;
-  gap: 0.35mm;
-  font-size: 10.2pt;
-  line-height: 1.05;
+  justify-content: center;
 }
 
 .label-tier-row {
+  flex: 1;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 1.5mm;
+  gap: 1mm;
+  max-height: 33.333%;
+}
+
+.label-tier-row + .label-tier-row {
+  border-top: 0.3mm solid #000;
 }
 
 .label-tier-label {
+  border-radius: 2.5mm;
+  padding: 1mm;
+  background: #000;
+  color: #fff;
+  font-size: 10pt;
+  line-height: 1.1;
   font-weight: 900;
   white-space: nowrap;
 }
 
 .label-tier-price {
+  font-size: 16pt;
+  line-height: 1;
   font-weight: 900;
   white-space: nowrap;
 }
